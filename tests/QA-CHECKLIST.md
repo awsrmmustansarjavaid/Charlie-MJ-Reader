@@ -1,0 +1,21 @@
+# Manual QA checklist
+
+- [ ] Load unpacked project from folder containing `manifest.json`.
+- [ ] Popup opens and shows current library counts.
+- [ ] Save an accessible article from a normal HTTP/HTTPS tab.
+- [ ] Duplicate URL does not create a second saved article from popup.
+- [ ] Open full-page reader workspace.
+- [ ] Search saved article title and body.
+- [ ] Open saved article in reader view.
+- [ ] Start and stop text-to-speech.
+- [ ] Save selected text using floating toolbar.
+- [ ] Save selected text using context menu.
+- [ ] Add and delete a note.
+- [ ] Add and delete vocabulary.
+- [ ] Create and delete a collection.
+- [ ] Export Markdown, TXT and JSON.
+- [ ] Export and restore full backup.
+- [ ] Change settings and reload extension; values persist.
+- [ ] Add/remove a website domain in Website Manager.
+- [ ] Confirm Medium Access Manager clearly says server-side limits cannot be reset.
+- [ ] Confirm restricted browser pages fail gracefully.

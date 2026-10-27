@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Charlie MJ Reader</title><link rel="stylesheet" href="popup.css"></head>
+<body><main class="app">
+<header><div class="brand"><img src="../../assets/icons/icon48.png" alt=""><div><strong>Charlie MJ Reader</strong><small>Read smarter. Learn deeper.</small></div></div><button id="open-settings" class="icon-btn" title="Settings">⚙</button></header>
+<section class="welcome"><span class="eyebrow">YOUR READING SPACE</span><h1>Make every read<br><em>count.</em></h1><p>Capture ideas, build vocabulary and keep your knowledge close.</p></section>
+<section class="actions">
+<button id="save-page" class="primary">＋ Save current article</button>
+<div class="action-grid"><button id="open-reader">▤<span>Reader</span></button><button id="listen">♫<span>Listen</span></button><button id="open-library">▣<span>Library</span></button><button id="open-options">⚙<span>Settings</span></button></div>
+</section>
+<section id="media-toolbar" class="media-toolbar" hidden aria-label="Reading media controls">
+  <div class="media-heading"><strong>Now reading</strong><span id="media-status">Ready</span></div>
+  <div class="progress-track"><span id="media-progress"></span></div>
+  <div class="media-meta"><span id="media-percent">0%</span><span id="media-position">0 / 0 words</span></div>
+  <div class="media-controls"><button id="media-play" class="primary">▶ Play</button><button id="media-pause">Ⅱ Pause</button><button id="media-stop">■ Stop</button></div>
+</section>
+<section class="stats"><div><b id="article-count">0</b><small>Articles</small></div><div><b id="highlight-count">0</b><small>Highlights</small></div><div><b id="word-count">0</b><small>Words saved</small></div></section>
+<section class="limit-card"><div><span class="eyebrow">MEDIUM ACCESS MANAGER</span><b>Reading access</b><p>Check official access options. Server-side limits cannot be reset by this extension.</p><a href="https://medium.com/membership" target="_blank">View Medium membership ↗</a></div><span class="status">Info</span></section>
+<footer><span>Local-first • Your data stays in your browser</span><button id="export-backup">Backup</button></footer>
+<div id="toast" role="status"></div>
+</main><script type="module" src="popup.js"></script></body></html>
