@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Reading Library</title><link rel="stylesheet" href="library.css"></head><body>
+<aside class="sidebar"><div class="brand">CMJ <span>My Reading Library</span></div><nav id="side-nav">
+<button data-view="websites" class="active">🌐 Websites</button><button data-view="favorites">★ Favorite</button><button data-view="profiles">◉ Profile Pages</button><button data-view="categories">▦ Category</button><button data-view="tags"># Tags</button><button data-view="recent">◷ Recent</button><button data-view="all">☰ All Saved</button>
+</nav><div class="side-bottom"><button id="open-options">⚙ General Settings</button><button id="open-adapters">🧩 Compatibility Adapters</button></div></aside>
+<main class="workspace"><header><div><span class="eyebrow">CHARLIE MJ READER</span><h1>My Reading Library</h1><p>Website profiles, saved articles, categories, tags and complete fetched website data.</p></div><div class="top-actions"><button id="add">Add current website</button><button id="refresh">Refresh website data</button><button id="import">Import</button><button id="export">Export</button></div></header>
+<section class="searchbar"><input id="search" autocomplete="off" placeholder="Search websites, categories, tags, profiles and saved data…"><div id="hints"></div></section>
+<section id="view-status" class="status"></section><section id="library-view"></section>
+</main><input id="file" type="file" accept=".json,application/json" hidden>
+<script type="module" src="library.js"></script></body></html>

@@ -1,74 +1,356 @@
-/**
- * Page bridge: exposes accessible article text and a small configurable toolbar.
- * It intentionally does not alter cookies, paywall state, or server-side quotas.
- */
+/** Charlie MJ Reader — site-gated Toolbars. */
 (() => {
   if (window.__cmjReaderLoaded) return;
   window.__cmjReaderLoaded = true;
 
-  const getArticle = () => {
-    const main = document.querySelector("article, main, [role='main']") || document.body;
-    const title = document.querySelector('meta[property="og:title"]')?.content ||
-      document.querySelector("h1")?.innerText || document.title;
-    const image = document.querySelector('meta[property="og:image"]')?.content || "";
-    const text = [...main.querySelectorAll("h1,h2,h3,p,blockquote,li,pre")]
-      .map(el => el.innerText.trim()).filter(Boolean).join("\n\n");
-    return { title, url: location.href, domain: location.hostname, image,
-      author: document.querySelector('meta[name="author"]')?.content || "",
-      siteName: document.querySelector('meta[property="og:site_name"]')?.content || location.hostname,
-      text, wordCount: text.split(/\s+/).filter(Boolean).length,
-      readingMinutes: Math.max(1, Math.ceil(text.split(/\s+/).length / 220)),
-      savedAt: new Date().toISOString(), status: "unread", progress: 0 };
-  };
+  const hostMatches = (host, domain) => { const d=String(domain||'').toLowerCase().trim().replace(/^https?:\/\//,'').replace(/\/.*$/,''); return !!d && (host === d || host.endsWith(`.${d}`)); };
+  let settings = {};
+  let site = null;
+  let selectedText = "";
+  let selectionRange = null;
+  let timer = null;
+  let timerMode = "";
+  let timerPhase = "work";
+  let timerEnd = 0;
+  let timerInterval = null;
+  let mediaUtterance = null;
+  let mediaWords = [];
+  let mediaState = "ready";
 
   const toolbar = document.createElement("aside");
-  toolbar.id = "cmj-floating-toolbar";
+  toolbar.id = "cmj-toolbars";
+  toolbar.hidden = true;
+  toolbar.setAttribute("role", "toolbar");
   toolbar.innerHTML = `
-    <button data-action="reader" title="Open reader">▤</button>
-    <button data-action="highlight" title="Highlight selection">✎</button>
-    <button data-action="listen" title="Listen">♫</button>
-    <button data-action="save" title="Save article">＋</button>
-    <button data-action="dictionary" title="Define selected word">Aa</button>
-    <button data-action="close" title="Hide toolbar">×</button>`;
+    <div class="cmj-mainbar">
+      <strong class="cmj-brand">CMJ</strong>
+      <button data-tool="reader">Reader</button>
+      <button data-tool="vocabulary">Vocabulary</button>
+      <button data-tool="media">Media</button>
+      <button data-tool="focus">Focus</button>
+      <button data-tool="productivity">Productivity</button>
+      <button data-tool="night">☾</button>
+      <button data-tool="close" aria-label="Hide toolbar">×</button>
+    </div>
+    <section class="cmj-panel cmj-vocab-panel" data-panel="vocabulary" hidden>
+      <div class="cmj-selected"><b>Selected text</b><span id="cmj-selected-text"></span></div>
+      <div class="cmj-actions"><button data-action="translate">See Translate</button><button data-action="meaning">Meaning</button><button data-action="save">＋ Save</button><button data-action="copy">Copy</button><button data-action="notes">Notes</button><button data-action="pronunciation">Pronunciation</button></div>
+      <div class="cmj-result" hidden><div class="cmj-original"></div><div class="cmj-translation"></div><div class="cmj-message"></div></div>
+    </section>
+    <section class="cmj-panel cmj-media-panel" data-panel="media" hidden>
+      <div class="cmj-row"><b>Media / Smart Reader</b><span id="cmj-media-status">Ready</span></div>
+      <div class="cmj-progress"><span id="cmj-media-progress"></span></div><div class="cmj-mini" id="cmj-media-percent">0%</div>
+      <div class="cmj-actions"><button data-action="listen">▶ Media Reader</button><button data-action="media-play">▶ Play</button><button data-action="pause">Ⅱ Pause</button><button data-action="stop">■ Stop</button></div>
+      <label class="cmj-field">Speed <input id="cmj-media-speed" type="range" min="0.5" max="2.5" step="0.1" value="1"><span id="cmj-speed-value">1×</span></label>
+    </section>
+    <section class="cmj-panel" data-panel="focus" hidden>
+      <div class="cmj-actions"><button data-action="focus-toggle">Focus</button><button data-action="adblock">Ads</button><button data-action="day">Day</button><button data-action="night">Night</button><button data-action="auto">Auto</button><button data-action="native-read">Native Read</button><button data-action="native-stop">Stop Read</button></div>
+      <div class="cmj-mini">Brightness <input id="cmj-brightness" type="range" min="50" max="150" value="100"></div>
+      <div class="cmj-mini">Contrast <input id="cmj-contrast" type="range" min="50" max="150" value="100"></div>
+      <div class="cmj-mini">Opacity <input id="cmj-opacity" type="range" min="40" max="100" value="100"></div>
+    </section>
+    <section class="cmj-panel cmj-productivity-panel" data-panel="productivity" hidden>
+      <div class="cmj-row"><b>Productivity</b><span id="cmj-timer">Ready</span></div>
+      <div class="cmj-actions"><button data-action="focus-open">Focus</button><button data-action="day">Day/Night</button><button data-action="pomodoro">Pomodoro</button><button data-action="eighty">80/20</button><button data-action="timer-stop">Stop</button></div>
+      <div class="cmj-mini">Pomodoro: <input id="cmj-work" type="number" min="1" max="180" value="25"> min work / <input id="cmj-break" type="number" min="1" max="60" value="5"> min break</div>
+    </section>`;
   document.documentElement.append(toolbar);
 
-  toolbar.addEventListener("click", async event => {
-    const action = event.target.closest("button")?.dataset.action;
-    if (!action) return;
-    if (action === "close") { toolbar.hidden = true; return; }
-    if (action === "save") {
-      const article = getArticle();
-      await chrome.runtime.sendMessage({ type: "CMJ_SAVE_ARTICLE", article });
-      event.target.textContent = "✓";
+  const q = (sel) => toolbar.querySelector(sel);
+  const panels = [...toolbar.querySelectorAll("[data-panel]")];
+
+  function getProfile() {
+    const list = Array.isArray(settings.websites) ? settings.websites : [];
+    return list.map(x => typeof x === "string" ? {domain:x,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true} : x)
+      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || null;
+  }
+
+  function hideAll() { toolbar.hidden = true; panels.forEach(p => p.hidden = true); }
+  function showPanel(name) { panels.forEach(p => p.hidden = p.dataset.panel !== name); toolbar.hidden = false; }
+
+  function applyFocus() {
+    const active = !!site && settings.focusEnabled !== false && site.focus !== false;
+    document.documentElement.classList.toggle("cmj-focus-active", active);
+    document.documentElement.classList.toggle("cmj-hide-images-active", active && settings.focusHideImages === true);
+    if (!active) {
+      document.documentElement.style.removeProperty("--cmj-brightness"); document.documentElement.style.removeProperty("--cmj-contrast"); document.documentElement.style.removeProperty("--cmj-opacity");
+      document.documentElement.style.removeProperty("--cmj-blur"); document.documentElement.style.removeProperty("--cmj-warmth"); document.documentElement.style.removeProperty("--cmj-font-scale");
+      return;
     }
-    if (action === "reader" || action === "listen") {
-      // Route page-toolbar reading into the full workspace so its real media
-      // controls remain visible alongside the synchronized article text.
-      const article = getArticle();
-      await chrome.runtime.sendMessage({ type: "CMJ_OPEN_READER", article, autoplay: true });
+    const mode = settings.dayNightMode || "day";
+    const night = mode === "night" || (mode === "auto" && [19,20,21,22,23,0,1,2,3,4,5,6].includes(new Date().getHours()));
+    document.documentElement.style.setProperty("--cmj-brightness", `${settings.focusBrightness ?? (night ? 82 : 100)}%`);
+    document.documentElement.style.setProperty("--cmj-contrast", `${settings.focusContrast ?? (night ? 92 : 100)}%`);
+    document.documentElement.style.setProperty("--cmj-opacity", `${settings.focusOpacity ?? 100}%`);
+    document.documentElement.style.setProperty("--cmj-blur", `${settings.focusBlur ?? 0}px`);
+    document.documentElement.style.setProperty("--cmj-warmth", `${settings.focusWarmth ?? 0}%`);
+    document.documentElement.style.setProperty("--cmj-font-scale", `${settings.focusFontScale ?? 100}%`);
+  }
+
+  function clearAds() { document.querySelectorAll('[data-cmj-ad-hidden="1"]').forEach(el => el.removeAttribute("data-cmj-ad-hidden")); }
+  function applyAds() {
+    if (!site || settings.adBlockEnabled === false || site.focus === false) { clearAds(); return; }
+    const selectors = [
+      '[id*="ad-" i]','[id*="advert" i]','[class*="advert" i]','[class*="ad-container" i]','[class*="adsbygoogle" i]',
+      '[data-ad]','[aria-label*="advertisement" i]','iframe[src*="doubleclick"]','iframe[src*="googlesyndication"]'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(el => { if (!toolbar.contains(el)) el.setAttribute('data-cmj-ad-hidden','1'); });
+  }
+
+  function clearNativeReading() {
+    document.querySelectorAll(".cmj-native-word").forEach(el => { const text=document.createTextNode(el.textContent||""); el.replaceWith(text); });
+    document.querySelectorAll(".cmj-native-line, .cmj-native-active").forEach(el=>el.classList.remove("cmj-native-line","cmj-native-active"));
+  }
+  let nativeReadingTimer=null, nativeObserver=null, nativeReadingDelayTimer=null;
+  function startNativeReading() {
+    if (!site || site.nativeReading === false || settings.nativeReadingEnabled === false) return;
+    clearNativeReading(); clearInterval(nativeReadingTimer); clearTimeout(nativeReadingDelayTimer);
+    const root=document.querySelector("article,main,[role=\"main\"],.post-content,.article-content")||document.body;
+    const nodes=[...root.querySelectorAll("p,h1,h2,h3,li,blockquote,pre")].filter(n=>!toolbar.contains(n)&&n.innerText.trim());
+    const words=[];
+    nodes.forEach(line=>{ const walker=document.createTreeWalker(line,NodeFilter.SHOW_TEXT); const texts=[]; while(walker.nextNode()) if(walker.currentNode.nodeValue.trim()) texts.push(walker.currentNode); texts.forEach(t=>{ const frag=document.createDocumentFragment(); const parts=t.nodeValue.split(/(\s+)/); parts.forEach(part=>{ if(/^\s+$/.test(part)){frag.appendChild(document.createTextNode(part));return;} const span=document.createElement("span"); span.className="cmj-native-word"; span.textContent=part; frag.appendChild(span); words.push(span); }); t.parentNode?.replaceChild(frag,t); }); line.classList.add("cmj-native-line"); });
+    let idx=0; const tick=()=>{ words.forEach(w=>w.classList.remove("cmj-native-active")); const w=words[idx++]; if(!w){clearInterval(nativeReadingTimer);return;} w.classList.add("cmj-native-active"); w.scrollIntoView({block:"center",behavior:"smooth"}); document.documentElement.style.setProperty("--cmj-native-word-color", settings.nativeHighlightWordColor || "#f0a34a"); document.documentElement.style.setProperty("--cmj-native-line-color", settings.nativeHighlightLineColor || "#8b7cff"); };
+    const seconds=Math.max(0.5,Number(settings.nativeReadingTimer||10));
+    const delay=Math.max(0,Number(settings.nativeReadingDelay||0))*1000;
+    const begin=()=>{tick();nativeReadingTimer=setInterval(tick,seconds*1000);};
+    if(delay) nativeReadingDelayTimer=setTimeout(begin,delay); else begin();
+    if(nativeObserver) nativeObserver.disconnect(); nativeObserver=new MutationObserver(()=>{});
+  }
+  async function refresh() {
+    const stored = await chrome.storage.local.get("settings");
+    settings = {toolbarEnabled:true,toolbarPosition:"top",toolbarOpacity:92,toolbarModules:{reader:true,vocabulary:true,media:true,focus:true,productivity:true},toolbarThemes:{main:"midnight",media:"midnight",vocabulary:"violet",productivity:"focus"},vocabularyToolbarEnabled:true,mediaToolbarEnabled:true,productivityToolbarEnabled:true,focusEnabled:false,adBlockEnabled:true,focusBrightness:100,focusContrast:100,focusOpacity:100,dayNightMode:"day",mediaSpeed:1,pomodoroWork:25,pomodoroBreak:5,nativeReadingEnabled:true,nativeReadingTimer:10,freediumEnabled:true,freediumAutoOpen:true,...(stored.settings||{})};
+    if (!settings.cmjFreedium112Migrated) {
+      settings.freediumEnabled = true;
+      settings.freediumAutoOpen = true;
+      settings.cmjFreedium112Migrated = true;
+      await chrome.storage.local.set({settings});
     }
-    if (action === "highlight") {
-      const selection = window.getSelection()?.toString().trim();
-      if (selection) chrome.runtime.sendMessage({ type: "CMJ_SAVE_HIGHLIGHT", text: selection, article: getArticle() });
-      else alert("Select text on the page first.");
+    if(!Array.isArray(settings.websites)) settings.websites=[];
+    const mediumHost = /(^|\\.)medium\\.com$/i.test(location.hostname);
+    if (mediumHost && !window.__cmjMediumOpened && settings.mediumEnabled !== false && settings.freediumEnabled === true && settings.freediumAutoOpen === true) {
+      window.__cmjMediumOpened = true;
+      chrome.runtime.sendMessage({type:"CMJ_MEDIUM_AUTO_OPEN", url: location.href, canonicalUrl: document.querySelector('link[rel="canonical"]')?.href || location.href});
     }
-    if (action === "dictionary") {
-      const word = window.getSelection()?.toString().trim();
-      if (!word || word.split(/\s+/).length > 1) { alert("Select one word first."); return; }
-      chrome.runtime.sendMessage({ type: "CMJ_LOOKUP_WORD", word });
+    site = getProfile();
+    if (!site || settings.toolbarEnabled === false || site.toolbar === false) { hideAll(); return; }
+    toolbar.hidden = false;
+    toolbar.style.display = "block";
+    toolbar.style.visibility = "visible";
+    const themes=settings.toolbarThemes||{};
+    toolbar.dataset.mainTheme=site.toolbarTheme||themes.main||"midnight"; toolbar.dataset.mediaTheme=site.mediaTheme||themes.media||"midnight"; toolbar.dataset.vocabTheme=site.vocabularyTheme||themes.vocabulary||"violet"; toolbar.dataset.productivityTheme=site.productivityTheme||themes.productivity||"focus";
+    toolbar.style.opacity = String((site.toolbarOpacity ?? settings.toolbarOpacity ?? 92) / 100);
+    toolbar.dataset.position = site.position || settings.toolbarPosition || "top";
+    toolbar.dataset.type = site.toolbarType || settings.toolbarType || "floating";
+    const modules = settings.toolbarModules || {reader:true,vocabulary:true,media:true,focus:true,productivity:true};
+    toolbar.querySelector('[data-tool="reader"]').hidden = modules.reader === false;
+    toolbar.querySelector('[data-tool="vocabulary"]').hidden = site.vocabulary === false || modules.vocabulary === false;
+    toolbar.querySelector('[data-tool="media"]').hidden = site.media === false || modules.media === false;
+    toolbar.querySelector('[data-tool="focus"]').hidden = site.focus === false || modules.focus === false;
+    toolbar.querySelector('[data-tool="productivity"]').hidden = site.productivity === false || modules.productivity === false;
+    q('#cmj-media-speed').value = settings.mediaSpeed || 1;
+    q('#cmj-speed-value').textContent = `${settings.mediaSpeed || 1}×`;
+    q('#cmj-brightness').value = settings.focusBrightness || 100;
+    q('#cmj-contrast').value = settings.focusContrast || 100;
+    q('#cmj-opacity').value = settings.focusOpacity || 100;
+    q('#cmj-work').value = settings.pomodoroWork || 25;
+    q('#cmj-break').value = settings.pomodoroBreak || 5;
+    applyFocus(); applyAds();
+  }
+
+  async function expandFreediumArticle() {
+    if (!/freedium-mirror\.cfd$/i.test(location.hostname)) return;
+    const clickTargets = () => {
+      const nodes = [...document.querySelectorAll('button,a,[role="button"],summary')];
+      let clicked = 0;
+      for (const el of nodes) {
+        const label = (el.innerText || el.textContent || el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (!label) continue;
+        if (/^show all(?: \d+)? sections?$/.test(label) || /^show all/.test(label) || label === 'read more') {
+          try { el.click(); clicked++; } catch {}
+        }
+      }
+      return clicked;
+    };
+    clickTargets();
+    await new Promise(r => setTimeout(r, 450));
+    clickTargets();
+    await new Promise(r => setTimeout(r, 650));
+    clickTargets();
+  }
+
+  async function articleReady() {
+    await expandFreediumArticle();
+  }
+
+  function buildArticleFromDocument(doc, pageUrl, sourceUrl = pageUrl) {
+    const freedium = /freedium-mirror\.cfd$/i.test(new URL(pageUrl).hostname);
+    const selectors = freedium
+      ? [
+          'article', 'main', '[role="main"]',
+          '[data-testid="post-content"]', '.post-content', '.article-content',
+          '.article-body', '.post-body', '.story-content', '.reader-article',
+          '.pw-post-body-paragraph', '.meteredContent', '.postArticle-content',
+          '[class*="article-content"]', '[class*="post-content"]'
+        ]
+      : ["article","main","[role=\"main\"]",".post-content",".article-content",".entry-content",".story-content",".article-body",".post-body"];
+    const candidates=[...doc.querySelectorAll(selectors.join(","))];
+    const score=el=>{
+      const text=(el.innerText||el.textContent||"").replace(/\s+/g," ").trim();
+      const lower=text.toLowerCase();
+      const p=el.querySelectorAll("p").length;
+      const h=el.querySelectorAll("h1,h2,h3,h4").length;
+      const links=el.querySelectorAll("a").length;
+      let value=text.length+(p*220)+(h*300)-(links*8);
+      if (freedium) {
+        if (lower.includes("1. dnsglobe") && lower.includes("10. gitlogue")) value += 500000;
+        if (lower.includes("the bigger pattern") && lower.includes("conclusion")) value += 100000;
+        if (text.length > 8000) value += 50000;
+      }
+      return value;
+    };
+    const root=(candidates.length ? candidates.sort((a,b)=>score(b)-score(a))[0] : doc.body) || doc.body;
+    const clone=root.cloneNode(true);
+    clone.querySelectorAll("script,style,noscript,nav,header,footer,aside,form,[aria-hidden='true'],[role='navigation'],[role='banner'],[role='contentinfo'],button,[role='button'],.share,.sharing,.toolbar,.navigation,.nav").forEach(el=>el.remove());
+    const text=(clone.innerText||clone.textContent||"").replace(/\n{3,}/g,"\n\n").trim();
+    const html=clone.innerHTML||"";
+    const words=text.split(/\s+/).filter(Boolean);
+    const meta=(selector,attr="content")=>doc.querySelector(selector)?.getAttribute(attr)||"";
+    const title=(meta('meta[property="og:title"]')||doc.querySelector("h1")?.innerText||doc.title||"").trim();
+    const tags=[...doc.querySelectorAll('meta[property="article:tag"],meta[name="keywords"]')].flatMap(x=>(x.getAttribute("content")||"").split(",")).map(x=>x.trim()).filter(Boolean);
+    const labels=[...doc.querySelectorAll('[rel="tag"],.tag,.tags a')].map(x=>(x.textContent||"").trim()).filter(Boolean);
+    return {
+      id:crypto.randomUUID(), title, url:sourceUrl, domain:new URL(sourceUrl).hostname,
+      canonicalUrl:meta('link[rel="canonical"]',"href")||sourceUrl,
+      siteName:meta('meta[property="og:site_name"]')||"Medium",
+      text, html, contentBaseUrl:pageUrl,
+      wordCount:words.length, readingMinutes:Math.max(1,Math.ceil(words.length/220)),
+      author:meta('meta[name="author"]')||doc.querySelector('[rel="author"]')?.textContent?.trim()||"",
+      image:meta('meta[property="og:image"]')||root.querySelector('img')?.src||"",
+      description:meta('meta[name="description"]')||meta('meta[property="og:description"]')||"",
+      publishedAt:meta('meta[property="article:published_time"]')||doc.querySelector('time[datetime]')?.getAttribute('datetime')||"",
+      category:meta('meta[property="article:section"]')||"General",
+      tags:[...new Set(tags)], labels:[...new Set(labels)], imageCount:root.querySelectorAll('img').length,
+      linkCount:root.querySelectorAll('a[href]').length, savedAt:new Date().toISOString(),
+      extractionSource:freedium ? "freedium" : "page"
+    };
+  }
+
+  async function fetchFreediumArticle() {
+    const host=location.hostname.toLowerCase();
+    const isMedium=host === "medium.com" || host.endsWith(".medium.com");
+    const isFreedium=/freedium-mirror\.cfd$/i.test(host);
+    if (!isMedium && !isFreedium) return null;
+    const response=await chrome.runtime.sendMessage({
+      type:"CMJ_FETCH_FREEDIUM_HTML",
+      sourceUrl:location.href
+    });
+    if (!response?.ok || !response.html) return null;
+    const doc=new DOMParser().parseFromString(response.html,"text/html");
+    const sourceUrl=isMedium ? location.href : (document.querySelector('link[rel="canonical"]')?.href || location.href);
+    const remote=buildArticleFromDocument(doc,response.finalUrl||response.url||location.href,sourceUrl);
+    if (!remote?.text) return null;
+    const lower=remote.text.toLowerCase();
+    const completeMarkers=(lower.includes("1. dnsglobe")?1:0)+(lower.includes("10. gitlogue")?1:0)+(lower.includes("conclusion")?1:0);
+    if (isMedium && completeMarkers < 2) return null;
+    return remote;
+  }
+
+  async function getArticle() {
+    await articleReady();
+    try {
+      const remote=await fetchFreediumArticle();
+      if (remote && remote.wordCount > 500) return remote;
+    } catch (e) {
+      console.debug("Charlie MJ Freedium extraction fallback:", e);
     }
+    return buildArticleFromDocument(document, location.href, location.href);
+  }
+
+  function article() {
+    return buildArticleFromDocument(document, location.href, location.href);
+  }
+  async function send(type, extra={}) { const currentArticle=await getArticle(); return chrome.runtime.sendMessage({type,text:selectedText,article:currentArticle,...extra}); }
+
+  async function translate() {
+    q('.cmj-result').hidden=false; q('.cmj-translation').textContent='Translating…';
+    try { const r=await send('CMJ_TRANSLATE_TEXT',{text:selectedText}); if(!r?.ok) throw Error(r?.error||'Translation unavailable.'); q('.cmj-translation').textContent=r.translation; q('.cmj-message').textContent='Original is bold; translation is normal weight.'; toolbar.dataset.translation=r.translation; }
+    catch(e){q('.cmj-message').textContent=e.message;}
+  }
+  function updateMediaProgress(word=0,status=mediaState){ const total=mediaWords.length; const pct=total?Math.min(100,Math.round(word/total*100)):0; q("#cmj-media-progress").style.width=`${pct}%`; q("#cmj-media-percent").textContent=`${pct}% · ${status}`; q("#cmj-media-status").textContent=status; }
+  async function playLocalMedia(){ const a=await getArticle(); if(!a.text)return; const text=a.text; mediaWords=text.split(/\s+/).filter(Boolean); if(speechSynthesis.paused){speechSynthesis.resume();mediaState="Playing";updateMediaProgress();return;} speechSynthesis.cancel(); mediaUtterance=new SpeechSynthesisUtterance(text); mediaUtterance.rate=Number(settings.mediaSpeed||1); mediaUtterance.volume=Number(settings.mediaVolume??1); mediaUtterance.onstart=()=>{mediaState="Playing";updateMediaProgress(0,"Playing")}; mediaUtterance.onboundary=e=>{if(e.name!=="word")return;const n=text.slice(0,e.charIndex).trim().split(/\s+/).filter(Boolean).length;updateMediaProgress(n,"Playing")}; mediaUtterance.onend=()=>{mediaState="Stopped";updateMediaProgress(mediaWords.length,"Completed")}; mediaUtterance.onerror=()=>{mediaState="Stopped";updateMediaProgress(0,"Stopped")}; speechSynthesis.speak(mediaUtterance);}
+  function pauseLocalMedia(){if(speechSynthesis.speaking&&!speechSynthesis.paused){speechSynthesis.pause();mediaState="Paused";updateMediaProgress(undefined,"Paused")}}
+  function stopLocalMedia(){speechSynthesis.cancel();mediaState="Stopped";updateMediaProgress(0,"Stopped")}
+
+  async function saveVocab() { const r=await send('CMJ_SAVE_VOCABULARY',{word:selectedText,translation:toolbar.dataset.translation||''}); q('.cmj-result').hidden=false; q('.cmj-message').textContent=r?.ok?'Saved to Vocabulary Library.':(r?.error||'Could not save.'); }
+
+  function showSelection() {
+    if (!site || site.vocabulary === false || settings.vocabularyToolbarEnabled === false) return;
+    const sel=window.getSelection(); const text=sel?.toString().trim();
+    if (!text || text.length>1800 || !sel.rangeCount) return;
+    selectedText=text; selectionRange=sel.getRangeAt(0).cloneRange(); q('#cmj-selected-text').textContent=text;
+    toolbar.hidden=false; showPanel('vocabulary');
+    if (settings.vocabularyAutoTranslate || site.autoTranslate) translate();
+    if (settings.vocabularyAutoSave || site.autoSave) saveVocab();
+  }
+
+  // Reader capture keeps the source HTML separate from the reading UI so formatting can be
+  // re-themed later without mutating the saved article.
+  document.addEventListener('mousemove', e => {
+    const word = e.target.closest?.('.cmj-word');
+    if (word) {
+      document.querySelectorAll('.cmj-word.cmj-pointer-word').forEach(x=>x.classList.remove('cmj-pointer-word'));
+      word.classList.add('cmj-pointer-word');
+    }
+  }, true);
+  document.addEventListener('mouseup',()=>setTimeout(showSelection,40),true);
+  document.addEventListener('mousedown',e=>{if(!toolbar.contains(e.target)&&!window.getSelection()?.toString().trim()) hideAll();},true);
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type === "CMJ_GET_PAGE_DATA") {
+      (async()=>{
+        try { const a=await getArticle(); if(!a.text) throw Error("No readable article content found on this page."); sendResponse({ok:true,article:a}); }
+        catch(e){ sendResponse({ok:false,error:e.message||"Unable to extract page data."}); }
+      })();
+      return true;
+    }
+    if (message?.type === "CMJ_START_NATIVE_READING") { startNativeReading(); sendResponse({ok:true}); return true; }
   });
 
-  chrome.runtime.onMessage.addListener((message) => {
-    if (message.type === "CMJ_SAVE_SELECTION" && message.selection) {
-      chrome.runtime.sendMessage({ type: "CMJ_SAVE_HIGHLIGHT", text: message.selection, article: getArticle() });
+  chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.settings) refresh();});
+  window.addEventListener('scroll',()=>{},true);
+
+  toolbar.addEventListener('click', async e => {
+    const tool=e.target.closest('[data-tool]')?.dataset.tool; const action=e.target.closest('[data-action]')?.dataset.action;
+    if(tool){
+      if(tool==='close'){hideAll();return;} if(tool==='reader'){const currentArticle=await getArticle(); const r=await send('CMJ_OPEN_READER',{article:currentArticle,autoplay:false,mode:'reader'});if(!r?.ok)throw Error(r?.error||'Could not open Reader.');return;} if(tool==='night'){settings.dayNightMode=settings.dayNightMode==='night'?'day':'night';applyFocus();return;} showPanel(tool); return;
     }
-    if (message.type === "CMJ_SAVE_PAGE") {
-      chrome.runtime.sendMessage({ type: "CMJ_SAVE_ARTICLE", article: getArticle() });
-    }
+    if(!action) return;
+    try {
+      if(action==='translate') await translate();
+      if(action==='meaning'){await translate(); q('.cmj-message').textContent='Contextual meaning uses the selected text and surrounding page context.';}
+      if(action==='save') await saveVocab();
+      if(action==='copy') await navigator.clipboard.writeText(selectedText);
+      if(action==='notes'){await navigator.clipboard.writeText(`${selectedText}\n${toolbar.dataset.translation||'[Add translation]'}\nSource: ${location.href}`);}
+      if(action==='pronunciation'){q('.cmj-result').hidden=false;q('.cmj-message').textContent='Pronunciation can be added to the vocabulary entry; select a word and save it.';}
+      if(action==='listen'){const r=await send('CMJ_OPEN_READER',{autoplay:true});if(!r?.ok)throw Error(r?.error||'Could not open reader.');}
+      if(action==='media-play') playLocalMedia();
+      if(action==='pause') pauseLocalMedia();
+      if(action==='stop') stopLocalMedia();
+      if(action==='focus-toggle'){settings.focusEnabled=!settings.focusEnabled;await chrome.storage.local.set({settings});applyFocus();applyAds();}
+      if(action==='adblock'){settings.adBlockEnabled=!settings.adBlockEnabled;await chrome.storage.local.set({settings});applyAds();}
+      if(action==='day'||action==='night'||action==='auto'){settings.dayNightMode=action;await chrome.storage.local.set({settings});applyFocus();}
+      if(action==='pomodoro') startTimer('pomodoro'); if(action==='eighty') startTimer('8020'); if(action==='timer-stop') stopTimer();
+      if(action==='focus-open'){showPanel('focus');}
+      if(action==='native-read'){startNativeReading();}
+      if(action==='native-stop'){clearInterval(nativeReadingTimer);clearTimeout(nativeReadingDelayTimer);clearNativeReading();}
+    } catch(err){q('.cmj-message').textContent=err.message||'Action failed.';}
   });
 
-  chrome.storage.local.get("settings", ({ settings }) => {
-    if (settings?.toolbarEnabled === false) toolbar.hidden = true;
-  });
+  q('#cmj-media-speed').addEventListener('input',e=>q('#cmj-speed-value').textContent=`${e.target.value}×`);
+  ['brightness','contrast','opacity'].forEach(k=>q('#cmj-'+k).addEventListener('input',async e=>{const key={brightness:'focusBrightness',contrast:'focusContrast',opacity:'focusOpacity'}[k];settings[key]=Number(e.target.value);await chrome.storage.local.set({settings});applyFocus();}));
+
+  function startTimer(mode){stopTimer();timerMode=mode;timerPhase='work';const duration=()=>timerMode==='8020'?(timerPhase==='work'?80:20):(timerPhase==='work'?Number(q('#cmj-work').value||25):Number(q('#cmj-break').value||5));timerEnd=Date.now()+duration()*60000;timerInterval=setInterval(()=>{const left=Math.max(0,timerEnd-Date.now());q('#cmj-timer').textContent=`${timerMode==='8020'?'80/20':'Pomodoro'} · ${timerPhase==='work'?'Focus':'Break'} · ${Math.ceil(left/1000)}s`;if(left<=0){timerPhase=timerPhase==='work'?'break':'work';timerEnd=Date.now()+duration()*60000;}},500);}
+  function stopTimer(){clearInterval(timerInterval);timerInterval=null;q('#cmj-timer').textContent='Ready';timerMode='';timerPhase='work';}
+
+  const adObserver=new MutationObserver(()=>{if(site?.focus!==false)applyAds();}); adObserver.observe(document.documentElement,{childList:true,subtree:true});
+  refresh();
 })();

@@ -32,3 +32,23 @@ Text-to-speech availability and word-boundary precision depend on the voice and 
 ## Medium and access-restricted pages
 
 The extension reads text that is already available to the signed-in browser session or otherwise legitimately accessible. It does not bypass Medium membership checks, access controls, paywalls, or server-side reading limits. If a page only exposes a membership prompt, save/read-aloud may have no article text to capture. Use the publisher's access options or an authorized copy.
+
+
+## Vocabulary Studio (version 1.0.0 feature expansion)
+
+### Enable the selection toolbar
+1. Open extension Settings → Vocabulary.
+2. Keep **Enable selection vocabulary toolbar** enabled.
+3. Review the comma-separated domain list. Defaults are `eksisozluk.com`, `x.com`, and `twitter.com`.
+4. Add any hostname you want to support, such as `reddit.com`, separated by commas.
+5. Reload already-open tabs after changing the domain list.
+
+The toolbar appears beside a selected text passage only on enabled domains. It offers Translate, Save, Copy and Notes. Translation defaults to Turkish → English and can be changed in Settings → Vocabulary. The public MyMemory endpoint is used without an API key; public-service limits and availability apply.
+
+### Manage vocabulary
+Open the workspace → Vocabulary. Create headings and subheadings, then add entries with translations, definitions, examples, pronunciation, part of speech, tags, notes and source context. The original expression is rendered in bold and the translation in regular weight.
+
+You can edit translations/definitions/notes, copy entries, mark them mastered, delete entries, search the library, and export Markdown, CSV or JSON. Category deletion leaves vocabulary intact and makes entries in that category uncategorized.
+
+### Privacy and reliability
+Vocabulary and categories are stored in local Chrome extension storage. Selected text is sent to the configured public translation endpoint only when you press Translate. Avoid translating private or sensitive text through a public service. Website-specific toolbar activation is local and configurable. Some sites may change their DOM or selection behavior; reload the page if the toolbar does not appear.

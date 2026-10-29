@@ -25,6 +25,102 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
+
+    if (message?.type === "CMJ_MEDIUM_AUTO_OPEN") {
+      const stored = await chrome.storage.local.get("settings");
+      const s = stored.settings || {};
+      const target = String(s.freediumServiceUrl || "").trim();
+      if (!/^https:\/\//i.test(target)) throw new Error("Freedium service URL must use HTTPS.");
+      const base = new URL(target);
+      const original = String(message.canonicalUrl || message.url || "").trim();
+      if (!/^https?:\/\//i.test(original)) throw new Error("Invalid Medium article URL.");
+      const join = base.href.endsWith("/") ? base.href : base.href + "/";
+      // Freedium expects the complete Medium URL as the path. Do not encode the
+      // entire URL, otherwise the service receives https%3A%2F%2Fmedium.com...
+      const freedium = join + original.replace(/^https?:\/\//i, match => match).replace(/^\/+/, "");
+      await chrome.tabs.create({url: freedium});
+      sendResponse({ok:true,url:freedium});
+      return;
+    }
+
+    if (message?.type === "CMJ_FETCH_FREEDIUM_HTML") {
+      const source = String(message.sourceUrl || "").trim();
+      if (!/^https?:\/\//i.test(source)) throw new Error("Invalid source URL.");
+      const sourceUrl = new URL(source);
+      const isMedium = sourceUrl.hostname === "medium.com" || sourceUrl.hostname.endsWith(".medium.com");
+      const isFreedium = /(^|\.)freedium-mirror\.cfd$/i.test(sourceUrl.hostname);
+      if (!isMedium && !isFreedium) throw new Error("Unsupported article host.");
+      let target = source;
+      if (isMedium) {
+        const stored = await chrome.storage.local.get(["settings"]);
+        const configured = String(stored.settings?.freediumServiceUrl || "https://freedium-mirror.cfd/").trim();
+        if (!/^https:\/\//i.test(configured)) throw new Error("Freedium service URL must use HTTPS.");
+        const base = configured.endsWith("/") ? configured : configured + "/";
+        target = base + source;
+      }
+      const response = await fetch(target, {
+        method: "GET",
+        redirect: "follow",
+        credentials: "omit",
+        headers: { "Accept": "text/html,application/xhtml+xml" },
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error(`Freedium returned HTTP ${response.status}.`);
+      const html = await response.text();
+      if (!html || html.length < 1000) throw new Error("Freedium returned an unexpectedly small document.");
+      sendResponse({ok:true, html, url:target, finalUrl:response.url || target});
+      return;
+    }
+
+    if (message?.type === "CMJ_TRANSLATE_TEXT") {
+      const text = String(message.text || "").trim();
+      if (!text) throw new Error("Select some text first.");
+      if (text.length > 1800) throw new Error("Please translate a shorter selection (maximum 1,800 characters).");
+      const stored = await chrome.storage.local.get("settings");
+      const settings = stored.settings || {};
+      const source = settings.translationSource || "tr";
+      const target = settings.translationTarget || "en";
+      const endpoint = new URL("https://api.mymemory.translated.net/get");
+      endpoint.searchParams.set("q", text);
+      endpoint.searchParams.set("langpair", `${source}|${target}`);
+      const response = await fetch(endpoint.toString(), { headers: { "Accept": "application/json" } });
+      if (!response.ok) throw new Error(`Translation service returned HTTP ${response.status}.`);
+      const payload = await response.json();
+      const translation = payload?.responseData?.translatedText;
+      if (!translation || payload?.responseStatus >= 400) throw new Error(payload?.responseDetails || "No translation was returned.");
+      sendResponse({ ok: true, translation, source, target });
+      return;
+    }
+
+    if (message?.type === "CMJ_SAVE_VOCABULARY") {
+      const word = String(message.word || message.text || "").trim();
+      if (!word) throw new Error("No selected text was provided.");
+      const stored = await chrome.storage.local.get(["vocabulary"]);
+      const vocabulary = Array.isArray(stored.vocabulary) ? stored.vocabulary : [];
+      const existing = vocabulary.find(item => item.word?.toLocaleLowerCase() === word.toLocaleLowerCase());
+      if (existing) {
+        if (message.translation && !existing.translation) existing.translation = message.translation;
+        existing.updatedAt = new Date().toISOString();
+        await chrome.storage.local.set({ vocabulary });
+        sendResponse({ ok: true, duplicate: true, id: existing.id });
+        return;
+      }
+      const article = message.article || {};
+      const entry = {
+        id: crypto.randomUUID(), word,
+        translation: String(message.translation || ""),
+        definition: "", example: word, exampleTranslation: "",
+        partOfSpeech: "", pronunciation: "", synonyms: "", notes: "",
+        categoryId: "", tags: [], source: article.domain || "Manual",
+        url: article.url || sender.tab?.url || "", sourceTitle: article.title || "",
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        status: "new", reviewCount: 0, nextReviewAt: null
+      };
+      await chrome.storage.local.set({ vocabulary: [entry, ...vocabulary] });
+      sendResponse({ ok: true, id: entry.id });
+      return;
+    }
+
     if (message?.type === "CMJ_OPEN_READER") {
       let articleId = "";
       if (message.article?.text) {
@@ -40,7 +136,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (!existing) await chrome.storage.local.set({ articles: [article, ...articles] });
       }
       const target = chrome.runtime.getURL(
-        `src/reader/reader.html${articleId ? `?articleId=${encodeURIComponent(articleId)}` : ""}#media`
+        `src/reader/reader.html${articleId ? `?articleId=${encodeURIComponent(articleId)}` : ""}#${message.mode === "reader" ? "reader" : "media"}`
       );
       await chrome.tabs.create({ url: target });
       sendResponse({ ok: true, articleId });

@@ -13,8 +13,13 @@ This matrix distinguishes implemented workflows from planned integrations. “Fo
 | Highlight storage | Implemented | Selected text and source URL |
 | Multi-color highlights / annotations | Foundation | Color field stored; advanced selection editor planned |
 | Notes | Basic | Independent text notes |
-| Vocabulary | Basic | Manual word capture and review prompt |
-| Dictionary lookup | Planned | Dictionary API adapter and context definitions to be added |
+| Vocabulary Library | Implemented | Local-first entries with original text, translation, definition, examples, pronunciation, part of speech, tags, notes and source URL |
+| Vocabulary categories | Implemented | Create top-level headings and nested subheadings; rename, re-parent and delete categories |
+| Selection vocabulary toolbar | Implemented | Appears beside selected text only on enabled domains; default Ekşi Sözlük and X/Twitter; custom domains supported |
+| Contextual translation | Implemented with external service | Turkish-to-English by default through public MyMemory endpoint; service limits/availability apply; language pair configurable |
+| Vocabulary copy/export | Implemented | Copy original/translation, copy note format, export Markdown, CSV and JSON |
+| Vocabulary revision | Basic | Review prompt with answer check and next-review scheduling; not a full adaptive SRS engine |
+| Dictionary lookup | Partial | Translation popup and editable definition fields are available; dedicated Turkish morphology/dictionary provider is not included |
 | Browser TTS | Basic | Speech Synthesis; word-level synchronized highlighting planned |
 | Reading progress restore | Planned | Data model includes progress field |
 | Themes | Partial | Settings model and UI; independent per-surface theme application planned |

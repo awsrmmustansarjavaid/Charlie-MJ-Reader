@@ -19,3 +19,16 @@
 - [ ] Add/remove a website domain in Website Manager.
 - [ ] Confirm Medium Access Manager clearly says server-side limits cannot be reset.
 - [ ] Confirm restricted browser pages fail gracefully.
+
+
+## Vocabulary Studio integration checks
+- [ ] On eksisozluk.com, selecting text displays the vocabulary toolbar.
+- [ ] On an unconfigured domain, selecting text does not display the vocabulary toolbar.
+- [ ] Add a custom hostname in Settings → Vocabulary, then reload that tab and verify toolbar activation.
+- [ ] Translate selected text; original remains bold and translation is regular weight.
+- [ ] Save selected text and verify it appears in Vocabulary in the Reader workspace with its source URL.
+- [ ] Create a top-level category and a subcategory; assign a vocabulary entry.
+- [ ] Edit and delete a category; verify saved vocabulary is retained.
+- [ ] Search vocabulary by original, translation, definition and notes.
+- [ ] Copy a vocabulary entry and export Markdown, CSV and JSON.
+- [ ] Verify default manifest version remains 1.0.0.

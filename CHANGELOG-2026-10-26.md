@@ -47,3 +47,56 @@ This is an enhanced source package, not a claim that every proposed capability i
 - Initialized the sentence word-timing fallback index before its interval runs, preventing `fallbackWord is not defined`.
 - Replaced native `window.confirm()` prompts in the Reader and Settings topic removal flow with extension-owned confirmation dialogs. This avoids Chrome suppressing native dialogs when the extension page is not the active tab.
 - Added accessible dialog styling and kept the existing reader workflows intact.
+
+
+## Vocabulary Studio expansion — 2026-10-28 (version remains 1.0.0)
+- Added selection-triggered toolbar for enabled sites, defaulting to Ekşi Sözlük and X/Twitter.
+- Added custom domain allowlist and enable/disable controls in Settings → Vocabulary.
+- Added configurable source/target languages and explicit-click translation using the public MyMemory endpoint.
+- Added vocabulary fields, source context, hierarchical category headings/subheadings, search, editing, copying, mastery status and revision scheduling.
+- Added Markdown, CSV and JSON vocabulary exports.
+- Preserved the existing extension manifest version (1.0.0) and existing Reader features.
+
+## 2026-10-28 — Toolbar, Focus, Productivity and Adapter Package expansion
+
+- Renamed Floating Toolbar settings to Toolbars.
+- Added site allow-list gating for all on-page toolbars.
+- Added Media, Vocabulary, Focus and Productivity toolbar modules.
+- Added Focus controls: ad hiding, day/night, brightness, contrast, opacity, blur, warmth and font scale.
+- Added 80/20 and Pomodoro toolbar timers.
+- Added Compatibility Adapter ZIP import, validation, enable/disable and logical adapter storage.
+- Added Adapter Package How to Use guide.
+- Kept extension version at 1.0.0.
+
+## 2026-10-28 — v1.0.0 feature-preserving upgrade
+- Restored the main on-page toolbar and expanded its settings.
+- Added independent themes for Main, Media, Vocabulary and Productivity toolbars.
+- Added Media Play/Pause/Stop plus progress feedback and Media Reader launch.
+- Added Copy / Save / See Translate vocabulary actions.
+- Added Focus, Day/Night, Pomodoro and 80/20 controls to the productivity/focus toolset.
+- Added supported-website grid/card settings.
+- Improved full-article extraction for Reader and Smart Audio.
+- Added native-page reading timer/highlighting support on supported sites.
+- Added dedicated My Reading Library page with categories, search suggestions, import/export, website metadata refresh and per-category JSON export.
+- Preserved Compatibility Adapter Package Manager with JSON/ZIP import, validation, enable/disable/delete and inactive JavaScript storage.
+- Version remains 1.0.0.
+
+## 2026-10-28 — FINAL v1.0.0 maintenance build
+- Fixed My Reading Library actions and rebuilt the page around a functional sidebar navigation model.
+- Added Website, Favorite, Profile Pages, Category, Tags, Recent and All Saved library views.
+- Added working website profile controls directly inside My Reading Library cards.
+- Added automatic synchronization from Library website additions into Supported Websites.
+- Added per-site toolbar type and individual Main/Media/Vocabulary/Productivity toolbar themes.
+- Added navbar, sidebar, right-sidebar, bottom-navbar and bubble toolbar types while retaining floating mode.
+- Hardened main toolbar visibility so an enabled supported website explicitly renders the toolbar.
+- Improved native reading timing/highlighting and configurable colors.
+- Improved article extraction and website metadata capture.
+- Expanded Medium Compatibility with dedicated settings sections and preserved the adapter package manager.
+- Version remains 1.0.0.
+
+
+## v1.1.3 — Full Freedium fetch extraction
+- Added background fetch of the public Freedium HTML for Medium/Freedium article capture.
+- Medium capture no longer depends on the limited Medium DOM preview.
+- Freedium complete-article extraction now scores for all sections, conclusion, and long-form content.
+- Reader and popup capture paths use the same content-script extraction pipeline.

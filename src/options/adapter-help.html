@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Charlie MJ Reader — Adapter Package Guide</title><link rel="stylesheet" href="options.css"></head><body><main class="wrap"><header><div><span class="eyebrow">CHARLIE MJ READER</span><h1>Compatibility Adapter Package Guide</h1><p>JSON and ZIP adapters are local packages. Imported JavaScript is stored as data and is not automatically executed.</p></div><a href="options.html">← Settings</a></header><section id="panel"><h2>ZIP package structure</h2><pre>medium-freedium/
+├── adapter.json       REQUIRED
+├── adapter.js         OPTIONAL (stored as data)
+├── sources.json       OPTIONAL
+├── README.md          OPTIONAL
+└── assets/            OPTIONAL</pre><h2>Install flow</h2><ol><li>Open Settings → Compatibility Adapters.</li><li>Choose Import Adapter Package (.zip).</li><li>The ZIP is checked for safe paths, size limits, supported compression, adapter.json, ID and semantic version.</li><li>If an adapter with the same ID exists, confirm replacement.</li><li>The complete package is stored under the logical extension path <code>extensions/adapters/&lt;id&gt;/</code>.</li><li>Use Enable / Disable without deleting the package.</li></ol><h2>Validation rules</h2><ul><li>No absolute paths or <code>..</code> traversal.</li><li>Maximum 500 entries; per-file and package size limits are enforced.</li><li>Only ZIP stored/deflate compression is accepted.</li><li><code>adapter.json</code> is required.</li><li><code>id</code> must be a safe package identifier.</li><li><code>version</code> must look like <code>1.0.0</code>.</li><li>If <code>entry</code> is declared, that file must exist.</li></ul><h2>Security model</h2><p>The extension does not call <code>eval()</code>, <code>new Function()</code>, or inject imported adapter JavaScript as extension code. The package manager keeps the adapter files available for review and future host-controlled adapter operations.</p><h2>Export / backup</h2><p>Installed adapter metadata and files are part of the local extension data model and can be exported for backup. Chrome extensions cannot write arbitrary files into their own installed directory; the displayed <code>extensions/adapters/</code> path is the extension's logical adapter storage namespace.</p><h2>Example manifest</h2><pre>{
+  "id": "medium-freedium",
+  "name": "Medium / Freedium",
+  "version": "1.0.0",
+  "type": "compatibility",
+  "entry": "adapter.js",
+  "capabilities": ["detect", "reader", "metadata", "content", "images"]
+}</pre></section></main></body></html>

@@ -2,23 +2,49 @@
   "manifest_version": 3,
   "name": "Charlie MJ Reader",
   "short_name": "CMJ Reader",
-  "version": "1.0.0",
-  "description": "A local-first reading, highlighting, vocabulary and personal knowledge workspace.",
-  "permissions": ["storage", "activeTab", "scripting", "tabs", "contextMenus", "notifications"],
-  "host_permissions": ["https://api.dictionaryapi.dev/*"],
-  "optional_host_permissions": ["http://*/*", "https://*/*"],
-  "background": {"service_worker": "src/background/service-worker.js"},
+  "version": "1.1.3",
+  "description": "A local-first reading workspace with full Medium/Freedium article capture, original-structure Read Yourself mode, Smart Reading Focus and installable adapter packages.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "contextMenus",
+    "notifications",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://api.dictionaryapi.dev/*",
+    "https://api.mymemory.translated.net/*",
+    "https://freedium-mirror.cfd/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
   "action": {
     "default_title": "Charlie MJ Reader",
     "default_popup": "src/popup/popup.html"
   },
   "options_page": "src/options/options.html",
-  "content_scripts": [{
-    "matches": ["http://*/*", "https://*/*"],
-    "js": ["src/content/content.js"],
-    "css": ["src/content/content.css"],
-    "run_at": "document_idle"
-  }],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "src/content/content.js"
+      ],
+      "css": [
+        "src/content/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",

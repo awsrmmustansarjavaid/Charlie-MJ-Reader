@@ -65,16 +65,9 @@ function playReading() {
 async function startReadingCurrentPage() {
   try {
     const tab = await activeTab();
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => {
-        const root = document.querySelector("article, main, [role='main']") || document.body;
-        return [...root.querySelectorAll("h1,h2,h3,p,blockquote,li,pre")]
-          .map((node) => node.innerText.trim()).filter(Boolean).join("\n\n") || root.innerText || "";
-      },
-    });
-    currentText = String(result || "").trim();
-    if (!currentText) throw new Error("No readable text is available on this page.");
+    const response = await chrome.tabs.sendMessage(tab.id, {type:"CMJ_GET_PAGE_DATA"});
+    if (!response?.ok || !response.article?.text) throw new Error(response?.error || "No readable text is available on this page.");
+    currentText = String(response.article.text).trim();
     wordCount = currentText.split(/\s+/).filter(Boolean).length;
     spokenWords = 0;
     $("media-toolbar").hidden = false;
@@ -88,27 +81,9 @@ async function startReadingCurrentPage() {
 $("save-page").addEventListener("click", async () => {
   try {
     const tab = await activeTab();
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => {
-        const root = document.querySelector("article,main,[role='main']") || document.body;
-        const text = [...root.querySelectorAll("h1,h2,h3,p,blockquote,li,pre")]
-          .map((node) => node.innerText.trim()).filter(Boolean).join("\n\n");
-        return {
-          id: crypto.randomUUID(),
-          title: document.querySelector("h1")?.innerText || document.title,
-          url: location.href,
-          domain: location.hostname,
-          text,
-          wordCount: text.split(/\s+/).filter(Boolean).length,
-          readingMinutes: Math.max(1, Math.ceil(text.split(/\s+/).filter(Boolean).length / 220)),
-          savedAt: new Date().toISOString(),
-          status: "unread",
-          progress: 0,
-        };
-      },
-    });
-    if (!result?.text?.trim()) throw new Error("No readable article text was found.");
+    const response = await chrome.tabs.sendMessage(tab.id, {type:"CMJ_GET_PAGE_DATA"});
+    if (!response?.ok || !response.article?.text) throw new Error(response?.error || "No readable article text was found.");
+    const result = response.article;
     const latest = await getAll();
     if (!latest.articles.some((article) => article.url === result.url)) latest.articles.unshift(result);
     await saveAll(latest);
