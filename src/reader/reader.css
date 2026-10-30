@@ -169,3 +169,10 @@
 #cmj-toast-host[data-position="top-left"]{left:18px;top:18px;right:auto;bottom:auto}
 #cmj-toast-host .cmj-toast{pointer-events:none}
 .cmj-note-dialog textarea{display:block;width:100%;min-height:110px;margin:12px 0;padding:11px;border:1px solid var(--line,#394461);border-radius:9px;background:#0c1528;color:#fff;font:inherit;resize:vertical}.cmj-note-dialog textarea:focus{outline:2px solid #8977ff;outline-offset:1px}
+
+
+/* Saved Library: responsive article-card grid and item-category grids. */
+.saved-article-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:stretch}
+.saved-article-card{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:inherit;text-decoration:none;min-width:0;transition:transform .15s,border-color .15s}
+.saved-article-card:hover{transform:translateY(-2px);border-color:var(--accent)}.saved-article-card h2{font-size:15px;margin:0 0 5px;overflow-wrap:anywhere}.saved-article-card p{font-size:11px;color:var(--muted);margin:0 0 8px;overflow-wrap:anywhere}.saved-article-thumb{width:112px;height:112px;border-radius:11px;background:#202b49;overflow:hidden;display:grid;place-items:center}.saved-article-thumb img{width:100%;height:100%;object-fit:cover}.saved-article-thumb span{font-size:28px;color:#b9b0ff}.saved-count-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:9px}.saved-count-grid span{display:flex;justify-content:space-between;gap:5px;padding:5px 7px;background:#0e172b;border-radius:7px;color:#aeb9d3;font-size:10px}.saved-group{padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin:0 0 14px}.saved-group>.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px}.saved-group>.list .item{border:1px solid var(--line);border-radius:10px;padding:12px;background:#0e172b}
+@media(max-width:560px){.saved-article-card{grid-template-columns:76px minmax(0,1fr)}.saved-article-thumb{width:76px;height:76px}.saved-count-grid{grid-template-columns:1fr}}

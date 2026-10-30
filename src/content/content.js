@@ -129,10 +129,10 @@
       await chrome.storage.local.set({settings});
     }
     if(!Array.isArray(settings.websites)) settings.websites=[];
-    const mediumHost = /(^|\\.)medium\\.com$/i.test(location.hostname);
+    const mediumHost = /(^|\.)medium\.com$/i.test(location.hostname);
     if (mediumHost && !window.__cmjMediumOpened && settings.mediumEnabled !== false && settings.freediumEnabled === true && settings.freediumAutoOpen === true) {
       window.__cmjMediumOpened = true;
-      chrome.runtime.sendMessage({type:"CMJ_MEDIUM_AUTO_OPEN", url: location.href, canonicalUrl: document.querySelector('link[rel="canonical"]')?.href || location.href});
+      chrome.runtime.sendMessage({type:"CMJ_MEDIUM_AUTO_OPEN", url: location.href, canonicalUrl: document.querySelector('link[rel="canonical"]')?.href || location.href}).catch(err => { if (!String(err?.message||err).includes("Extension context invalidated")) console.debug("CMJ Medium handoff:", err); });
     }
     site = getProfile();
     if (!site || settings.toolbarEnabled === false || site.toolbar === false) { hideAll(); return; }
@@ -243,10 +243,9 @@
     const isMedium=host === "medium.com" || host.endsWith(".medium.com");
     const isFreedium=/freedium-mirror\.cfd$/i.test(host);
     if (!isMedium && !isFreedium) return null;
-    const response=await chrome.runtime.sendMessage({
-      type:"CMJ_FETCH_FREEDIUM_HTML",
-      sourceUrl:location.href
-    });
+    let response;
+    try { response=await chrome.runtime.sendMessage({type:"CMJ_FETCH_FREEDIUM_HTML",sourceUrl:location.href}); }
+    catch (err) { if (String(err?.message||err).includes("Extension context invalidated")) return null; throw err; }
     if (!response?.ok || !response.html) return null;
     const doc=new DOMParser().parseFromString(response.html,"text/html");
     const sourceUrl=isMedium ? location.href : (document.querySelector('link[rel="canonical"]')?.href || location.href);
@@ -272,7 +271,7 @@
   function article() {
     lastArticleSnapshot=buildArticleFromDocument(document, location.href, location.href); return lastArticleSnapshot;
   }
-  async function send(type, extra={}) { const currentArticle=await getArticle(); return chrome.runtime.sendMessage({type,text:selectedText,article:currentArticle,...extra}); }
+  async function send(type, extra={}) { const currentArticle=await getArticle(); try { return await chrome.runtime.sendMessage({type,text:selectedText,article:currentArticle,...extra}); } catch (err) { if (String(err?.message||err).includes("Extension context invalidated") || !chrome.runtime?.id) throw new Error("Charlie MJ Reader was reloaded or updated. Refresh this webpage to reconnect it."); throw err; } }
 
   async function translate() {
     q('.cmj-result').hidden=false; q('.cmj-translation').textContent='Translating…';

@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Charlie MJ Reader",
   "short_name": "CMJ Reader",
-  "version": "1.1.4",
-  "description": "A local-first reading workspace with unified saved library, per-button feedback notifications and article-scoped saved items.",
+  "version": "1.1.6",
+  "description": "A local-first reading workspace with responsive saved-library grids and article metadata refresh.",
   "permissions": [
     "storage",
     "activeTab",
