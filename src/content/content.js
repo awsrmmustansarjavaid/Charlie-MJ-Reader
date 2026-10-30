@@ -16,6 +16,9 @@
   let mediaUtterance = null;
   let mediaWords = [];
   let mediaState = "ready";
+  let lastArticleSnapshot = null;
+  let lastScrollSave = 0;
+  let manualScrollUntil = 0;
 
   const toolbar = document.createElement("aside");
   toolbar.id = "cmj-toolbars";
@@ -24,9 +27,9 @@
   toolbar.innerHTML = `
     <div class="cmj-mainbar">
       <strong class="cmj-brand">CMJ</strong>
-      <button data-tool="reader">Reader</button>
+      <button data-tool="reader">Reader Workspace</button>
       <button data-tool="vocabulary">Vocabulary</button>
-      <button data-tool="media">Media</button>
+      <button data-tool="media">Productivity Reader</button>
       <button data-tool="focus">Focus</button>
       <button data-tool="productivity">Productivity</button>
       <button data-tool="night">☾</button>
@@ -34,13 +37,13 @@
     </div>
     <section class="cmj-panel cmj-vocab-panel" data-panel="vocabulary" hidden>
       <div class="cmj-selected"><b>Selected text</b><span id="cmj-selected-text"></span></div>
-      <div class="cmj-actions"><button data-action="translate">See Translate</button><button data-action="meaning">Meaning</button><button data-action="save">＋ Save</button><button data-action="copy">Copy</button><button data-action="notes">Notes</button><button data-action="pronunciation">Pronunciation</button></div>
+      <div class="cmj-actions"><button data-action="translate">See Translate</button><button data-action="meaning">Meaning</button><button data-action="save">＋ Vocabulary</button><button data-action="quote">💬 Quote</button><button data-action="paragraph">¶ Paragraph</button><button data-action="selection">✂ Selection</button><button data-action="copy">Copy</button><button data-action="notes">Notes</button><button data-action="pronunciation">Pronunciation</button></div>
       <div class="cmj-result" hidden><div class="cmj-original"></div><div class="cmj-translation"></div><div class="cmj-message"></div></div>
     </section>
     <section class="cmj-panel cmj-media-panel" data-panel="media" hidden>
       <div class="cmj-row"><b>Media / Smart Reader</b><span id="cmj-media-status">Ready</span></div>
       <div class="cmj-progress"><span id="cmj-media-progress"></span></div><div class="cmj-mini" id="cmj-media-percent">0%</div>
-      <div class="cmj-actions"><button data-action="listen">▶ Media Reader</button><button data-action="media-play">▶ Play</button><button data-action="pause">Ⅱ Pause</button><button data-action="stop">■ Stop</button></div>
+      <div class="cmj-actions"><button data-action="listen">▶ Listen in Productivity Reader</button><button data-action="media-play">▶ Play</button><button data-action="pause">Ⅱ Pause</button><button data-action="stop">■ Stop</button><button data-action="bookmark-page">🔖 Bookmark position</button></div>
       <label class="cmj-field">Speed <input id="cmj-media-speed" type="range" min="0.5" max="2.5" step="0.1" value="1"><span id="cmj-speed-value">1×</span></label>
     </section>
     <section class="cmj-panel" data-panel="focus" hidden>
@@ -62,7 +65,7 @@
   function getProfile() {
     const list = Array.isArray(settings.websites) ? settings.websites : [];
     return list.map(x => typeof x === "string" ? {domain:x,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true} : x)
-      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || null;
+      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || {domain:location.hostname,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true,nativeReading:true};
   }
 
   function hideAll() { toolbar.hidden = true; panels.forEach(p => p.hidden = true); }
@@ -154,7 +157,7 @@
     q('#cmj-opacity').value = settings.focusOpacity || 100;
     q('#cmj-work').value = settings.pomodoroWork || 25;
     q('#cmj-break').value = settings.pomodoroBreak || 5;
-    applyFocus(); applyAds();
+    applyFocus(); applyAds(); updateReadingFocus();
   }
 
   async function expandFreediumArticle() {
@@ -259,15 +262,15 @@
     await articleReady();
     try {
       const remote=await fetchFreediumArticle();
-      if (remote && remote.wordCount > 500) return remote;
+      if (remote && remote.wordCount > 500) { lastArticleSnapshot=remote; return remote; }
     } catch (e) {
       console.debug("Charlie MJ Freedium extraction fallback:", e);
     }
-    return buildArticleFromDocument(document, location.href, location.href);
+    lastArticleSnapshot=buildArticleFromDocument(document, location.href, location.href); return lastArticleSnapshot;
   }
 
   function article() {
-    return buildArticleFromDocument(document, location.href, location.href);
+    lastArticleSnapshot=buildArticleFromDocument(document, location.href, location.href); return lastArticleSnapshot;
   }
   async function send(type, extra={}) { const currentArticle=await getArticle(); return chrome.runtime.sendMessage({type,text:selectedText,article:currentArticle,...extra}); }
 
@@ -281,7 +284,12 @@
   function pauseLocalMedia(){if(speechSynthesis.speaking&&!speechSynthesis.paused){speechSynthesis.pause();mediaState="Paused";updateMediaProgress(undefined,"Paused")}}
   function stopLocalMedia(){speechSynthesis.cancel();mediaState="Stopped";updateMediaProgress(0,"Stopped")}
 
-  async function saveVocab() { const r=await send('CMJ_SAVE_VOCABULARY',{word:selectedText,translation:toolbar.dataset.translation||''}); q('.cmj-result').hidden=false; q('.cmj-message').textContent=r?.ok?'Saved to Vocabulary Library.':(r?.error||'Could not save.'); }
+  async function saveVocab() { const r=await send('CMJ_SAVE_VOCABULARY',{word:selectedText,translation:toolbar.dataset.translation||''}); q('.cmj-result').hidden=false; q('.cmj-message').textContent=r?.ok?'Saved to Vocabulary Library.':(r?.error||'Could not save.'); if(r?.ok) cmjToast('✓ Vocabulary saved'); }
+
+  function cmjToast(message,event="article"){ const n=settings.notifications||{}, events=n.events||{}; if(n.enabled===false||events[event]===false)return; const host=document.getElementById("cmj-page-toasts")||(()=>{const x=document.createElement("div");x.id="cmj-page-toasts";document.documentElement.append(x);return x;})(); host.dataset.position=["bottom-right","bottom-left","top-right","top-left"].includes(n.position)?n.position:"bottom-right"; const e=document.createElement("div");e.className="cmj-page-toast";e.setAttribute("role","status");e.textContent=message;host.append(e);setTimeout(()=>e.remove(),Math.max(1000,Number(n.durationMs||2600))); }
+  async function saveCapture(type,text){ const value=String(text||selectedText||"").trim(); if(!value)return; const a=lastArticleSnapshot||await getArticle(); const record={id:crypto.randomUUID(),type,text:value,articleId:a.id,title:a.title,url:a.url,domain:a.domain,siteName:a.siteName,category:a.category||"General",tags:a.tags||[],labels:a.labels||[],createdAt:new Date().toISOString(),selection:{start:selectionRange?.startOffset||0,end:selectionRange?.endOffset||0}}; const stored=await chrome.storage.local.get(["vocabulary","quotes","paragraphs","selections"]); const key=type==="vocabulary"?"vocabulary":type==="quote"?"quotes":type==="paragraph"?"paragraphs":"selections"; const list=Array.isArray(stored[key])?stored[key]:[]; if(type==="vocabulary") record.word=value; list.unshift(record); await chrome.storage.local.set({[key]:list}); cmjToast(`✓ ${type[0].toUpperCase()+type.slice(1)} saved`); }
+  async function savePageBookmark(){ const a=lastArticleSnapshot||await getArticle(); const words=(a.text||"").split(/\s+/).filter(Boolean); const percent=Math.round((window.scrollY/Math.max(1,document.documentElement.scrollHeight-window.innerHeight))*100); const b={id:crypto.randomUUID(),articleId:a.id,title:a.title,url:a.url,position:percent,percent,createdAt:new Date().toISOString()}; const stored=await chrome.storage.local.get("bookmarks"); const list=Array.isArray(stored.bookmarks)?stored.bookmarks:[]; list.unshift(b); await chrome.storage.local.set({bookmarks:list}); cmjToast("✓ Reading position bookmarked"); }
+  function updateReadingFocus(){ const root=document.querySelector("article,main,[role='main'],.post-content,.article-content,.entry-content")||document.body; const blocks=[...root.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(x=>x.innerText?.trim()&&!toolbar.contains(x)); blocks.forEach(x=>x.classList.remove("cmj-reading-focus")); const mid=window.innerHeight*0.42; let best=null,bestDist=1e9; blocks.forEach(x=>{const r=x.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;const d=Math.abs((r.top+r.bottom)/2-mid);if(d<bestDist){bestDist=d;best=x;}}); if(best){best.classList.add("cmj-reading-focus"); best.scrollIntoView({block:"nearest"});} if(Date.now()-lastScrollSave>1200 && lastArticleSnapshot){lastScrollSave=Date.now(); chrome.storage.local.get("articles").then(({articles=[]})=>{const idx=articles.findIndex(x=>x.url===location.href||x.canonicalUrl===location.href);if(idx<0)return;const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);const percent=Math.round(window.scrollY/max*100);articles[idx].progress=percent;articles[idx].currentWord=Math.round((lastArticleSnapshot.wordCount||0)*percent/100);articles[idx].readingPosition={percent,word:articles[idx].currentWord,updatedAt:new Date().toISOString()};articles[idx].updatedAt=new Date().toISOString();chrome.storage.local.set({articles});});} }
 
   function showSelection() {
     if (!site || site.vocabulary === false || settings.vocabularyToolbarEnabled === false) return;
@@ -303,7 +311,7 @@
     }
   }, true);
   document.addEventListener('mouseup',()=>setTimeout(showSelection,40),true);
-  document.addEventListener('mousedown',e=>{if(!toolbar.contains(e.target)&&!window.getSelection()?.toString().trim()) hideAll();},true);
+  document.addEventListener('mousedown',e=>{if(!toolbar.contains(e.target)&&!window.getSelection()?.toString().trim()) hideAll(); manualScrollUntil=Date.now()+700;},true);
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.type === "CMJ_GET_PAGE_DATA") {
       (async()=>{
@@ -316,7 +324,7 @@
   });
 
   chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.settings) refresh();});
-  window.addEventListener('scroll',()=>{},true);
+  window.addEventListener('scroll',()=>{ if(Date.now()<manualScrollUntil)return; updateReadingFocus(); },{passive:true,capture:true});
 
   toolbar.addEventListener('click', async e => {
     const tool=e.target.closest('[data-tool]')?.dataset.tool; const action=e.target.closest('[data-action]')?.dataset.action;
@@ -328,6 +336,10 @@
       if(action==='translate') await translate();
       if(action==='meaning'){await translate(); q('.cmj-message').textContent='Contextual meaning uses the selected text and surrounding page context.';}
       if(action==='save') await saveVocab();
+      if(action==='quote') await saveCapture('quote');
+      if(action==='paragraph') await saveCapture('paragraph');
+      if(action==='selection') await saveCapture('selection');
+      if(action==='bookmark-page') await savePageBookmark();
       if(action==='copy') await navigator.clipboard.writeText(selectedText);
       if(action==='notes'){await navigator.clipboard.writeText(`${selectedText}\n${toolbar.dataset.translation||'[Add translation]'}\nSource: ${location.href}`);}
       if(action==='pronunciation'){q('.cmj-result').hidden=false;q('.cmj-message').textContent='Pronunciation can be added to the vocabulary entry; select a word and save it.';}

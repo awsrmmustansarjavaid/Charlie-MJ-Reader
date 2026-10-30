@@ -1,5 +1,29 @@
 /** Background event handlers for quick actions and context-menu capture. */
+async function seedFromBundle() {
+  try {
+    const url = chrome.runtime.getURL("database/websites/charlie-mj-websites.json");
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) return;
+    const bundle = await response.json();
+    const stored = await chrome.storage.local.get(["settings"]);
+    const settings = stored.settings || {};
+    const websites = Array.isArray(settings.websites) ? settings.websites : [];
+    const existing = new Set(websites.map(item => typeof item === "string" ? item.toLowerCase() : String(item?.domain || "").toLowerCase()).filter(Boolean));
+    const incoming = Array.isArray(bundle) ? bundle : Array.isArray(bundle?.websites) ? bundle.websites : [];
+    const additions = incoming.filter(item => {
+      const domain = typeof item === "string" ? item : item?.domain;
+      return domain && !existing.has(String(domain).toLowerCase());
+    });
+    if (additions.length) {
+      await chrome.storage.local.set({ settings: { ...settings, websites: [...websites, ...additions] } });
+    }
+  } catch {
+    // Seed data is optional; extension startup must not fail if it cannot be read.
+  }
+}
+
 chrome.runtime.onInstalled.addListener(() => {
+  seedFromBundle().catch(() => {}); // load the bundled starter website list (adds only missing sites)
   chrome.contextMenus.create({
     id: "cmj-save-selection", title: "Save selection to Charlie MJ Reader",
     contexts: ["selection"]

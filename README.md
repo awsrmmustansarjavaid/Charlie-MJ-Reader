@@ -7,8 +7,8 @@ A local-first Chrome Manifest V3 extension for distraction-free article reading,
 > This repository is a functional foundation and first implementation. Some advanced items in the product blueprint (AI provider calls, true DOCX/PDF generation, semantic search, cloud sync, spaced repetition scheduling, knowledge graph, and official Medium account status) are integration milestones, not represented as completed features.
 
 <p align="center">
-  <a href="/downloads/Charlie-MJ-Reader-v1.1.3.zip">
-    <img src="https://img.shields.io/badge/%E2%AC%87%20Download%20Chrome%20Extension%20v1.1.3-2ea44f?style=for-the-badge" alt="Charlie-MJ-Reader">
+  <a href="/downloads/Charlie-MJ-Reader.zip">
+    <img src="https://img.shields.io/badge/%E2%AC%87%20Download%20Chrome%20Extension%20v1.0.0-2ea44f?style=for-the-badge" alt="Download Chrome Extension Charlie-MJ-YouTube-v1.0.0">
   </a>
 </p>
 
@@ -95,3 +95,7 @@ Use the **Media Reader** item in the main sidebar to open the audio workspace. F
 
 ### Open the full media player from a webpage
 On a supported article page, click the floating toolbar's **♫ Listen** or **▤ Reader** control. Charlie MJ Reader captures/reuses that article and opens the full Reader workspace directly on **Media Reader**, where the working media deck appears above the article. The deck includes playback, progress, speed, voice and synchronized highlighting controls.
+
+
+## 1.2.0 highlights
+Newspapers tab, writer profiles, automatic categories, logos, SEO & ranking data and a Details view for every site. See `CHANGELOG-1.2.0.md`.

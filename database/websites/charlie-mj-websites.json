@@ -1,0 +1,338 @@
+[
+  {
+    "domain": "dermnetnz.org",
+    "title": "DermNet®",
+    "url": "https://dermnetnz.org/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "dev.to",
+    "title": "DEV Community",
+    "url": "https://dev.to/",
+    "category": "Tech",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "eksisozluk.com",
+    "title": "eksisozluk.com",
+    "url": "https://eksisozluk.com/",
+    "category": "Social",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "greatergood.berkeley.edu",
+    "title": "Greater Good Podcasts",
+    "url": "https://greatergood.berkeley.edu/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "hackernoon.com",
+    "title": "HackerNoon",
+    "url": "https://hackernoon.com/",
+    "category": "Tech",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "medium.com",
+    "title": "Medium",
+    "url": "https://medium.com/",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "my.clevelandclinic.org",
+    "title": "Cleveland Clinic",
+    "url": "https://my.clevelandclinic.org/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "practicaldermatology.com",
+    "title": "PracticalDermatology",
+    "url": "https://practicaldermatology.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "psychcentral.com",
+    "title": "Psych Central",
+    "url": "https://psychcentral.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "thehackernews.com",
+    "title": "The Hacker News",
+    "url": "https://thehackernews.com/",
+    "category": "Tech",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "twitter.com",
+    "title": "X (formerly Twitter)",
+    "url": "https://twitter.com/",
+    "category": "Social",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.aad.org",
+    "title": "American Academy of Dermatology",
+    "url": "https://www.aad.org/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.allure.com",
+    "title": "Allure",
+    "url": "https://www.allure.com/",
+    "category": "Lifestyle",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.apa.org",
+    "title": "www.apa.org",
+    "url": "https://www.apa.org",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.byrdie.com",
+    "title": "The latest from www.byrdie.com",
+    "url": "https://www.byrdie.com/",
+    "category": "Lifestyle",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.freecodecamp.org",
+    "title": "www.freecodecamp.org",
+    "url": "https://www.freecodecamp.org/",
+    "category": "Tech",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.health.harvard.edu",
+    "title": "Harvard Health",
+    "url": "https://www.health.harvard.edu/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.healthline.com",
+    "title": "Healthline",
+    "url": "https://www.healthline.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.mayoclinic.org",
+    "title": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.mindful.org",
+    "title": "Mindful",
+    "url": "https://www.mindful.org/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.nhs.uk",
+    "title": "nhs.uk",
+    "url": "https://www.nhs.uk/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.precisionnutrition.com",
+    "title": "Precision Nutrition",
+    "url": "https://www.precisionnutrition.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.quantamagazine.org",
+    "title": "Quanta Magazine – Illuminating science",
+    "url": "https://www.quantamagazine.org/",
+    "category": "Science",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.smashingmagazine.com",
+    "title": "Smashing Magazine",
+    "url": "https://www.smashingmagazine.com/",
+    "category": "Tech",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.theschooloflife.com",
+    "title": "The School of Life",
+    "url": "https://www.theschooloflife.com/",
+    "category": "Lifestyle",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.verywellfit.com",
+    "title": "Verywell Fit | trusted nutrition and fitness information",
+    "url": "https://www.verywellfit.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "x.com",
+    "title": "X (formerly Twitter)",
+    "url": "https://x.com/",
+    "category": "Social",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.instagram.com",
+    "title": "Raja Muhammad Mustansar Javaid (@charlie.mj.official) • Instagram photos and videos",
+    "url": "https://www.instagram.com/charlie.mj.official/",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.bayhealth.org",
+    "title": "Health & Wellness Blog",
+    "url": "https://www.bayhealth.org/community-wellness/blog?",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.everydayhealth.com",
+    "title": "EverydayHealth.com",
+    "url": "https://www.everydayhealth.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.verywellhealth.com",
+    "title": "Verywell Health | Expert Health Information and Advice",
+    "url": "https://www.verywellhealth.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "health.calm.com",
+    "title": "Calm Health",
+    "url": "https://health.calm.com/resources/blog/",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.health.com",
+    "title": "Health | Trusted Health and Wellness Information",
+    "url": "https://www.health.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.webmd.com",
+    "title": "WebMD",
+    "url": "https://www.webmd.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.sutterhealth.org",
+    "title": "www.sutterhealth.org",
+    "url": "https://www.sutterhealth.org/health/health-wellness-blog",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "goop.com",
+    "title": "goop",
+    "url": "https://goop.com/editorial/?sort=newest",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.mindbodygreen.com",
+    "title": "mindbodygreen RSS Feed",
+    "url": "https://www.mindbodygreen.com//",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "wellnessmama.com",
+    "title": "Wellness Mama®",
+    "url": "https://wellnessmama.com/",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "draxe.com",
+    "title": "Root-Cause Natural Health You Can Trust",
+    "url": "https://draxe.com/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.dukehealth.org",
+    "title": "Duke Health - Connect with your health care at Duke Health",
+    "url": "https://www.dukehealth.org/blog",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.anytimefitness.com",
+    "title": "Anytime Fitness",
+    "url": "https://www.anytimefitness.com/blog",
+    "category": "General",
+    "tags": [],
+    "type": "site"
+  },
+  {
+    "domain": "www.totalhealthandfitness.com",
+    "title": "Total Health and Fitness",
+    "url": "https://www.totalhealthandfitness.com/blog/",
+    "category": "Health",
+    "tags": [],
+    "type": "site"
+  }
+]

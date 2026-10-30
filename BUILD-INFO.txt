@@ -1,5 +1,7 @@
 Charlie MJ Reader
-Version: 1.1.3
-Build: FULL-FREEDIUM-FETCH-FIX
+Version: 1.0.0
+Build: UNIFIED-READING-WORKSPACE
 
-This build captures Medium/Freedium articles through a background Freedium fetch, then parses the returned complete HTML in the content-script context.
+This build unifies Reader Workspace, Productivity Reader, Article Library, parent-page reading tools, capture collections, reading-position sync, TTS, notifications and shared reading data.
+
+Version 1.1.0 - Productivity Reader workspace + hardened article HTML sanitizer.

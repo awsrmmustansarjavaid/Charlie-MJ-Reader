@@ -19,11 +19,24 @@ let wordTimerStartedAt = 0;
 let audioSettings = { speed: data.settings?.ttsRate || 1, pitch: data.settings?.ttsPitch || 1, volume: 1, highlightMode: data.settings?.audioHighlightMode || "combined", autoScroll: data.settings?.audioAutoScroll !== false, mouseFollow: data.settings?.readerMouseFollow !== false, focusMode: false, smartPause: false, sleepMinutes: 0, voiceURI: data.settings?.audioVoiceURI || "" };
 let sleepTimer = null;
 let readingStartedAt = 0;
+let playbackStarted = false;
+let completionHandled = false;
 let progressSaveTimer = null;
 let elapsedReadingMs = 0;
 let currentBookmark = null;
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const save = async () => { await saveAll(data); };
+function toast(message, event="article", tone="ok") {
+  const settings=data.settings?.notifications||{}; const events=settings.events||{};
+  if(settings.enabled===false || events[event]===false) return;
+  let host=document.getElementById("cmj-toast-host");
+  if(!host){ host=document.createElement("div"); host.id="cmj-toast-host"; document.body.append(host); }
+  host.dataset.position = ["top-left","top-right","bottom-left","bottom-right"].includes(settings.position) ? settings.position : "bottom-right";
+  const el=document.createElement("div"); el.className=`cmj-toast cmj-toast-${tone}`; el.textContent=message; host.append(el);
+  setTimeout(()=>el.remove(), Number(settings.durationMs||2600));
+}
+function markBusy(button,label="Working…") { if(!button) return ()=>{}; const old=button.innerHTML; button.disabled=true; button.classList.add("is-active"); button.innerHTML=label; return (text)=>{button.disabled=false;button.classList.remove("is-active");button.innerHTML=text||old;}; }
+
 
 // Use an extension-owned confirmation dialog instead of browser-native dialogs.
 // Native confirm() can be suppressed when the extension page is not the active tab.
@@ -51,11 +64,11 @@ function render() {
     ["Saved articles",data.articles.length],["Highlights",data.highlights.length],
     ["Vocabulary",data.vocabulary.length],["Personal notes",data.notes.length]
   ];
-  const nav = {analytics:"Reading analytics",dashboard:"Your reading dashboard",reader:"Reader workspace",media:"Smart Audio Reader",library:"My Library",highlights:"Highlights",vocabulary:"Vocabulary builder",notes:"Personal notes",collections:"Collections",history:"Reading history",exports:"Export center"};
+  const nav = {analytics:"Reading analytics",dashboard:"Your reading dashboard",reader:"Reader Workspace",media:"Productivity Reader","article-library":"Article Library",library:"My Reading Library",bookmarks:"Bookmarks",highlights:"Highlights",vocabulary:"Vocabulary builder",quotes:"Quotes",paragraphs:"Saved paragraphs",notes:"Personal notes",collections:"Collections",history:"Reading history",exports:"Export center"};
   title.textContent = nav[route] || nav.dashboard;
   document.querySelectorAll(".sidebar nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}`));
   if (route === "media" && !activeArticle) {
-    view.innerHTML = `<div class="media-welcome card"><span class="eyebrow">CHARLIE MJ · SMART AUDIO</span><h2>Smart Reading Media</h2><p>Choose an article and press Read. Your media controls, synchronized text, progress and reading tools will appear here in the main workspace.</p><div class="media-empty-state"><span class="media-empty-icon">♫</span><strong>No article is currently playing</strong><span>Start reading from your library below.</span></div></div><div class="section-head"><h2>Ready to read</h2><button class="btn" data-route="library">Open full library →</button></div>${articleList(articles.slice(0,8))}`;
+    view.innerHTML = `<div class="media-welcome card"><span class="eyebrow">CHARLIE MJ · SMART AUDIO</span><h2>Productivity Reader</h2><p>Choose an article and press Read. Your media controls, synchronized text, progress and reading tools will appear here in the main workspace.</p><div class="media-empty-state"><span class="media-empty-icon">♫</span><strong>No article is currently playing</strong><span>Start reading from your Article Library below.</span></div></div><div class="section-head"><h2>Ready to read</h2><button class="btn" data-route="library">Open full library →</button></div>${articleList(articles.slice(0,8))}`;
   } else if (route==="analytics") {
     const completed = data.articles.filter(a => a.status === "completed");
     const seconds = data.articles.reduce((n,a) => n + (a.listenedSeconds || 0), 0);
@@ -65,8 +78,16 @@ function render() {
     view.innerHTML = `<div class="hero"><span class="eyebrow">WELCOME BACK</span><h2>Read smarter. Learn deeper.</h2><p>Turn articles into ideas you can find, revisit and use. Your saved content stays in this browser unless you export it.</p><button class="btn" data-action="capture">＋ Save current tab</button> <button class="btn" data-action="new-note">Create a note</button></div><div class="grid">${counts.map(([n,v])=>`<div class="stat"><b>${v}</b><span>${n}</span></div>`).join("")}</div><div class="section-head"><h2>Recently saved articles</h2><button class="btn" data-route="library">View library →</button></div>${articleList(articles.slice(0,5))}`;
   } else if (route==="reader") {
     view.innerHTML = `<div class="toolbar"><button data-action="capture">Capture current page</button><button data-action="listen-page">Listen to current page</button><button data-action="stop-audio">Stop audio</button></div><div class="card"><h3>Reader workspace</h3><p>Use “Capture current page” to save accessible article text from the active tab. Open a saved article below to read it in a distraction-free view.</p></div>${articleList(articles)}`;
+  } else if (route==="article-library") {
+    view.innerHTML = `<div class="toolbar"><button data-action="capture">＋ Save current tab</button><button data-action="refresh-library">↻ Refresh</button><button data-action="backup">Export</button><button data-action="import">Import</button><button data-action="download-articles">Download JSON</button><select id="article-sort"><option value="modified">Recently modified</option><option value="saved">Recently saved</option><option value="title">Title</option><option value="progress">Progress</option></select><input id="article-filter" placeholder="Search articles, sites, authors…"></div><div class="card"><p class="muted">Article Library is linked to <b>My Reading Library → Saved Articles</b>. Each card is the same saved article record, not a second copy.</p></div>${articleCards(articles)}`;
   } else if (route==="library" || route==="history") {
     view.innerHTML = `<div class="toolbar"><button data-action="capture">＋ Save current tab</button><button data-action="backup">Export full backup</button><button data-action="import">Import backup</button><input id="import-file" type="file" accept="application/json" hidden></div>${articleList(route==="history" ? data.readingHistory : articles)}`;
+  } else if (route==="bookmarks") {
+    view.innerHTML = `<div class="card"><h3>Reading position bookmarks</h3><p>Bookmarks restore the exact article and word position whenever the saved article is opened.</p></div>${genericList(data.bookmarks,"No bookmarks yet.","bookmark")}`;
+  } else if (route==="quotes") {
+    view.innerHTML = `<div class="toolbar"><button data-action="export-captures">Export captures</button></div>${genericList(data.quotes,"No quotes yet.","quote")}`;
+  } else if (route==="paragraphs") {
+    view.innerHTML = `${genericList(data.paragraphs,"No saved paragraphs yet.","paragraph")}${genericList(data.selections,"No custom selections yet.","selection")}`;
   } else if (route==="highlights") {
     view.innerHTML = `<div class="toolbar"><button data-action="capture-highlight">Highlight selected text on active tab</button></div>${genericList(data.highlights,"No highlights yet.","highlight")}`;
   } else if (route==="vocabulary") {
@@ -105,14 +126,10 @@ function render() {
     view.innerHTML = `<div class="empty">Choose a section from the sidebar.</div>`;
   }
 }
-function articleList(items) {
-  if (!items?.length) return `<div class="empty">Nothing here yet. Save an article to get started.</div>`;
-  return `<div class="list">${items.map(a=>`<article class="item"><div><h3>${esc(a.title||"Untitled article")}</h3><p>${esc((a.text||"").slice(0,190))}</p><p>${esc(a.domain||"")} · ${a.wordCount||0} words · ${a.readingMinutes||1} min</p></div><div class="item-actions">${btn("Read Yourself","read",a.id)}${btn("Listen","listen",a.id)}${btn("MD","md",a.id)}${btn("TXT","txt",a.id)}${btn("Delete","delete-article",a.id)}</div></article>`).join("")}</div>`;
-}
-function genericList(items,empty,type) {
-  if (!items?.length) return `<div class="empty">${empty}</div>`;
-  return `<div class="list">${items.map(item=>`<article class="item"><div><h3>${esc(item.word||item.title||item.text||"Saved item")}</h3><p>${esc(item.definition||item.note||item.text||"")}</p><p>${esc(item.url||item.createdAt||"")}</p></div><div class="item-actions">${btn("Delete",`delete-${type}`,item.id)}</div></article>`).join("")}</div>`;
-}
+function articleCard(a){ const progress=Math.round(a.progress||0); const thumb=a.image||a.thumbnail||""; const logo=a.siteLogo||a.favicon||""; return `<article class="article-card"><div class="article-card-media">${thumb?`<img src="${esc(thumb)}" loading="lazy">`:`<div class="article-placeholder">▤</div>`}</div><div class="article-card-body"><div class="article-card-site">${logo?`<img src="${esc(logo)}">`:""}<span>${esc(a.siteName||a.domain||"Website")}</span></div><h3 class="article-title-link" data-action="read" data-id="${esc(a.id)}">${esc(a.title||"Untitled article")}</h3><p>${esc(a.description||a.subtitle||((a.text||"").slice(0,180)))}</p><p class="muted">${esc(a.author||"")} · ${a.wordCount||0} words · ${a.readingMinutes||1} min</p><div class="article-meta"><span>Saved ${esc((a.savedAt||a.createdAt||"").slice(0,10))}</span><span>Modified ${esc((a.updatedAt||a.modifiedAt||a.savedAt||"").slice(0,10))}</span><span>${progress}%</span></div><div class="progress-track"><span style="width:${progress}%"></span></div></div><div class="item-actions"><button data-action="read" data-id="${esc(a.id)}">Read Yourself</button><button data-action="listen" data-id="${esc(a.id)}">Listen</button><button data-action="see-saved" data-id="${esc(a.id)}">See Saved</button><button data-action="details-article" data-id="${esc(a.id)}">Details</button><button data-action="edit-article" data-id="${esc(a.id)}">Edit</button><button data-action="delete-article" data-id="${esc(a.id)}">Remove</button></div></article>`; }
+function articleCards(items){ if(!items?.length) return `<div class="empty">No articles match your search.</div>`; return `<div class="article-grid">${items.map(articleCard).join("")}</div>`; }
+function articleList(items) { if (!items?.length) return `<div class="empty">Nothing here yet. Save an article to get started.</div>`; return `<div class="article-grid">${items.map(articleCard).join("")}</div>`; }
+function genericList(items,empty,type) { if (!items?.length) return `<div class="empty">${empty}</div>`; return `<div class="list">${items.map(item=>`<article class="item"><div><h3>${esc(item.title||item.word||item.text||"Saved item")}</h3><p>${esc(item.text||item.definition||item.note||"")}</p><p>${esc(item.siteName||item.domain||"")} · ${esc(item.url||item.createdAt||"")}</p></div><div class="item-actions">${item.articleId?btn("Open article","read",item.articleId):""}${btn("Delete",`delete-${type}`,item.id)}</div></article>`).join("")}</div>`; }
 async function captureActive() {
   const [tab] = await chrome.tabs.query({active:true,currentWindow:true});
   const [{result}] = await chrome.scripting.executeScript({target:{tabId:tab.id},func:()=>{
@@ -122,11 +139,12 @@ async function captureActive() {
     const text=(clone.innerText||main.innerText||"").replace(/\n{3,}/g,"\n\n").trim();
     const html=clone.innerHTML||"";
     const wordCount=text.split(/\s+/).filter(Boolean).length;
-    return {id:crypto.randomUUID(),title:document.querySelector('meta[property="og:title"]')?.content||document.querySelector("h1")?.innerText||document.title,url:location.href,domain:location.hostname,text,html,canonicalUrl:document.querySelector('link[rel="canonical"]')?.href||location.href,siteName:document.querySelector('meta[property="og:site_name"]')?.content||location.hostname,author:document.querySelector('meta[name="author"]')?.content||"",image:document.querySelector('meta[property="og:image"]')?.content||"",description:document.querySelector('meta[name="description"]')?.content||document.querySelector('meta[property="og:description"]')?.content||"",tags:[...document.querySelectorAll('meta[property="article:tag"],meta[name="keywords"]')].flatMap(x=>(x.content||"").split(',')).map(x=>x.trim()).filter(Boolean),labels:[...document.querySelectorAll('[rel="tag"],.tag,.tags a')].map(x=>x.textContent.trim()).filter(Boolean),wordCount,readingMinutes:Math.max(1,Math.ceil(wordCount/220)),savedAt:new Date().toISOString(),status:"unread",progress:0};
+    return {id:crypto.randomUUID(),title:document.querySelector('meta[property="og:title"]')?.content||document.querySelector("h1")?.innerText||document.title,url:location.href,domain:location.hostname,text,html,canonicalUrl:document.querySelector('link[rel="canonical"]')?.href||location.href,siteName:document.querySelector('meta[property="og:site_name"]')?.content||location.hostname,author:document.querySelector('meta[name="author"]')?.content||"",image:document.querySelector('meta[property="og:image"]')?.content||"",description:document.querySelector('meta[name="description"]')?.content||document.querySelector('meta[property="og:description"]')?.content||"",tags:[...document.querySelectorAll('meta[property="article:tag"],meta[name="keywords"]')].flatMap(x=>(x.content||"").split(',')).map(x=>x.trim()).filter(Boolean),labels:[...document.querySelectorAll('[rel="tag"],.tag,.tags a')].map(x=>x.textContent.trim()).filter(Boolean),wordCount,readingMinutes:Math.max(1,Math.ceil(wordCount/220)),savedAt:new Date().toISOString(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),status:"unread",progress:0,readingPosition:{word:0,percent:0}};
   }});
   if (!result.text?.trim()) throw new Error("No readable article text found on this page.");
   if (!data.articles.some(a=>a.url===result.url)) data.articles.unshift(result);
-  await save(); render();
+  else { const existing=data.articles.find(a=>a.url===result.url); Object.assign(existing,result,{id:existing.id,createdAt:existing.createdAt||result.createdAt,updatedAt:new Date().toISOString()}); }
+  await save(); toast("✓ Article saved","article"); render();
 }
 function splitSentences(text) {
   // Keep punctuation with each sentence; this provides reliable utterance boundaries.
@@ -134,36 +152,34 @@ function splitSentences(text) {
 }
 function sanitizeArticleHTML(raw, baseUrl = location.href) {
   if (!raw) return "";
-  const doc = new DOMParser().parseFromString(String(raw), "text/html");
+  // Strip SVG/MathML blocks and inline event attributes before parsing. The
+  // parsed document is inert, but pre-filtering also prevents hostile markup
+  // from reaching any later DOM insertion path.
+  const source = String(raw)
+    .replace(/<(svg|math)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(?:src|href)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, "");
+  const parsed = new DOMParser().parseFromString(source, "text/html");
   const allowed = new Set(["ARTICLE","SECTION","DIV","P","H1","H2","H3","H4","H5","H6","UL","OL","LI","BLOCKQUOTE","PRE","CODE","TABLE","THEAD","TBODY","TR","TH","TD","A","IMG","FIGURE","FIGCAPTION","STRONG","B","EM","I","U","S","BR","HR","DL","DT","DD","SPAN"]);
-  const blocked = new Set(["SCRIPT","STYLE","NOSCRIPT","IFRAME","OBJECT","EMBED","FORM","INPUT","BUTTON","VIDEO","AUDIO","SOURCE","TRACK","SVG","MATH"]);
-  const cleanUrl = (value, image=false) => {
-    try { const u=new URL(value,baseUrl); if (u.protocol==="https:" || u.protocol==="http:") return u.href; } catch {}
-    return "";
+  const blocked = new Set(["SCRIPT","STYLE","NOSCRIPT","IFRAME","OBJECT","EMBED","FORM","INPUT","BUTTON","VIDEO","AUDIO","SOURCE","TRACK","SVG","MATH","FOREIGNOBJECT","CANVAS"]);
+  const safeUrl = value => { try { const u = new URL(value, baseUrl); return ["https:","http:"].includes(u.protocol) ? u.href : ""; } catch { return ""; } };
+  // Rebuild from a strict element/attribute allowlist; never copy inline handlers or SVG.
+  const copyNode = node => {
+    if (node.nodeType === Node.TEXT_NODE) return parsed.createTextNode(node.nodeValue || "");
+    if (node.nodeType !== Node.ELEMENT_NODE) return parsed.createDocumentFragment();
+    const tag = node.tagName.toUpperCase().split(":").pop();
+    if (node.namespaceURI === "http://www.w3.org/2000/svg" || node.namespaceURI === "http://www.w3.org/1998/Math/MathML" || blocked.has(tag)) return parsed.createDocumentFragment();
+    const children = [...node.childNodes].map(copyNode);
+    if (!allowed.has(tag)) { const frag = parsed.createDocumentFragment(); children.forEach(child => frag.append(child)); return frag; }
+    const clean = parsed.createElement(tag.toLowerCase());
+    if (tag === "A") { const href = safeUrl(node.getAttribute("href")); if (href) { clean.setAttribute("href", href); clean.setAttribute("target", "_blank"); clean.setAttribute("rel", "noopener noreferrer"); } }
+    if (tag === "IMG") { const src = safeUrl(node.getAttribute("src")); if (!src) return parsed.createDocumentFragment(); clean.setAttribute("src", src); clean.setAttribute("loading", "lazy"); clean.setAttribute("referrerpolicy", "no-referrer"); const alt=node.getAttribute("alt"); if(alt) clean.setAttribute("alt",alt.slice(0,500)); }
+    if ((tag === "TH" || tag === "TD") && /^[1-9]$|^10$/.test(node.getAttribute("colspan")||"")) clean.setAttribute("colspan",node.getAttribute("colspan"));
+    children.forEach(child => clean.append(child)); return clean;
   };
-  const walk = node => {
-    [...node.children].forEach(el => {
-      if (blocked.has(el.tagName)) { el.remove(); return; }
-      if (!allowed.has(el.tagName)) {
-        const frag=document.createDocumentFragment(); while(el.firstChild) frag.append(el.firstChild); el.replaceWith(frag); return;
-      }
-      [...el.attributes].forEach(a => {
-        const n=a.name.toLowerCase();
-        if (n.startsWith("on") || n==="style" || n==="srcset" || n==="class" || n==="id") el.removeAttribute(a.name);
-      });
-      if (el.tagName==="A") {
-        const href=cleanUrl(el.getAttribute("href"));
-        if (href) { el.setAttribute("href",href); el.setAttribute("target","_blank"); el.setAttribute("rel","noopener noreferrer"); } else el.removeAttribute("href");
-      }
-      if (el.tagName==="IMG") {
-        const src=cleanUrl(el.getAttribute("src"),true);
-        if (src) { el.setAttribute("src",src); el.setAttribute("loading","lazy"); el.setAttribute("referrerpolicy","no-referrer"); } else el.remove();
-      }
-      walk(el);
-    });
-  };
-  walk(doc.body);
-  return doc.body.innerHTML;
+  const holder = parsed.createElement("div");
+  [...parsed.body.childNodes].forEach(node => holder.append(copyNode(node)));
+  return holder.innerHTML;
 }
 function buildStructuredReadingMarkup(article) {
   const html = sanitizeArticleHTML(article.html || "", article.contentBaseUrl || article.url || location.href);
@@ -189,6 +205,18 @@ function buildStructuredReadingMarkup(article) {
   }
   activeWordCount=global;
   root.querySelectorAll("p,h1,h2,h3,h4,h5,h6,li,blockquote,pre").forEach((el,i)=>el.dataset.cmjBlock=String(i));
+  // Build the speech sentence index from the article's actual readable text.
+  // Previously structured HTML populated word spans but left audioSentences
+  // empty, so clicking Listen immediately called finishReading().
+  const speechText = String(article.text || root.textContent || "").replace(/\s+/g, " ").trim();
+  let firstWord = 0;
+  audioSentences = splitSentences(speechText).map((sentence, index) => {
+    const words = sentence.match(/\S+/g) || [];
+    const item = { text: sentence, words, firstWord, index };
+    firstWord += words.length;
+    return item;
+  });
+  activeWordCount = firstWord;
   return root.innerHTML;
 }
 function buildReadingMarkup(text) {
@@ -206,14 +234,17 @@ function buildReadingMarkup(text) {
   activeWordCount = global;
   return audioSentences.map(s => `<p class="cmj-sentence" data-sentence="${s.index}">${s.markup}</p>`).join("");
 }
+let captureType = "selection";
 function openRead(article, autoplay = false) {
   if (!article) return;
   route = "media";
   if (location.hash !== "#media") location.hash = "media";
   speechSynthesis.cancel(); clearInterval(wordTimer); clearTimeout(sleepTimer);
   activeArticle = article;
+  playbackStarted = false; completionHandled = false; readingStartedAt = 0;
   activeWordCount = article.wordCount || (article.text || "").split(/\s+/).filter(Boolean).length;
   currentWord = Math.max(0, Math.min(activeWordCount, Number.isFinite(article.currentWord) ? article.currentWord : Math.floor((article.progress || 0) * activeWordCount / 100)));
+  if(currentWord>0) toast(`↻ Reading position restored (${Math.round(currentWord/Math.max(1,activeWordCount)*100)}%)`,"restored");
   sentenceIndex = 0;
   audioState = "idle";
   const readingMarkup = buildStructuredReadingMarkup(article);
@@ -224,7 +255,7 @@ function openRead(article, autoplay = false) {
   data.readingHistory.unshift({...article,openedAt:new Date().toISOString()});
   data.readingHistory = data.readingHistory.slice(0, 500);
   save();
-  view.innerHTML = `<div class="toolbar"><button data-action="back">← Back</button><button data-action="reader-close">Close reading</button><button data-action="md" data-id="${esc(article.id)}">Export Markdown</button><label>Aa <input id="reader-font" type="range" min="14" max="30" value="${data.settings.fontSize||18}"></label><label>Width <input id="reader-width" type="range" min="520" max="1100" value="${data.settings.readingWidth||760}"></label><label>Line <input id="reader-line" type="range" min="1.2" max="2.4" step=".1" value="${data.settings.lineHeight||1.75}"></label><label>Theme <select id="reader-theme"><option value="default-dark">Dark</option><option value="pure-white">Light</option><option value="sepia">Sepia</option></select></label></div>
+  view.innerHTML = `<div class="toolbar"><button data-action="back">← Back</button><button data-action="reader-close">Close Productivity Reader</button><button data-action="md" data-id="${esc(article.id)}">Export Markdown</button><label>Aa <input id="reader-font" type="range" min="14" max="30" value="${data.settings.fontSize||18}"></label><label>Width <input id="reader-width" type="range" min="520" max="1100" value="${data.settings.readingWidth||760}"></label><label>Line <input id="reader-line" type="range" min="1.2" max="2.4" step=".1" value="${data.settings.lineHeight||1.75}"></label><label>Theme <select id="reader-theme"><option value="default-dark">Dark</option><option value="pure-white">Light</option><option value="sepia">Sepia</option></select></label></div>
     <section class="media-toolbar card" id="smart-media-toolbar" aria-label="Smart reading media controls">
       <div class="media-head"><strong>CHARLIE MJ — SMART AUDIO READER</strong><span id="audio-status">Ready</span></div>
       <div class="media-head muted"><span id="audio-percent">${Math.round(article.progress||0)}% complete</span><span id="audio-position">${currentWord} / ${activeWordCount} words</span></div>
@@ -235,9 +266,41 @@ function openRead(article, autoplay = false) {
       <label>Highlight <select id="highlight-mode"><option value="combined">Word + sentence</option><option value="word">Word only</option><option value="sentence">Sentence only</option></select></label>
       <label><input type="checkbox" id="auto-scroll" checked> Auto-scroll</label><label><input type="checkbox" id="focus-mode"> Focus mode</label><label><input type="checkbox" id="smart-pause"> Pause after sentence</label><label><input type="checkbox" id="auto-next-article"> Play next saved article</label>
       <label>Sleep timer <select id="sleep-timer"><option value="0">Off</option><option value="10">10 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option></select></label>
-      <button data-action="bookmark-word">☆ Bookmark position</button><button data-action="annotate-position">✎ Note at position</button><button data-action="repeat-word">↻ Repeat word</button></div>
+      <button data-action="bookmark-word">☆ Bookmark position</button><button data-action="repeat-word">↻ Repeat word</button></div>
     </section>
     <article class="card reading-article" id="reading-article"><span class="eyebrow">${esc(article.siteName||article.domain||"ARTICLE")}</span><h2>${esc(article.title)}</h2><p class="muted">${esc(article.author||"")} · ${article.publishedAt?esc(new Date(article.publishedAt).toLocaleDateString()):""} · ${article.readingMinutes||1} min read</p>${article.image?`<img class="reader-featured-image" src="${esc(article.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:""}${article.description?`<p class="reader-dek">${esc(article.description)}</p>`:""}${toc.length?`<nav class="reader-toc card" aria-label="Table of contents"><strong>Contents</strong>${toc.map(x=>`<a href="#${x.id}" style="margin-left:${Math.max(0,x.level-1)*14}px">${esc(x.text)}</a>`).join("")}</nav>`:""}<div class="reading-content">${readingMarkup}</div></article>`;
+  // Focused two-column workspace: article + one right-hand Productivity Toolbar.
+  // All reader controls live in the right rail; no duplicate in-reader left rail.
+  const player = document.getElementById("smart-media-toolbar"), articleNode = document.getElementById("reading-article");
+  if (player && articleNode) {
+    const layout=document.createElement("div"); layout.className="cmj-productivity-layout cmj-productivity-layout-single-rail";
+    const center=document.createElement("div"); center.className="cmj-reader-center";
+    const right=document.createElement("aside"); right.className="cmj-reader-rail cmj-reader-right";
+    right.innerHTML=`<div class="cmj-rail-heading">PRODUCTIVITY TOOLBAR</div>
+      <div class="cmj-now-reading"><span class="cmj-live-dot"></span> NOW READING</div><b id="cmj-rail-title"></b>
+      <div class="cmj-rail-heading">AUDIO READER</div><div id="cmj-audio-controls"></div>
+      <div class="cmj-rail-divider"></div><div class="cmj-rail-heading">SAVE & ANNOTATE</div>
+      <button data-action="bookmark-word">☆ Save reading position</button><button data-action="annotate-position">✎ Add note at position</button>
+      <button data-action="workspace-capture" data-kind="vocabulary">＋ Save selected word</button><button data-action="workspace-capture" data-kind="quote">❝ Save quote</button>
+      <button data-action="workspace-capture" data-kind="paragraph">¶ Save paragraph</button><button data-action="workspace-capture" data-kind="selection">▤ Save selection</button>
+      <div class="cmj-rail-divider"></div><div class="cmj-rail-heading">READING PROGRESS</div><div class="cmj-rail-progress"><span id="cmj-rail-progress-fill"></span></div>
+      <small id="cmj-rail-progress-label">${Math.round(article.progress||0)}% completed</small>
+      <div class="cmj-rail-divider"></div><div class="cmj-rail-heading">QUICK SETTINGS</div>
+      <label class="cmj-rail-label">Theme<select id="rail-reader-theme"><option value="default-dark">Dark</option><option value="pure-white">Light</option><option value="sepia">Sepia</option></select></label>
+      <label class="cmj-rail-label">Text size<input id="rail-reader-font" type="range" min="14" max="30" value="${data.settings.fontSize||18}"></label>
+      <label class="cmj-rail-check"><input id="rail-focus-mode" type="checkbox"> Focus mode</label>
+      <div class="cmj-rail-divider"></div><div class="cmj-rail-heading">IN THIS ARTICLE</div><nav id="cmj-reader-outline" class="cmj-reader-outline"></nav>`;
+    player.before(layout); layout.append(center,right); center.append(articleNode);
+    right.querySelector("#cmj-audio-controls").append(player);
+    right.querySelector("#cmj-rail-title").textContent=article.title||"Untitled article";
+    right.querySelector("#rail-reader-theme").value=data.settings.readingTheme||"default-dark";
+    right.querySelector("#rail-focus-mode").checked=audioSettings.focusMode;
+    const outline=right.querySelector("#cmj-reader-outline");
+    toc.forEach((item,index)=>{const link=document.createElement("a");link.href=`#cmj-heading-${index}`;link.textContent=item.text;link.style.paddingLeft=`${Math.max(0,item.level-1)*10}px`;link.addEventListener("click",ev=>{ev.preventDefault();articleNode.querySelector(`#cmj-heading-${index}`)?.scrollIntoView({behavior:"smooth",block:"start"});});outline.append(link);});
+    right.querySelector("#rail-reader-theme").addEventListener("change",ev=>{data.settings.readingTheme=ev.target.value;articleNode.setAttribute("data-reading-theme",ev.target.value);const mainTheme=document.getElementById("reader-theme");if(mainTheme)mainTheme.value=ev.target.value;save();});
+    right.querySelector("#rail-reader-font").addEventListener("input",ev=>{data.settings.fontSize=Number(ev.target.value);articleNode.style.setProperty("--reader-font-size",`${ev.target.value}px`);const mainFont=document.getElementById("reader-font");if(mainFont)mainFont.value=ev.target.value;save();});
+    right.querySelector("#rail-focus-mode").addEventListener("change",ev=>{audioSettings.focusMode=ev.target.checked;const mainFocus=document.getElementById("focus-mode");if(mainFocus)mainFocus.checked=ev.target.checked;updateAudioProgress(currentWord,audioState);});
+  }
   const readingRoot = document.getElementById("reading-article");
   readingRoot?.querySelectorAll(".reading-content h1,.reading-content h2,.reading-content h3,.reading-content h4")?.forEach((h,i)=>{ h.id=`cmj-heading-${i}`; });
   readingRoot?.addEventListener("mousemove", e => {
@@ -253,7 +316,7 @@ function openRead(article, autoplay = false) {
   readingRoot?.addEventListener("mouseleave", () => {
     readingRoot.querySelectorAll(".cmj-pointer-word,.cmj-pointer-line").forEach(x=>x.classList.remove("cmj-pointer-word","cmj-pointer-line"));
   });
-  title.textContent = "Smart Audio Reader";
+  title.textContent = "Productivity Reader";
   document.querySelectorAll(".sidebar nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === "#media"));
   document.getElementById("highlight-mode").value = audioSettings.highlightMode;
   document.getElementById("auto-scroll").checked = audioSettings.autoScroll;
@@ -281,6 +344,8 @@ function updateAudioProgress(word, status = audioState) {
   activeArticle.currentWord = currentWord;
   activeArticle.status = percent >= 100 ? "completed" : percent > 0 ? "in-progress" : "unread";
   const bar = document.getElementById("audio-progress"); if (bar) bar.style.width = `${percent}%`;
+  const railBar=document.getElementById("cmj-rail-progress-fill"); if(railBar) railBar.style.width=`${percent}%`;
+  const railLabel=document.getElementById("cmj-rail-progress-label"); if(railLabel) railLabel.textContent=`${percent}% completed`;
   const pct = document.getElementById("audio-percent"); if (pct) pct.textContent = `${percent}% complete`;
   const pos = document.getElementById("audio-position"); if (pos) pos.textContent = `${currentWord} / ${activeWordCount} words`;
   const label = document.getElementById("audio-status"); if (label) label.textContent = status === "playing" ? "Playing" : status === "paused" ? "Paused" : status === "stopped" ? "Stopped" : "Ready";
@@ -344,7 +409,7 @@ function speakCurrentSentence() {
   activeUtterance = utterance; speechSynthesis.speak(utterance);
 }
 function playArticleAudio() {
-  if (!activeArticle?.text) return;
+  if (!activeArticle?.text || !audioSentences.length) return;
   if (audioState === "paused" && speechSynthesis.paused) { speechSynthesis.resume(); audioState = "playing"; const sentence = audioSentences[sentenceIndex]; if (sentence) startWordFallback(sentence.firstWord + sentence.words.length); updateAudioProgress(currentWord, audioState); return; }
   if (audioState === "paused" && audioSettings.smartPause) { audioState = "playing"; speakCurrentSentence(); return; }
   if (audioState === "playing") return;
@@ -352,11 +417,14 @@ function playArticleAudio() {
   sentenceIndex = Math.max(0, audioSentences.findIndex(s => currentWord >= s.firstWord && currentWord < s.firstWord + s.words.length));
   audioState = "playing";
   if (!readingStartedAt) readingStartedAt = Date.now();
+  playbackStarted = true;
   const sleep = Number(document.getElementById("sleep-timer")?.value || 0);
   if (sleep) { clearTimeout(sleepTimer); sleepTimer = setTimeout(() => stopArticleAudio(), sleep * 60000); }
   speakCurrentSentence();
 }
 async function finishReading() {
+  if (!activeArticle || !playbackStarted || completionHandled) return;
+  completionHandled = true;
   stopWordFallback(); audioState = "stopped"; updateAudioProgress(activeWordCount, "stopped");
   if (activeArticle) {
     activeArticle.completedAt = new Date().toISOString();
@@ -380,8 +448,11 @@ function jumpSentence(direction) {
 }
 function savePositionNote() {
   const word = audioSentences[sentenceIndex]?.words[Math.max(0, currentWord - (audioSentences[sentenceIndex]?.firstWord || 0))] || "";
-  const note = prompt(`Note at word ${currentWord}${word ? ` (${word})` : ""}:`);
-  if (note?.trim()) { data.notes.unshift({id:makeId(),text:note.trim(),note:note.trim(),articleId:activeArticle?.id,position:currentWord,createdAt:new Date().toISOString()}); save(); }
+  const overlay=document.createElement("div"); overlay.className="cmj-confirm-overlay";
+  overlay.innerHTML=`<section class="cmj-confirm-card cmj-note-dialog" role="dialog" aria-modal="true" aria-labelledby="cmj-note-title"><h3 id="cmj-note-title">Add note at reading position</h3><p>Save a note at word ${currentWord}${word?` (${esc(word)})`:""} in this article.</p><textarea id="cmj-position-note" rows="5" placeholder="Write your note…"></textarea><div class="cmj-confirm-actions"><button type="button" data-choice="cancel">Cancel</button><button type="button" data-choice="save">Save note</button></div></section>`;
+  const field=overlay.querySelector("#cmj-position-note");
+  overlay.addEventListener("click",async event=>{if(event.target===overlay||event.target.closest('[data-choice="cancel"]')){overlay.remove();return;}if(event.target.closest('[data-choice="save"]')){const note=field.value.trim();if(!note){field.focus();field.setAttribute("aria-invalid","true");return;}data.notes.unshift({id:makeId(),title:`Note at word ${currentWord}`,text:note,note,articleId:activeArticle?.id,position:currentWord,createdAt:new Date().toISOString()});await save();overlay.remove();toast("Note saved at this position","article");}});
+  document.body.append(overlay);field.focus();
 }
 document.addEventListener("click",async e=>{
   const spokenWord = e.target.closest?.(".cmj-word");
@@ -407,7 +478,7 @@ document.addEventListener("click",async e=>{
     if(action==="capture") await captureActive();
     if(action==="listen-page"){const [tab]=await chrome.tabs.query({active:true,currentWindow:true});await chrome.scripting.executeScript({target:{tabId:tab.id},func:()=>speechSynthesis.speak(new SpeechSynthesisUtterance((document.querySelector("article,main")||document.body).innerText.slice(0,12000)))});}
     if(action==="stop-audio") speechSynthesis.cancel();
-    if(action==="read") openRead(data.articles.find(a=>a.id===id), true);
+    if(action==="read") openRead(data.articles.find(a=>a.id===id), false);
     if(action==="back") render();
     if(action==="listen"){
       const article = data.articles.find((item)=>item.id===id);
@@ -419,8 +490,9 @@ document.addEventListener("click",async e=>{
     if(action==="reader-close"){speechSynthesis.cancel();stopWordFallback();activeArticle=null;route="media";location.hash="media";render();}
     if(action==="previous-sentence") jumpSentence(-1);
     if(action==="next-sentence") jumpSentence(1);
-    if(action==="bookmark-word"){data.bookmarks.unshift({id:makeId(),articleId:activeArticle?.id,title:activeArticle?.title,position:currentWord,createdAt:new Date().toISOString()});await save();alert("Reading position bookmarked.");}
+    if(action==="bookmark-word"){data.bookmarks.unshift({id:makeId(),articleId:activeArticle?.id,title:activeArticle?.title,position:currentWord,percent:Math.round(currentWord/Math.max(1,activeWordCount)*100),createdAt:new Date().toISOString()});await save();toast("✓ Reading position bookmarked","bookmark");}
     if(action==="annotate-position") savePositionNote();
+    if(action==="see-saved"){ chrome.tabs.create({url:chrome.runtime.getURL(`src/reader/saved.html?articleId=${encodeURIComponent(id)}`)}); }
     if(action==="repeat-word"){const sentence=audioSentences[sentenceIndex];const word=sentence?.words[Math.max(0,currentWord-sentence.firstWord)];if(word){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(word);u.rate=audioSettings.speed;speechSynthesis.speak(u);}}
 
     if(["md","txt"].includes(action)){const a=data.articles.find(x=>x.id===id);if(a)exportArticle(a,action);}
@@ -526,10 +598,44 @@ document.addEventListener("click",async e=>{
         }
       }
     }
+    if(action==="details-article"){const a=data.articles.find(x=>x.id===id);if(a) await askConfirmation(`Website: ${a.siteName||a.domain||""}
+Author: ${a.author||""}
+Category: ${a.category||"General"}
+Saved: ${a.savedAt||a.createdAt||""}
+Modified: ${a.updatedAt||a.modifiedAt||""}
+Words: ${a.wordCount||0}
+Reading time: ${a.readingMinutes||1} min` ,"Article details");}
+    if(action==="edit-article"){const a=data.articles.find(x=>x.id===id);if(a){const category=prompt("Category",a.category||"General");if(category!==null){a.category=category.trim()||"General";a.updatedAt=new Date().toISOString();await save();render();toast("Article updated","article");}}}
+    if(action==="refresh-library"){data=await getAll();render();toast("Article Library refreshed","article");}
+    if(action==="download-articles"){downloadText("charlie-mj-article-library.json",JSON.stringify({version:1,exportedAt:new Date().toISOString(),articles:data.articles},null,2),"application/json");toast("Article Library exported","export");}
+    if(action==="export-captures"){downloadText("charlie-mj-captures.json",JSON.stringify({quotes:data.quotes,paragraphs:data.paragraphs,selections:data.selections},null,2),"application/json");toast("Captures exported","export");}
+    if(action==="delete-bookmark"){data.bookmarks=data.bookmarks.filter(x=>x.id!==id);await save();render();}
+    if(action==="delete-quote"){data.quotes=data.quotes.filter(x=>x.id!==id);await save();render();}
+    if(action==="delete-paragraph"){data.paragraphs=data.paragraphs.filter(x=>x.id!==id);await save();render();}
+    if(action==="delete-selection"){data.selections=data.selections.filter(x=>x.id!==id);await save();render();}
+    if(action==="save-capture"){
+      const text=document.getElementById("capture-text")?.value.trim(); if(!text) throw new Error("Select or enter text first.");
+      const item={id:makeId(),text,articleId:activeArticle?.id||null,title:activeArticle?.title||"",url:activeArticle?.url||"",domain:activeArticle?.domain||"",siteName:activeArticle?.siteName||activeArticle?.domain||"",category:activeArticle?.category||"General",tags:activeArticle?.tags||[],labels:activeArticle?.labels||[],note:document.getElementById("capture-note")?.value.trim()||"",createdAt:new Date().toISOString()};
+      const section=captureType==="vocabulary"?"vocabulary":captureType==="quote"?"quotes":captureType==="paragraph"?"paragraphs":"selections";
+      if(section==="vocabulary") item.word=text; data[section].unshift(item); await save(); toast(`✓ ${captureType[0].toUpperCase()+captureType.slice(1)} saved`,captureType==="selection"?"selection":captureType); document.getElementById("capture-preview").textContent="Saved ✓";
+    }
+    if(action==="workspace-capture"){
+      const selected=window.getSelection()?.toString().trim(), kind=target.dataset.kind||"selection";
+      const block=window.getSelection()?.anchorNode?.parentElement?.closest("p,li,blockquote,h1,h2,h3,h4")||document.querySelector("#reading-article .active-sentence");
+      const text=selected||(kind==="paragraph"?block?.innerText?.trim():"");
+      if(!text) throw new Error("Select text first, or click inside a paragraph to save it.");
+      const section=kind==="vocabulary"?"vocabulary":kind==="quote"?"quotes":kind==="paragraph"?"paragraphs":"selections";
+      const item={id:makeId(),text,title:activeArticle?.title||"",articleId:activeArticle?.id||null,url:activeArticle?.url||"",domain:activeArticle?.domain||"",siteName:activeArticle?.siteName||"",position:currentWord,createdAt:new Date().toISOString(),category:activeArticle?.category||"General",tags:[],notes:""};
+      if(section==="vocabulary") item.word=text; data[section].unshift(item); await save(); toast(`${kind[0].toUpperCase()+kind.slice(1)} saved`,kind); target.classList.add("is-active");
+    }
+    if(action==="save-capture-from-selection"){ const sel=window.getSelection()?.toString().trim(); if(sel){document.getElementById("capture-text").value=sel;} }
     if(action==="new-collection"){const name=prompt("Collection name:");if(name?.trim()){data.collections.unshift({id:makeId(),title:name.trim(),createdAt:new Date().toISOString(),items:[]});await save();render();}}
     if(action.startsWith("delete-")){const section={highlight:"highlights",word:"vocabulary",note:"notes",collection:"collections"}[action.slice(7)];if(section){data[section]=data[section].filter(x=>x.id!==id);await save();render();}}
   } catch(err){alert(err.message||"Action could not be completed.");}
 });
+
+document.addEventListener("click", event=>{ const tab=event.target.closest("[data-capture-type]"); if(tab){ captureType=tab.dataset.captureType; document.querySelectorAll("[data-capture-type]").forEach(x=>x.classList.toggle("is-active",x===tab)); const sel=window.getSelection()?.toString().trim(); if(sel) document.getElementById("capture-text").value=sel; }});
+document.addEventListener("mouseup",()=>{ if(!activeArticle) return; const sel=window.getSelection()?.toString().trim(); if(sel && document.getElementById("capture-text")) document.getElementById("capture-text").value=sel; });
 
 document.addEventListener("submit", async event => {
   if (event.target?.id !== "vocab-entry-form") return;
@@ -554,7 +660,20 @@ document.addEventListener("submit", async event => {
   await save(); render();
 });
 
-document.getElementById("global-search")?.addEventListener("input",()=>{if(["dashboard","library","vocabulary"].includes(route))render();});
+
+// Universal click acknowledgement: every reader action button gives bottom-corner feedback.
+document.addEventListener("click",(event)=>{const b=event.target.closest("button");if(!b)return;const label=(b.textContent||"Action").trim().replace(/\s+/g," ").slice(0,48);if(["media-play","media-pause","bookmark-word","reader-close"].includes(b.dataset.action)){b.classList.toggle("is-active",true);b.setAttribute("aria-pressed","true");}if(label && !b.matches("[data-no-toast]"))toast(`${label} clicked`,"action","info");},{capture:true});
+
+function getSearchValues(){return [...new Set([...(data.articles||[]).map(x=>x.title),...(data.vocabulary||[]).map(x=>x.word),...(data.quotes||[]).map(x=>x.text),...(data.paragraphs||[]).map(x=>x.text),...(data.notes||[]).map(x=>x.title||x.text)].filter(Boolean).map(v=>String(v).trim()).filter(Boolean))].slice(0,500);}
+function refreshSearchSuggestions(){const dl=document.getElementById("cmj-search-suggestions");if(dl)dl.replaceChildren(...getSearchValues().slice(0,250).map(v=>{const o=document.createElement("option");o.value=v.slice(0,180);return o;}));}
+const searchInput=document.getElementById("global-search"), hintBox=document.getElementById("cmj-search-hints");
+function renderSearchHints(){if(!searchInput||!hintBox)return;const q=searchInput.value.trim();if(!q){hintBox.hidden=true;hintBox.replaceChildren();return;}const matches=getSearchValues().filter(v=>v.toLocaleLowerCase().includes(q.toLocaleLowerCase())).slice(0,8);hintBox.innerHTML=matches.map(v=>{const i=v.toLocaleLowerCase().indexOf(q.toLocaleLowerCase());return `<button type="button" class="cmj-search-hint" data-search-value="${esc(v)}">${esc(v.slice(0,i))}<mark>${esc(v.slice(i,i+q.length))}</mark>${esc(v.slice(i+q.length))}</button>`;}).join("");hintBox.hidden=!matches.length;}
+refreshSearchSuggestions();
+searchInput?.addEventListener("input",()=>{refreshSearchSuggestions();renderSearchHints();if(["dashboard","library","vocabulary","saved"].includes(route))render();});
+searchInput?.addEventListener("focus",renderSearchHints);
+searchInput?.addEventListener("keydown",e=>{if(e.key==="Escape"&&hintBox)hintBox.hidden=true;});
+document.addEventListener("click",e=>{const hint=e.target.closest("[data-search-value]");if(hint&&searchInput){searchInput.value=hint.dataset.searchValue;hintBox.hidden=true;if(["dashboard","library","vocabulary"].includes(route))render();}else if(!e.target.closest(".cmj-search-wrap")&&hintBox)hintBox.hidden=true;});
+document.addEventListener("input",event=>{ if(event.target?.id==="article-filter"){ const q=event.target.value.toLowerCase(); const filtered=data.articles.filter(a=>`${a.title} ${a.domain} ${a.siteName} ${a.author} ${a.category} ${(a.tags||[]).join(" ")}`.toLowerCase().includes(q)); document.querySelector(".article-grid")?.replaceWith(Object.assign(document.createElement("div"),{className:"article-grid",innerHTML:filtered.map(articleCard).join("")})); }});
 document.getElementById("theme-toggle")?.addEventListener("click",async()=>{const light=document.body.dataset.theme!=="light";document.body.dataset.theme=light?"light":"dark";document.body.style.background=light?"#f5f6fb":"#0b1020";document.body.style.color=light?"#18213a":"#edf0ff";});
 document.getElementById("settings-link")?.addEventListener("click",()=>chrome.runtime.openOptionsPage());
 document.addEventListener("change", event => {
@@ -612,23 +731,23 @@ document.addEventListener("keydown", event => {
   if (event.code === "Space") { event.preventDefault(); if (audioState === "playing") { speechSynthesis.pause(); audioState = "paused"; stopWordFallback(); updateAudioProgress(currentWord, "paused"); } else playArticleAudio(); }
   if (event.code === "ArrowRight") { event.preventDefault(); jumpSentence(1); }
   if (event.code === "ArrowLeft") { event.preventDefault(); jumpSentence(-1); }
-  if (event.key.toLowerCase() === "b") { data.bookmarks.unshift({id:makeId(),articleId:activeArticle.id,title:activeArticle.title,position:currentWord,createdAt:new Date().toISOString()}); save(); }
+  if (event.key.toLowerCase() === "b") { data.bookmarks.unshift({id:makeId(),articleId:activeArticle.id,title:activeArticle.title,position:currentWord,percent:Math.round(currentWord/Math.max(1,activeWordCount)*100),createdAt:new Date().toISOString()}); save(); toast("✓ Reading position bookmarked","bookmark"); }
 });
 window.addEventListener("hashchange",()=>{
   const nextRoute = location.hash.slice(1) || "dashboard";
   // Keep the active session alive when navigating to the dedicated Media tab.
-  if (activeArticle && nextRoute === "media") { route = "media"; title.textContent = "Smart Audio Reader"; return; }
+  if (activeArticle && nextRoute === "media") { route = "media"; title.textContent = "Productivity Reader"; return; }
   if (activeArticle && nextRoute !== "media") { speechSynthesis.cancel(); stopWordFallback(); activeArticle = null; }
   route = nextRoute;
   render();
 });
 render();
-if (initialArticleId) { const initial = data.articles.find(a=>a.id===initialArticleId); if (initial) openRead(initial, true); }
+if (initialArticleId) { const initial = data.articles.find(a=>a.id===initialArticleId); if (initial) openRead(initial, false); }
 
 
 // Deep-link from the Medium page toolbar into the full reader workspace.
 const launchArticleId = new URLSearchParams(location.search).get("articleId");
 if (launchArticleId) {
   const launchArticle = data.articles.find(article => article.id === launchArticleId);
-  if (launchArticle) openRead(launchArticle, true);
+  if (launchArticle) openRead(launchArticle, false);
 }

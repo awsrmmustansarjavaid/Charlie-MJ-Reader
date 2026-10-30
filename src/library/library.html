@@ -1,9 +1,16 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Reading Library</title><link rel="stylesheet" href="library.css"></head><body>
 <aside class="sidebar"><div class="brand">CMJ <span>My Reading Library</span></div><nav id="side-nav">
-<button data-view="websites" class="active">🌐 Websites</button><button data-view="favorites">★ Favorite</button><button data-view="profiles">◉ Profile Pages</button><button data-view="categories">▦ Category</button><button data-view="tags"># Tags</button><button data-view="recent">◷ Recent</button><button data-view="all">☰ All Saved</button>
+<button data-view="websites" class="active">🌐 Websites</button><button data-view="news">📰 Newspapers / News</button><button data-view="profiles">◉ Profile Pages</button><button data-view="favorites">★ Favorite</button><button data-view="categories">▦ Category</button><button data-view="tags"># Tags</button><button data-view="saved">🔖 Saved Articles</button><button data-view="recent">◷ Recent</button><button data-view="all">☰ All Saved</button>
 </nav><div class="side-bottom"><button id="open-options">⚙ General Settings</button><button id="open-adapters">🧩 Compatibility Adapters</button></div></aside>
-<main class="workspace"><header><div><span class="eyebrow">CHARLIE MJ READER</span><h1>My Reading Library</h1><p>Website profiles, saved articles, categories, tags and complete fetched website data.</p></div><div class="top-actions"><button id="add">Add current website</button><button id="refresh">Refresh website data</button><button id="import">Import</button><button id="export">Export</button></div></header>
-<section class="searchbar"><input id="search" autocomplete="off" placeholder="Search websites, categories, tags, profiles and saved data…"><div id="hints"></div></section>
-<section id="view-status" class="status"></section><section id="library-view"></section>
+<main class="workspace"><header><div><span class="eyebrow">CHARLIE MJ READER</span><h1>My Reading Library</h1><p>Websites, newspapers, writer profiles, logos, categories, SEO and complete fetched data.</p></div><div class="top-actions"><button id="add" class="primary-sm">＋ Add current website</button><button id="add-url-btn">Add by address</button><button id="refresh">Refresh website data</button><button id="import">Import</button><button id="export">Export</button></div></header>
+<section class="searchbar"><input id="search" autocomplete="off" placeholder="Search websites, newspapers, categories, tags, profiles and saved data…"><div id="hints" class="hints"></div></section>
+<section id="view-status" class="status" role="status"></section><section id="library-view"></section>
 </main><input id="file" type="file" accept=".json,application/json" hidden>
+
+<dialog id="add-dialog"><form id="add-form"><h3>Add to your library</h3><p class="meta">Paste a website, newspaper or profile address. Category, logo and details are detected automatically.</p>
+<input id="add-url" placeholder="https://example.com  ·  or  https://medium.com/@username" autocomplete="off" required>
+<div class="row"><label>Type<select id="add-kind"><option value="auto">Auto-detect</option><option value="site">Website / blog</option><option value="news">Newspaper / news</option><option value="profile">Writer profile</option></select></label><button type="button" id="add-tab">Use my last open tab</button></div>
+<div id="add-msg" class="note"></div><div class="row end"><button type="button" id="add-cancel">Cancel</button><button type="submit" class="primary-sm">Add</button></div></form></dialog>
+
+<dialog id="detail"><div class="d-top"><div id="detail-head" class="d-head"></div><button id="detail-close" class="btn" aria-label="Close">✕</button></div><div id="detail-tabs" class="d-tabs"></div><div id="detail-body" class="d-body"></div></dialog>
 <script type="module" src="library.js"></script></body></html>

@@ -2,8 +2,8 @@
  * Small storage adapter. Chrome storage is used in-extension; localStorage
  * provides a predictable fallback for opening the UI outside Chrome.
  */
-const defaults = {
-  articles: [], highlights: [], notes: [], vocabulary: [], categories: [], bookmarks: [],
+export const defaults = {
+  articles: [], highlights: [], notes: [], vocabulary: [], quotes: [], paragraphs: [], selections: [], categories: [], bookmarks: [],
   collections: [], topics: [],
   settings: {
     theme: "dark", vocabularyToolbarEnabled: true, vocabularySites: ["eksisozluk.com", "x.com", "twitter.com"],
@@ -34,22 +34,50 @@ const defaults = {
     mediumExtractCanonical: true, mediumExtractContent: true, freediumEnabled: true, freediumAutoOpen: true,
     freediumMediaButton: true, freediumFallback: true, freediumNewTab: true,
     freediumServiceUrl: "https://freedium-mirror.cfd/", mediumAdapterEnabled: true, mediumUserAdapters: true,
-    mediumAdapterDiagnostics: true, mediumAdapterConfirm: true, mediumAdapterReplace: true, adapterMaxPackageMB: 25, adapterMaxFiles: 500
+    mediumAdapterDiagnostics: true, mediumAdapterConfirm: true, mediumAdapterReplace: true, adapterMaxPackageMB: 25, adapterMaxFiles: 500,
+    libraryAutoCategory: true, libraryAllowManualCategory: true, libraryFetchCompleteArticle: true, libraryFetchSeoOnSave: true, articleGoogleAuditOnSave: true, libraryDefaultArticleCategory: "General", libraryCustomCategories: ["Tech","Health","Science","Business","Lifestyle","Education","Sports","Entertainment","Social","News","General"], libraryAutoTags: true, libraryAutoLabels: true,
+    intelligenceEnabled: true, intelligenceUsePublisherRules: true, intelligenceUseKeywordScoring: true, intelligenceMinConfidence: 0.6, intelligenceAutoCategoryArticles: true, intelligenceLearnFromEdits: true,
+    notifications: { enabled: true, position: "bottom-right", durationMs: 2600, events: { bookmark: true, article: true, vocabulary: true, quote: true, paragraph: true, selection: true, opened: true, completed: true, restored: true, export: true, error: true } },
   },
   adapterPackages: [],
   readingHistory: [], deleted: [],
-  readingLibrary: { version: 1, categories: {}, websiteData: {} }
+  readingLibrary: { version: 1, categories: {}, websiteData: {} },
+  articleLibrary: { version: 1, linkedToSavedArticles: true },
+  readingEngine: { version: 1 }
 };
 
+function cloneDefaults() {
+  return structuredClone(defaults);
+}
+
+function mergeData(stored) {
+  const source = stored && typeof stored === "object" ? stored : {};
+  const storedSettings = source.settings && typeof source.settings === "object" ? source.settings : {};
+  const storedNotifications = storedSettings.notifications && typeof storedSettings.notifications === "object"
+    ? storedSettings.notifications
+    : {};
+  const storedEvents = storedNotifications.events && typeof storedNotifications.events === "object"
+    ? storedNotifications.events
+    : {};
+
+  const data = { ...cloneDefaults(), ...source };
+  data.settings = { ...defaults.settings, ...storedSettings };
+  data.settings.notifications = { ...defaults.settings.notifications, ...storedNotifications };
+  data.settings.notifications.events = { ...defaults.settings.notifications.events, ...storedEvents };
+  return data;
+}
+
 export async function getAll() {
-  if (globalThis.chrome?.storage?.local) {
+  if (globalThis.chrome && chrome.storage && chrome.storage.local) {
     const stored = await chrome.storage.local.get(null);
-    return { ...structuredClone(defaults), ...stored,
-      settings: { ...defaults.settings, ...(stored.settings || {}) } };
+    return mergeData(stored);
   }
   try {
-    return { ...structuredClone(defaults), ...JSON.parse(localStorage.getItem("cmj-data") || "{}") };
-  } catch { return structuredClone(defaults); }
+    const stored = JSON.parse(localStorage.getItem("cmj-data") || "{}");
+    return mergeData(stored);
+  } catch {
+    return cloneDefaults();
+  }
 }
 
 export async function saveAll(data) {

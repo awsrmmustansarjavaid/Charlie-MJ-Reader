@@ -1,5 +1,6 @@
 import { getAll, saveAll } from "../lib/storage.js";
 import { exportBackup } from "../lib/export.js";
+import { addFromUrl } from "../lib/sites.js";
 
 // Keep popup controls and counters small, predictable, and easy to maintain.
 const $ = (id) => document.getElementById(id);
@@ -93,8 +94,17 @@ $("save-page").addEventListener("click", async () => {
   }
 });
 
+$("add-site").addEventListener("click", async () => {
+  try {
+    const tab = await activeTab();
+    if (!/^https?:\/\//i.test(tab.url || "")) throw new Error("Open a normal http/https website tab first.");
+    toast("Fetching website data…");
+    const r = await addFromUrl(tab.url, { kind: "auto" });
+    toast(`${r.isNew ? "Added" : "Updated"} ${r.label} → ${r.category}.`);
+  } catch (error) { toast(error.message || "Could not add this website."); }
+});
 $("open-reader").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("src/reader/reader.html") }));
-$("open-library").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("src/reader/reader.html#library") }));
+$("open-library").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("src/library/library.html") }));
 $("open-settings").addEventListener("click", () => chrome.runtime.openOptionsPage());
 $("open-options").addEventListener("click", () => chrome.runtime.openOptionsPage());
 $("export-backup").addEventListener("click", async () => exportBackup(await getAll()));
