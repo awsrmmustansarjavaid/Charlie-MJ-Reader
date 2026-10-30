@@ -204,11 +204,10 @@
       const h=el.querySelectorAll("h1,h2,h3,h4").length;
       const links=el.querySelectorAll("a").length;
       let value=text.length+(p*220)+(h*300)-(links*8);
-      if (freedium) {
-        if (lower.includes("1. dnsglobe") && lower.includes("10. gitlogue")) value += 500000;
-        if (lower.includes("the bigger pattern") && lower.includes("conclusion")) value += 100000;
-        if (text.length > 8000) value += 50000;
-      }
+      // Prefer substantial article containers, but never score against phrases
+      // from one particular article. Medium stories have many different structures.
+      if (freedium && text.length > 1500) value += 5000;
+      if (freedium && p >= 4) value += p * 120;
       return value;
     };
     const root=(candidates.length ? candidates.sort((a,b)=>score(b)-score(a))[0] : doc.body) || doc.body;
@@ -251,9 +250,8 @@
     const sourceUrl=isMedium ? location.href : (document.querySelector('link[rel="canonical"]')?.href || location.href);
     const remote=buildArticleFromDocument(doc,response.finalUrl||response.url||location.href,sourceUrl);
     if (!remote?.text) return null;
-    const lower=remote.text.toLowerCase();
-    const completeMarkers=(lower.includes("1. dnsglobe")?1:0)+(lower.includes("10. gitlogue")?1:0)+(lower.includes("conclusion")?1:0);
-    if (isMedium && completeMarkers < 2) return null;
+    // Do not reject a fetched article based on article-specific words or headings.
+    // Different Medium stories have different structures and may not contain a conclusion.
     return remote;
   }
 
@@ -261,7 +259,7 @@
     await articleReady();
     try {
       const remote=await fetchFreediumArticle();
-      if (remote && remote.wordCount > 500) { lastArticleSnapshot=remote; return remote; }
+      if (remote && remote.text && remote.text.trim().length > 200) { lastArticleSnapshot=remote; return remote; }
     } catch (e) {
       console.debug("Charlie MJ Freedium extraction fallback:", e);
     }
@@ -328,7 +326,19 @@
   toolbar.addEventListener('click', async e => {
     const tool=e.target.closest('[data-tool]')?.dataset.tool; const action=e.target.closest('[data-action]')?.dataset.action;
     if(tool){
-      if(tool==='close'){hideAll();return;} if(tool==='reader'){const currentArticle=await getArticle(); const r=await send('CMJ_OPEN_READER',{article:currentArticle,autoplay:false,mode:'reader'});if(!r?.ok)throw Error(r?.error||'Could not open Reader.');return;} if(tool==='night'){settings.dayNightMode=settings.dayNightMode==='night'?'day':'night';applyFocus();return;} showPanel(tool); return;
+      try {
+        if(tool==='close'){hideAll();return;}
+        if(tool==='reader'){const currentArticle=await getArticle(); const r=await send('CMJ_OPEN_READER',{article:currentArticle,autoplay:false,mode:'reader'});if(!r?.ok)throw Error(r?.error||'Could not open Reader.');return;}
+        if(tool==='night'){settings.dayNightMode=settings.dayNightMode==='night'?'day':'night';applyFocus();return;}
+        showPanel(tool);
+      } catch(err) {
+        const message=String(err?.message||err);
+        q('.cmj-result').hidden=false;
+        q('.cmj-message').textContent=message.includes('reloaded or updated')
+          ? 'Charlie MJ Reader was updated. Refresh this webpage, then open Reader Workspace again.'
+          : message;
+      }
+      return;
     }
     if(!action) return;
     try {

@@ -44,6 +44,48 @@ function crc32(bytes){let c=0xffffffff;for(let i=0;i<bytes.length;i++){c^=bytes[
 function u16(n){return new Uint8Array([n&255,(n>>>8)&255]);} function u32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
 function catName(s){return String(s||'General').replace(/[\\/:*?"<>|]+/g,'-').trim()||'General';}
 function zipStore(entries){const enc=new TextEncoder(),local=[],central=[];let off=0;for(const e of entries){const name=enc.encode(e.path),body=typeof e.data==='string'?enc.encode(e.data):e.data,crc=crc32(body);const x=new Uint8Array(30+name.length+body.length);let p=0;const put=(a)=>{x.set(a,p);p+=a.length};put(new Uint8Array([80,75,3,4]));put(u16(20));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(crc));put(u32(body.length));put(u32(body.length));put(u16(name.length));put(u16(0));put(name);put(body);local.push(x);central.push({name,crc,size:body.length,off});off+=x.length;}let cd=0,cs=[];for(const c of central){const x=new Uint8Array(46+c.name.length);let p=0;const put=a=>{x.set(a,p);p+=a.length};put(new Uint8Array([80,75,1,2]));put(u16(20));put(u16(20));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(c.crc));put(u32(c.size));put(u32(c.size));put(u16(c.name.length));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(0));put(u32(c.off));put(c.name);cs.push(x);cd+=x.length;}const end=new Uint8Array(22);let p=0;const put=a=>{end.set(a,p);p+=a.length};put(new Uint8Array([80,75,5,6]));put(u16(0));put(u16(0));put(u16(central.length));put(u16(central.length));put(u32(cd));put(u32(off));put(u16(0));return new Blob([...local,...cs,end],{type:'application/zip'});}
+async function readAdapterZip(file){
+ const maxMB=Math.max(1,Math.min(100,Number(data.settings.adapterMaxPackageMB||25)));
+ const maxFiles=Math.max(1,Math.min(500,Number(data.settings.adapterMaxFiles||500)));
+ if(file.size>maxMB*1024*1024) throw Error(`ZIP exceeds the ${maxMB} MB package limit.`);
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ const u16=(o)=>view.getUint16(o,true),u32=(o)=>view.getUint32(o,true);
+ let eocd=-1; for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){if(u32(i)===0x06054b50){eocd=i;break;}}
+ if(eocd<0) throw Error('Invalid ZIP: end-of-central-directory record not found.');
+ const count=u16(eocd+10),centralSize=u32(eocd+12),centralOffset=u32(eocd+16);
+ if(count>maxFiles) throw Error(`ZIP contains ${count} files; limit is ${maxFiles}.`);
+ if(centralOffset+centralSize>bytes.length) throw Error('Invalid ZIP central directory.');
+ const decoder=new TextDecoder(),entries=[];let pos=centralOffset,total=0;
+ for(let i=0;i<count;i++){
+  if(u32(pos)!==0x02014b50) throw Error('Invalid ZIP central directory entry.');
+  const method=u16(pos+10),compressed=u32(pos+20),expanded=u32(pos+24),nameLen=u16(pos+28),extraLen=u16(pos+30),commentLen=u16(pos+32),localOffset=u32(pos+42);
+  const name=decoder.decode(bytes.slice(pos+46,pos+46+nameLen));pos+=46+nameLen+extraLen+commentLen;
+  if(!name||name.startsWith('/')||name.startsWith('\\')||/^[a-z]:/i.test(name)||name.split(/[\\/]/).includes('..')||name.includes('\\')) throw Error(`Unsafe ZIP path: ${name}`);
+  if(name.endsWith('/')) continue;
+  if(method!==0&&method!==8) throw Error(`Unsupported ZIP compression method for ${name}.`);
+  if(expanded>10*1024*1024) throw Error(`File is too large: ${name}`);
+  total+=expanded;if(total>maxMB*1024*1024) throw Error('Expanded ZIP exceeds package size limit.');
+  if(u32(localOffset)!==0x04034b50) throw Error(`Invalid ZIP local header: ${name}`);
+  const localName=u16(localOffset+26),localExtra=u16(localOffset+28),start=localOffset+30+localName+localExtra,end=start+compressed;
+  if(end>bytes.length) throw Error(`Truncated ZIP entry: ${name}`);
+  let body=bytes.slice(start,end);
+  if(method===8){if(typeof DecompressionStream==='undefined')throw Error('This Chrome version cannot decompress deflate ZIP entries.');const stream=new Blob([body]).stream().pipeThrough(new DecompressionStream('deflate-raw'));body=new Uint8Array(await new Response(stream).arrayBuffer());}
+  if(body.length!==expanded) throw Error(`ZIP size check failed for ${name}.`);
+  entries.push({path:name.replace(/^\.\//,''),data:decoder.decode(body)});
+ }
+ const manifestEntry=entries.find(x=>x.path==='adapter.json'||x.path.endsWith('/adapter.json'));
+ if(!manifestEntry) throw Error('ZIP must contain adapter.json at its root or inside one package folder.');
+ let manifest;try{manifest=JSON.parse(manifestEntry.data);}catch{throw Error('adapter.json is not valid JSON.');}
+ if(!manifest||typeof manifest!=='object')throw Error('adapter.json must contain an object.');
+ if(!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id||''))throw Error('Invalid adapter id.');
+ if(!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version||'')))throw Error('Adapter version must use semantic versioning, e.g. 1.0.0.');
+ const prefix=manifestEntry.path.slice(0,-'adapter.json'.length);
+ const files=entries.filter(x=>x.path.startsWith(prefix)).map(x=>({path:x.path.slice(prefix.length),type:'text',content:x.data}));
+ if(manifest.entry&&!files.some(x=>x.path===manifest.entry))throw Error(`Declared entry file not found: ${manifest.entry}`);
+ return {id:manifest.id,manifest,enabled:true,installedAt:new Date().toISOString(),files,storagePath:`extensions/adapters/${manifest.id}/`};
+}
+
 function dlBlob(name,blob){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function dbEntries(d){const l=d.readingLibrary||{}, sites=(d.settings.websites||[]).map(x=>typeof x==='string'?{domain:x}:x), profiles=l.profiles||[], arts=d.articles||[], cats=[...new Set([...(d.settings.libraryCustomCategories||[]),...sites.map(x=>x.category||'General'),...profiles.map(x=>x.category||'General'),...arts.map(x=>x.category||'General'),...Object.keys(l.categories||{})])].sort(), news=sites.filter(x=>x.type==='news'||l.websiteData?.[x.domain]?.kind==='news'), fav=new Set(l.favorites||[]), out=[], add=(p,v)=>out.push({path:'database/'+p,data:JSON.stringify(v,null,2)}), cat=(a,c)=>a.filter(x=>(x.category||l.websiteData?.[x.domain]?.category||'General')===c); add('README.md',`# Charlie MJ Reader database\\nGenerated ${new Date().toISOString()}\\n`); for(const c of cats){add(`My Reading Library/Websites/${catName(c)}.json`,cat(sites,c));add(`My Reading Library/Favorites/${catName(c)}.json`,cat(sites,c).filter(x=>fav.has(x.domain)));add(`My Reading Library/Tags/${catName(c)}.json`,{category:c,tags:[...new Set(cat(sites,c).flatMap(x=>x.tags||[]).concat(cat(arts,c).flatMap(x=>x.tags||[])))]});add(`My Reading Library/Labels/${catName(c)}.json`,{category:c,labels:[...new Set(cat(arts,c).flatMap(x=>x.labels||[]))]});add(`My Reading Library/Newspapers/${catName(c)}.json`,cat(news,c));add(`My Reading Library/Profile Pages/${catName(c)}.json`,cat(profiles,c));add(`My Reading Library/Saved Articles/${catName(c)}.json`,cat(arts,c));}add('My Reading Library/index.json',{version:1,categories:cats}); for(const k of ['articles','highlights','notes','vocabulary','bookmarks','collections','topics','readingHistory','categories'])add(`Core/${k}.json`,d[k]||[]); add('Core/settings.json',d.settings||{}); return out;}
 function dbZipEntries(d,libraryOnly=false){return dbEntries(d).filter(e=>!libraryOnly||e.path.startsWith('database/My Reading Library/'));}

@@ -5,3 +5,5 @@ Build: UNIFIED-READING-WORKSPACE
 This build unifies Reader Workspace, Productivity Reader, Article Library, parent-page reading tools, capture collections, reading-position sync, TTS, notifications and shared reading data.
 
 Version 1.1.0 - Productivity Reader workspace + hardened article HTML sanitizer.
+
+Medium compatibility repair: removed article-specific extraction rejection and added the missing ZIP adapter reader/import validation.
