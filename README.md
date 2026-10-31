@@ -12,7 +12,7 @@ A local-first Chrome Manifest V3 extension for distraction-free reading, article
 
 <p align="center">
   <img src="assets/thumbnail.png" alt="Charlie MJ Reader overview" width="720"><br>
-  <img src="assets/Charlie-MJ-Reader-thumbnail.png" alt="Charlie MJ Reader — Instagram Story thumbnail (1080×1920, 9:16)" width="270">
+  <img src="assets/Charlie-MJ-Reader-thumbnail.png" alt="Charlie MJ Reader — Charlie-MJ-Reader-thumbnail (1080×1920, 9:16)" width="270">
 </p>
 
 > **Honesty note.** Everything listed under *Features* exists in the extension. Items under [Not included / limitations](#not-included--limitations) are integration milestones and are **not** claimed as complete.
