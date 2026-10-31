@@ -5,7 +5,7 @@
 A local-first Chrome Manifest V3 extension for distraction-free reading, article capture, highlights, notes, vocabulary, synchronized text-to-speech, a website/newspaper library with SEO data, productivity tools and portable backups. Plain JavaScript ES modules, no build step.
 
 <p align="center">
-  <a href="/downloads/Charlie-MJ-Reader.zip">
+  <a href="/downloads/Charlie-MJ-Reader-v1.0.0-FINAL-WORKING.zip">
     <img src="https://img.shields.io/badge/%E2%AC%87%20Download%20Chrome%20Extension%20v1.0.0-2ea44f?style=for-the-badge" alt="Download Chrome Extension Charlie-MJ-Reader-v1.0.0">
   </a>
 </p>
