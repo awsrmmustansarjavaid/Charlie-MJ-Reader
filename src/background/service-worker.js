@@ -91,7 +91,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       if (!response.ok) throw new Error(`Freedium returned HTTP ${response.status}.`);
       const html = await response.text();
-      if (!html || html.length < 1000) throw new Error("Freedium returned an unexpectedly small document.");
+      if (!html || !html.trim()) throw new Error("Freedium returned an empty document.");
       sendResponse({ok:true, html, url:target, finalUrl:response.url || target});
       return;
     }

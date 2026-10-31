@@ -6,6 +6,7 @@
   const hostMatches = (host, domain) => { const d=String(domain||'').toLowerCase().trim().replace(/^https?:\/\//,'').replace(/\/.*$/,''); return !!d && (host === d || host.endsWith(`.${d}`)); };
   let settings = {};
   let site = null;
+  let libraryDomains = new Set();
   let selectedText = "";
   let selectionRange = null;
   let timer = null;
@@ -62,10 +63,24 @@
   const q = (sel) => toolbar.querySelector(sel);
   const panels = [...toolbar.querySelectorAll("[data-panel]")];
 
-  function getProfile() {
+  function defaultProfile(domain = location.hostname) {
+    return {domain,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true,nativeReading:true};
+  }
+
+  function getSupportedProfile() {
     const list = Array.isArray(settings.websites) ? settings.websites : [];
-    return list.map(x => typeof x === "string" ? {domain:x,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true} : x)
-      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || {domain:location.hostname,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true,nativeReading:true};
+    return list.map(x => typeof x === "string" ? defaultProfile(x) : x)
+      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || null;
+  }
+
+  function toolbarDomainAllowed() {
+    const mode = settings.mainToolbarVisibility || "supported_and_library";
+    if (mode === "all") return true;
+    const supported = !!getSupportedProfile();
+    const inLibrary = [...libraryDomains].some(domain => hostMatches(location.hostname, domain));
+    if (mode === "supported") return supported;
+    if (mode === "library") return inLibrary;
+    return supported || inLibrary;
   }
 
   function hideAll() { toolbar.hidden = true; panels.forEach(p => p.hidden = true); }
@@ -121,7 +136,7 @@
   }
   async function refresh() {
     const stored = await chrome.storage.local.get("settings");
-    settings = {toolbarEnabled:true,toolbarPosition:"top",toolbarOpacity:92,toolbarModules:{reader:true,vocabulary:true,media:true,focus:true,productivity:true},toolbarThemes:{main:"midnight",media:"midnight",vocabulary:"violet",productivity:"focus"},vocabularyToolbarEnabled:true,mediaToolbarEnabled:true,productivityToolbarEnabled:true,focusEnabled:false,adBlockEnabled:true,focusBrightness:100,focusContrast:100,focusOpacity:100,dayNightMode:"day",mediaSpeed:1,pomodoroWork:25,pomodoroBreak:5,nativeReadingEnabled:true,nativeReadingTimer:10,freediumEnabled:true,freediumAutoOpen:true,...(stored.settings||{})};
+    settings = {toolbarEnabled:true,mainToolbarVisibility:"supported_and_library",toolbarPosition:"top",toolbarOpacity:92,toolbarModules:{reader:true,vocabulary:true,media:true,focus:true,productivity:true},toolbarThemes:{main:"midnight",media:"midnight",vocabulary:"violet",productivity:"focus"},vocabularyToolbarEnabled:true,mediaToolbarEnabled:true,productivityToolbarEnabled:true,focusEnabled:false,adBlockEnabled:true,focusBrightness:100,focusContrast:100,focusOpacity:100,dayNightMode:"day",mediaSpeed:1,pomodoroWork:25,pomodoroBreak:5,nativeReadingEnabled:true,nativeReadingTimer:10,freediumEnabled:true,freediumAutoOpen:true,...(stored.settings||{})};
     if (!settings.cmjFreedium112Migrated) {
       settings.freediumEnabled = true;
       settings.freediumAutoOpen = true;
@@ -129,13 +144,30 @@
       await chrome.storage.local.set({settings});
     }
     if(!Array.isArray(settings.websites)) settings.websites=[];
+    const library = (await chrome.storage.local.get(["readingLibrary","articles"]));
+    const domains = new Set();
+    const addDomain = value => {
+      try {
+        const raw=String(value||"").trim();
+        if(!raw) return;
+        const candidate=/^https?:\/\//i.test(raw) ? new URL(raw).hostname : raw.replace(/^\/\//,"").split("/")[0];
+        const normalized=candidate.toLowerCase().replace(/^www\./,"");
+        if(normalized) domains.add(normalized);
+      } catch {}
+    };
+    const rl=library.readingLibrary||{};
+    Object.keys(rl.websiteData||{}).forEach(addDomain);
+    (Array.isArray(library.articles)?library.articles:[]).forEach(a=>{ addDomain(a.domain); addDomain(a.url); });
+    libraryDomains=domains;
     const mediumHost = /(^|\.)medium\.com$/i.test(location.hostname);
     if (mediumHost && !window.__cmjMediumOpened && settings.mediumEnabled !== false && settings.freediumEnabled === true && settings.freediumAutoOpen === true) {
       window.__cmjMediumOpened = true;
       chrome.runtime.sendMessage({type:"CMJ_MEDIUM_AUTO_OPEN", url: location.href, canonicalUrl: document.querySelector('link[rel="canonical"]')?.href || location.href}).catch(err => { if (!String(err?.message||err).includes("Extension context invalidated")) console.debug("CMJ Medium handoff:", err); });
     }
-    site = getProfile();
-    if (!site || settings.toolbarEnabled === false || site.toolbar === false) { hideAll(); return; }
+    const supportedProfile = getSupportedProfile();
+    const toolbarAllowed = toolbarDomainAllowed();
+    site = supportedProfile || ([...libraryDomains].some(domain => hostMatches(location.hostname, domain)) ? defaultProfile(location.hostname) : defaultProfile(location.hostname));
+    if (settings.toolbarEnabled === false || site.toolbar === false || !toolbarAllowed) { hideAll(); } else {
     toolbar.hidden = false;
     toolbar.style.display = "block";
     toolbar.style.visibility = "visible";
@@ -158,6 +190,7 @@
     q('#cmj-work').value = settings.pomodoroWork || 25;
     q('#cmj-break').value = settings.pomodoroBreak || 5;
     applyFocus(); applyAds(); updateReadingFocus();
+    }
   }
 
   async function expandFreediumArticle() {
@@ -259,7 +292,7 @@
     await articleReady();
     try {
       const remote=await fetchFreediumArticle();
-      if (remote && remote.text && remote.text.trim().length > 200) { lastArticleSnapshot=remote; return remote; }
+      if (remote && remote.text && remote.text.trim()) { lastArticleSnapshot=remote; return remote; }
     } catch (e) {
       console.debug("Charlie MJ Freedium extraction fallback:", e);
     }

@@ -8,7 +8,7 @@ export const defaults = {
   settings: {
     theme: "dark", vocabularyToolbarEnabled: true, vocabularySites: ["eksisozluk.com", "x.com", "twitter.com"],
     translationSource: "tr", translationTarget: "en", dictionaryLanguage: "en", accent: "#8b7cff", fontSize: 18, readingWidth: 760,
-    lineHeight: 1.75, toolbarEnabled: true, toolbarPosition: "top", toolbarOpacity: 92,
+    lineHeight: 1.75, toolbarEnabled: true, mainToolbarVisibility: "supported_and_library", toolbarPosition: "top", toolbarOpacity: 92,
     toolbarModules: { reader: true, vocabulary: true, media: true, focus: true, productivity: true },
     toolbarThemes: { main: "midnight", media: "midnight", vocabulary: "violet", productivity: "focus" },
     toolbarType: "floating",
