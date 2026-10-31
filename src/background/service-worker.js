@@ -82,16 +82,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const base = configured.endsWith("/") ? configured : configured + "/";
         target = base + source;
       }
-      const response = await fetch(target, {
-        method: "GET",
-        redirect: "follow",
-        credentials: "omit",
-        headers: { "Accept": "text/html,application/xhtml+xml" },
-        cache: "no-store"
-      });
-      if (!response.ok) throw new Error(`Freedium returned HTTP ${response.status}.`);
-      const html = await response.text();
-      if (!html || !html.trim()) throw new Error("Freedium returned an empty document.");
+      // Retry transient failures (rate limit / gateway errors / challenge pages) before giving up.
+      let response = null, html = "", lastError = "";
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt) await new Promise(r => setTimeout(r, 700 * attempt));
+        try {
+          response = await fetch(target, {
+            method: "GET", redirect: "follow", credentials: "omit",
+            headers: { "Accept": "text/html,application/xhtml+xml" }, cache: "no-store"
+          });
+        } catch (err) { lastError = String(err?.message || err); response = null; continue; }
+        if (response.status === 429 || response.status >= 500) { lastError = `Freedium returned HTTP ${response.status}.`; continue; }
+        if (!response.ok) throw new Error(`Freedium returned HTTP ${response.status}.`);
+        html = await response.text();
+        if (/<title>\s*(just a moment|attention required)/i.test(html) && !/<article/i.test(html)) { lastError = "Freedium returned a verification page."; html = ""; continue; }
+        break;
+      }
+      if (!response || !response.ok) throw new Error(lastError || "Could not reach Freedium.");
+      if (!html || !html.trim()) throw new Error(lastError || "Freedium returned an empty document.");
       sendResponse({ok:true, html, url:target, finalUrl:response.url || target});
       return;
     }
@@ -150,7 +158,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.article?.text) {
         const stored = await chrome.storage.local.get(["articles"]);
         const articles = Array.isArray(stored.articles) ? stored.articles : [];
-        const existing = articles.find(item => item.url === message.article.url);
+        const same = item => item.url === message.article.url || (message.article.canonicalUrl && item.canonicalUrl === message.article.canonicalUrl);
+        const existing = articles.find(same);
         const article = existing || {
           id: crypto.randomUUID(), ...message.article,
           savedAt: message.article.savedAt || new Date().toISOString(),
@@ -158,6 +167,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         };
         articleId = article.id;
         if (!existing) await chrome.storage.local.set({ articles: [article, ...articles] });
+        else if ((message.article.wordCount || 0) > (existing.wordCount || 0)) {
+          // A previously saved copy was incomplete: replace its content, keep id/progress/status.
+          Object.assign(existing, message.article, { id: existing.id, savedAt: existing.savedAt, status: existing.status, progress: existing.progress, category: existing.category || message.article.category });
+          await chrome.storage.local.set({ articles });
+        }
       }
       const target = chrome.runtime.getURL(
         `src/reader/reader.html${articleId ? `?articleId=${encodeURIComponent(articleId)}` : ""}#${message.mode === "reader" ? "reader" : "media"}`
@@ -183,7 +197,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const item = message.type === "CMJ_SAVE_HIGHLIGHT"
         ? { id: crypto.randomUUID(), text: message.text, url: message.article?.url, title: message.article?.title, createdAt: new Date().toISOString(), color: "yellow" }
         : { id: crypto.randomUUID(), ...message.article };
-      if (message.type === "CMJ_SAVE_HIGHLIGHT" || !list.some(entry => entry.url === item.url)) {
+      const dup = section === "articles" ? list.find(entry => entry.url === item.url) : null;
+      if (dup && (item.wordCount || 0) > (dup.wordCount || 0)) {
+        Object.assign(dup, item, { id: dup.id, savedAt: dup.savedAt, status: dup.status, progress: dup.progress });
+        await chrome.storage.local.set({ [section]: list });
+      } else if (message.type === "CMJ_SAVE_HIGHLIGHT" || !dup) {
         await chrome.storage.local.set({ [section]: [item, ...list] });
       }
       sendResponse({ ok: true });

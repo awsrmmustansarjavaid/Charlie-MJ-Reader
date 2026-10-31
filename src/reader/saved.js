@@ -21,5 +21,3 @@ if(!articleId){
 
 // Button feedback on the standalone See Saved page.
 document.addEventListener("click", event => { const b=event.target.closest("button"); if(!b) return; const n=data.settings?.notifications||{}; if(n.enabled===false||n.events?.action===false) return; let host=document.getElementById("cmj-toast-host"); if(!host){host=document.createElement("div");host.id="cmj-toast-host";document.body.append(host);} host.dataset.position=["top-left","top-right","bottom-left","bottom-right"].includes(n.position)?n.position:"bottom-right"; const t=document.createElement("div");t.className="cmj-toast cmj-toast-ok";t.textContent=`${(b.textContent||"Action").trim().slice(0,48)} clicked`;host.append(t);setTimeout(()=>t.remove(),Number(n.durationMs||2600));},{capture:true});
-
-}

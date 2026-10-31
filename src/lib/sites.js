@@ -158,7 +158,13 @@ export function parseHtml(html, baseUrl) {
   const imgs = [...doc.querySelectorAll("img")];
   const links = [...doc.querySelectorAll("a[href]")].map((a) => abs(a.getAttribute("href"), baseUrl)).filter(Boolean);
   const internal = links.filter((h) => { try { return stripWww(new URL(h).hostname) === stripWww(base.hostname); } catch { return false; } }).length;
-  const main = doc.querySelector("article, main, [role=main]") || doc.body;
+  let main = doc.querySelector("article, main, [role=main]") || doc.body;
+  { // Prefer the true article container when the semantic tag holds clearly less text (partial wrappers).
+    const w = (el) => [...el.querySelectorAll("p,h1,h2,h3,h4,li,blockquote,pre")].reduce((n, b) => n + (b.closest("nav,footer,aside") ? 0 : b.textContent.trim().length), 0);
+    let node = doc.body; const total = node ? w(node) : 0;
+    for (let g = 0; node && total && g < 40; g++) { let nx = null, nw = 0; for (const c of node.children) { const cw = w(c); if (cw > nw) { nx = c; nw = cw; } } if (nx && nw >= total * 0.9) node = nx; else break; }
+    if (node && node !== main && w(node) > w(main) * 1.15) main = node;
+  }
   const bodyText = clean(main?.textContent || "");
   const articleText = [...(main?.querySelectorAll("h1,h2,h3,p,blockquote,li,pre") || [])].map((n) => clean(n.textContent)).filter((t) => t.length > 1).join("\n\n");
   const navText = [...doc.querySelectorAll("nav a, header a")].slice(0, 60).map((a) => clean(a.textContent)).filter(Boolean).join(" ");
@@ -499,11 +505,20 @@ export async function addFromUrl(input, { kind = "auto", presetName = "", preset
 
 /** Save an article by URL without needing a content script (used by the “Save” buttons). */
 export async function saveArticleFromUrl(url, categoryHint = "") {
-  const page = await fetchText(url);
+  const data = await getAll(); libraryOf(data);
+  let fetchUrl = url, viaFreedium = false;
+  try {
+    const h = new URL(url).hostname;
+    if (data.settings?.freediumEnabled !== false && (h === "medium.com" || h.endsWith(".medium.com"))) {
+      const svc = String(data.settings?.freediumServiceUrl || "https://freedium-mirror.cfd/").trim();
+      if (/^https:\/\//i.test(svc)) { fetchUrl = (svc.endsWith("/") ? svc : svc + "/") + url; viaFreedium = true; }
+    }
+  } catch { /* keep the original URL */ }
+  let page = await fetchText(fetchUrl, viaFreedium ? { maxBytes: 4000000, timeout: 25000 } : {});
   if (!page.ok) throw new Error(`The page returned HTTP ${page.status}.`);
   const p = parseHtml(page.text, page.url);
+  if (viaFreedium) page = { ...page, url };
   if (!p.articleText || p.articleText.length < 200) throw new Error("No readable article text was found (the page may need a login or be paywalled).");
-  const data = await getAll(); libraryOf(data);
   const host = new URL(page.url).hostname;
   const existing = data.articles.find((a) => a.url === page.url);
   const words = p.articleText.split(/\s+/).filter(Boolean).length;

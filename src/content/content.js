@@ -6,6 +6,17 @@
   const hostMatches = (host, domain) => { const d=String(domain||'').toLowerCase().trim().replace(/^https?:\/\//,'').replace(/\/.*$/,''); return !!d && (host === d || host.endsWith(`.${d}`)); };
   let settings = {};
   let site = null;
+  let toolbarAllowedNow = false;
+  const isFreediumHost = host => /(^|\.)freedium-mirror\.cfd$/i.test(host || "");
+  // The Freedium mirror is the reading surface for Medium, so it inherits Medium's allow-list status.
+  const effectiveHost = () => isFreediumHost(location.hostname) ? "medium.com" : location.hostname;
+  const originalArticleUrl = () => {
+    if (!isFreediumHost(location.hostname)) return location.href;
+    const m = location.pathname.replace(/^\/+/, "") + location.search;
+    const full = /^https?:\/\//i.test(m) ? m : (/^https?:\/(?!\/)/i.test(m) ? m.replace(/^(https?:)\//i, "$1//") : "");
+    if (full) { try { return new URL(full).href; } catch {} }
+    return document.querySelector('link[rel="canonical"]')?.href || location.href;
+  };
   let libraryDomains = new Set();
   let selectedText = "";
   let selectionRange = null;
@@ -70,14 +81,14 @@
   function getSupportedProfile() {
     const list = Array.isArray(settings.websites) ? settings.websites : [];
     return list.map(x => typeof x === "string" ? defaultProfile(x) : x)
-      .find(x => x && x.enabled !== false && x.domain && hostMatches(location.hostname, String(x.domain).toLowerCase().trim())) || null;
+      .find(x => x && x.enabled !== false && x.domain && hostMatches(effectiveHost(), String(x.domain).toLowerCase().trim())) || null;
   }
 
   function toolbarDomainAllowed() {
     const mode = settings.mainToolbarVisibility || "supported_and_library";
     if (mode === "all") return true;
     const supported = !!getSupportedProfile();
-    const inLibrary = [...libraryDomains].some(domain => hostMatches(location.hostname, domain));
+    const inLibrary = [...libraryDomains].some(domain => hostMatches(effectiveHost(), domain));
     if (mode === "supported") return supported;
     if (mode === "library") return inLibrary;
     return supported || inLibrary;
@@ -121,7 +132,7 @@
   }
   let nativeReadingTimer=null, nativeObserver=null, nativeReadingDelayTimer=null;
   function startNativeReading() {
-    if (!site || site.nativeReading === false || settings.nativeReadingEnabled === false) return;
+    if (!toolbarAllowedNow || !site || site.nativeReading === false || settings.nativeReadingEnabled === false) return;
     clearNativeReading(); clearInterval(nativeReadingTimer); clearTimeout(nativeReadingDelayTimer);
     const root=document.querySelector("article,main,[role=\"main\"],.post-content,.article-content")||document.body;
     const nodes=[...root.querySelectorAll("p,h1,h2,h3,li,blockquote,pre")].filter(n=>!toolbar.contains(n)&&n.innerText.trim());
@@ -166,8 +177,10 @@
     }
     const supportedProfile = getSupportedProfile();
     const toolbarAllowed = toolbarDomainAllowed();
-    site = supportedProfile || ([...libraryDomains].some(domain => hostMatches(location.hostname, domain)) ? defaultProfile(location.hostname) : defaultProfile(location.hostname));
-    if (settings.toolbarEnabled === false || site.toolbar === false || !toolbarAllowed) { hideAll(); } else {
+    toolbarAllowedNow = !!toolbarAllowed && settings.toolbarEnabled !== false;
+    // Sites outside the selected allow-list get no toolbar, no selection popup, no focus/ad tools.
+    site = toolbarAllowed ? (supportedProfile || defaultProfile(location.hostname)) : null;
+    if (!site || settings.toolbarEnabled === false || site.toolbar === false) { toolbarAllowedNow = false; hideAll(); clearAds(); applyFocus(); } else {
     toolbar.hidden = false;
     toolbar.style.display = "block";
     toolbar.style.visibility = "visible";
@@ -218,6 +231,24 @@
     await expandFreediumArticle();
   }
 
+  // Structure-agnostic article root: descend from <body> while a single child still holds
+  // (almost) all of the readable text. Works for any Medium story layout.
+  function bestContentRoot(doc) {
+    const blockSel = "p,h1,h2,h3,h4,h5,h6,li,blockquote,pre,figcaption";
+    const weight = el => { let n = 0; el.querySelectorAll(blockSel).forEach(b => { if (!b.closest("nav,footer,aside,form,script,style,noscript")) n += (b.textContent || "").trim().length; }); return n; };
+    let node = doc.body; if (!node) return null;
+    const total = weight(node); if (!total) return node;
+    for (let guard = 0; guard < 40; guard++) {
+      let next = null, nextW = 0;
+      for (const child of node.children) { const w = weight(child); if (w > nextW) { next = child; nextW = w; } }
+      if (next && nextW >= total * 0.9) node = next; else break;
+    }
+    return node;
+  }
+  const textWeight = el => (el?.textContent || "").replace(/\s+/g, " ").trim().length;
+  // Challenge / error pages are not articles (generic markers, not article-specific).
+  const isChallengePage = html => /<title>\s*(just a moment|attention required|access denied|checking your browser|ddos protection)/i.test(html) || /cf-browser-verification|cf-challenge|challenge-platform|enable javascript and cookies to continue/i.test(html.slice(0, 60000)) && !/<article|<p[ >]/i.test(html.slice(0, 60000));
+
   function buildArticleFromDocument(doc, pageUrl, sourceUrl = pageUrl) {
     const freedium = /freedium-mirror\.cfd$/i.test(new URL(pageUrl).hostname);
     const selectors = freedium
@@ -243,9 +274,14 @@
       if (freedium && p >= 4) value += p * 120;
       return value;
     };
-    const root=(candidates.length ? candidates.sort((a,b)=>score(b)-score(a))[0] : doc.body) || doc.body;
+    let root=(candidates.length ? candidates.sort((a,b)=>score(b)-score(a))[0] : doc.body) || doc.body;
+    // If the selector match holds clearly less text than the true article container, use the container.
+    const generic=bestContentRoot(doc);
+    if (generic && generic !== root && textWeight(generic) > textWeight(root) * 1.15) root = generic;
     const clone=root.cloneNode(true);
-    clone.querySelectorAll("script,style,noscript,nav,header,footer,aside,form,[aria-hidden='true'],[role='navigation'],[role='banner'],[role='contentinfo'],button,[role='button'],.share,.sharing,.toolbar,.navigation,.nav").forEach(el=>el.remove());
+    clone.querySelectorAll("script,style,noscript,nav,footer,aside,form,[role='navigation'],[role='contentinfo'],button,[role='button'],.share,.sharing,.navigation").forEach(el=>el.remove());
+    // Keep page headers that carry the article title/lead; drop pure navigation headers.
+    clone.querySelectorAll("header").forEach(el=>{ if(!el.querySelector("h1,h2,p")) el.remove(); });
     const text=(clone.innerText||clone.textContent||"").replace(/\n{3,}/g,"\n\n").trim();
     const html=clone.innerHTML||"";
     const words=text.split(/\s+/).filter(Boolean);
@@ -279,8 +315,9 @@
     try { response=await chrome.runtime.sendMessage({type:"CMJ_FETCH_FREEDIUM_HTML",sourceUrl:location.href}); }
     catch (err) { if (String(err?.message||err).includes("Extension context invalidated")) return null; throw err; }
     if (!response?.ok || !response.html) return null;
+    if (isChallengePage(response.html)) return null;
     const doc=new DOMParser().parseFromString(response.html,"text/html");
-    const sourceUrl=isMedium ? location.href : (document.querySelector('link[rel="canonical"]')?.href || location.href);
+    const sourceUrl=isMedium ? location.href : originalArticleUrl();
     const remote=buildArticleFromDocument(doc,response.finalUrl||response.url||location.href,sourceUrl);
     if (!remote?.text) return null;
     // Do not reject a fetched article based on article-specific words or headings.
@@ -290,17 +327,22 @@
 
   async function getArticle() {
     await articleReady();
-    try {
-      const remote=await fetchFreediumArticle();
-      if (remote && remote.text && remote.text.trim()) { lastArticleSnapshot=remote; return remote; }
-    } catch (e) {
-      console.debug("Charlie MJ Freedium extraction fallback:", e);
+    let remote=null;
+    try { remote=await fetchFreediumArticle(); }
+    catch (e) { console.debug("Charlie MJ Freedium extraction fallback:", e); }
+    const onFreedium=isFreediumHost(location.hostname);
+    if (onFreedium) {
+      // The live Freedium tab is already the full mirrored article; use whichever capture is more complete.
+      const live=buildArticleFromDocument(document, location.href, originalArticleUrl());
+      const best=(remote?.text?.trim() && remote.wordCount >= live.wordCount) ? remote : live;
+      lastArticleSnapshot=best; return best;
     }
+    if (remote && remote.text && remote.text.trim()) { lastArticleSnapshot=remote; return remote; }
     lastArticleSnapshot=buildArticleFromDocument(document, location.href, location.href); return lastArticleSnapshot;
   }
 
   function article() {
-    lastArticleSnapshot=buildArticleFromDocument(document, location.href, location.href); return lastArticleSnapshot;
+    lastArticleSnapshot=buildArticleFromDocument(document, location.href, originalArticleUrl()); return lastArticleSnapshot;
   }
   async function send(type, extra={}) { const currentArticle=await getArticle(); try { return await chrome.runtime.sendMessage({type,text:selectedText,article:currentArticle,...extra}); } catch (err) { if (String(err?.message||err).includes("Extension context invalidated") || !chrome.runtime?.id) throw new Error("Charlie MJ Reader was reloaded or updated. Refresh this webpage to reconnect it."); throw err; } }
 
@@ -322,7 +364,7 @@
   function updateReadingFocus(){ const root=document.querySelector("article,main,[role='main'],.post-content,.article-content,.entry-content")||document.body; const blocks=[...root.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(x=>x.innerText?.trim()&&!toolbar.contains(x)); blocks.forEach(x=>x.classList.remove("cmj-reading-focus")); const mid=window.innerHeight*0.42; let best=null,bestDist=1e9; blocks.forEach(x=>{const r=x.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;const d=Math.abs((r.top+r.bottom)/2-mid);if(d<bestDist){bestDist=d;best=x;}}); if(best){best.classList.add("cmj-reading-focus"); best.scrollIntoView({block:"nearest"});} if(Date.now()-lastScrollSave>1200 && lastArticleSnapshot){lastScrollSave=Date.now(); chrome.storage.local.get("articles").then(({articles=[]})=>{const idx=articles.findIndex(x=>x.url===location.href||x.canonicalUrl===location.href);if(idx<0)return;const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);const percent=Math.round(window.scrollY/max*100);articles[idx].progress=percent;articles[idx].currentWord=Math.round((lastArticleSnapshot.wordCount||0)*percent/100);articles[idx].readingPosition={percent,word:articles[idx].currentWord,updatedAt:new Date().toISOString()};articles[idx].updatedAt=new Date().toISOString();chrome.storage.local.set({articles});});} }
 
   function showSelection() {
-    if (!site || site.vocabulary === false || settings.vocabularyToolbarEnabled === false) return;
+    if (!toolbarAllowedNow || !site || site.vocabulary === false || settings.vocabularyToolbarEnabled === false) return;
     const sel=window.getSelection(); const text=sel?.toString().trim();
     if (!text || text.length>1800 || !sel.rangeCount) return;
     selectedText=text; selectionRange=sel.getRangeAt(0).cloneRange(); q('#cmj-selected-text').textContent=text;
