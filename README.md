@@ -185,7 +185,7 @@ On any other site (Google, ChatGPT, YouTube …) the toolbar, the selection popu
 
 ```text
 Charlie-MJ-Reader/
-├── assets/                 # Logo, icons, thumbnail, Instagram Story thumbnail
+├── assets/                 # Logo, icons, thumbnail, Charlie-MJ-Reader-thumbnail
 ├── database/               # Website seed list and index (My Reading Library)
 ├── docs/                   # User, feature, adapter and developer documentation
 ├── extensions/adapters/    # Adapter package notes
