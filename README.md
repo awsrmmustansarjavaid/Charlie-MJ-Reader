@@ -223,7 +223,7 @@ Charlie-MJ-Reader/
 | File | Size | Use |
 |---|---|---|
 | `assets/thumbnail.png` | 1536×1024 | Repository / store overview |
-| `assets/thumbnail-instagram-story.png` | **1080×1920 (9:16)** | Instagram Story / Reels cover. Key content sits inside the safe area (≈250 px top, ≈340 px bottom reserved for Instagram UI). |
+| `assets/Charlie-MJ-Reader-thumbnail.png` | **1080×1920 (9:16)** | Instagram Story / Reels cover. Key content sits inside the safe area (≈250 px top, ≈340 px bottom reserved for Instagram UI). |
 | `assets/logo.svg`, `assets/icons/` | 16–128 px | Extension icons |
 
 ## Documentation
