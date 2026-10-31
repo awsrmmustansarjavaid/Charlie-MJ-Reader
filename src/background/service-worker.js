@@ -1,3 +1,12 @@
+
+// Charlie MJ Reader — Link Context Menu
+// Adds the right-click "Charlie MJ Reader" submenu on links:
+//   1. Open article in Reader Workspace
+//   2. Save article to Saved Articles
+// Implemented in link-context-menu.js (same folder). Must stay at the top so the menu is registered
+// every time the service worker starts. Classic importScripts: no manifest "type": "module" needed.
+importScripts("link-context-menu.js");
+
 /** Background event handlers for quick actions and context-menu capture. */
 async function seedFromBundle() {
   try {
@@ -35,7 +44,8 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (!tab?.id) return;
+  // Ignore clicks on the Link Context Menu items (ids start with "cmj-link-"); link-context-menu.js handles them.
+  if (!tab?.id || String(info.menuItemId).startsWith("cmj-link-")) return;
   const selection = info.selectionText || "";
   try {
     await chrome.tabs.sendMessage(tab.id, {
