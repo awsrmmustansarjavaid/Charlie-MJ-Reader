@@ -209,7 +209,7 @@ Charlie-MJ-Reader/
 - No adaptive spaced-repetition engine (basic review scheduling only).
 - No official Medium account/quota status; Medium Access Manager is reminder/link based.
 - Ad hiding is best-effort; extraction quality varies by site; audio word-sync depends on OS voices.
-- Static/package checks and scripted browser tests were run, but full manual QA in Chrome is still recommended (`tests/QA-CHECKLIST.md`).
+- Static/package checks and scripted browser tests were run, but full manual QA in Chrome is still recommended.
 
 ## Developer standards
 
@@ -228,7 +228,7 @@ Charlie-MJ-Reader/
 
 ## Documentation
 
-See [`docs/`](docs/README.md) for installation, features, user guide, privacy, smart audio reader, adapter packages, development and QA. Version notes are in the `CHANGELOG-*.md` files.
+See [`docs/`](docs/README.md) for installation, features, user guide, privacy, smart audio reader, adapter packages, development and QA.
 
 ## License
 
