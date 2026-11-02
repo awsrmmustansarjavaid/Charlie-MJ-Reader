@@ -1,0 +1,637 @@
+{
+  "theme": "dark",
+  "vocabularyToolbarEnabled": true,
+  "vocabularySites": [
+    "eksisozluk.com",
+    "x.com",
+    "twitter.com"
+  ],
+  "translationSource": "tr",
+  "translationTarget": "en",
+  "dictionaryLanguage": "en",
+  "accent": "#8b7cff",
+  "fontSize": 18,
+  "readingWidth": 760,
+  "lineHeight": 1.75,
+  "toolbarEnabled": true,
+  "toolbarPosition": "top",
+  "toolbarOpacity": 92,
+  "toolbarModules": {
+    "focus": true,
+    "languageLearning": true,
+    "media": true,
+    "productivity": true,
+    "reader": true,
+    "vocabulary": true
+  },
+  "toolbarThemes": {
+    "main": "midnight",
+    "media": "midnight",
+    "productivity": "focus",
+    "vocabulary": "violet"
+  },
+  "toolbarType": "floating",
+  "toolbarTypes": [
+    "floating",
+    "navbar",
+    "sidebar",
+    "right-sidebar",
+    "bottom-navbar",
+    "bubble"
+  ],
+  "mediaToolbarEnabled": true,
+  "mediaAutoPlay": false,
+  "mediaSpeed": 1,
+  "mediaVolume": 1,
+  "vocabularyToolbarPosition": "selection",
+  "vocabularyAutoTranslate": false,
+  "vocabularyAutoSave": false,
+  "vocabularyShowMeaning": true,
+  "vocabularyShowPronunciation": true,
+  "vocabularyShowNotes": true,
+  "focusEnabled": false,
+  "adBlockEnabled": true,
+  "dayNightMode": "day",
+  "focusBrightness": 100,
+  "focusContrast": 100,
+  "focusOpacity": 100,
+  "focusDimBackground": false,
+  "focusBlur": 0,
+  "focusWarmth": 0,
+  "focusFontScale": 100,
+  "focusHideImages": false,
+  "productivityToolbarEnabled": true,
+  "pomodoroEnabled": true,
+  "pomodoroWork": 25,
+  "pomodoroBreak": 5,
+  "pomodoroLongBreak": 15,
+  "nativeReadingEnabled": true,
+  "nativeReadingTimer": 10,
+  "nativeReadingDelay": 0,
+  "nativeHighlightWordColor": "orange",
+  "nativeHighlightLineColor": "purple",
+  "nativeCurrentWordBold": true,
+  "nativeReadingAutoStart": false,
+  "eightyTwentyEnabled": true,
+  "eightyTwentyRatio": 80,
+  "productivityPosition": "top-right",
+  "websites": [
+    {
+      "category": "Health",
+      "domain": "dermnetnz.org",
+      "tags": [
+        "health"
+      ],
+      "title": "DermNet®",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:27.016Z",
+      "url": "https://dermnetnz.org/"
+    },
+    {
+      "category": "Tech",
+      "domain": "dev.to",
+      "tags": [
+        "tech"
+      ],
+      "title": "DEV Community",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:24.808Z",
+      "url": "https://dev.to/"
+    },
+    {
+      "category": "Social",
+      "domain": "eksisozluk.com",
+      "tags": [
+        "social"
+      ],
+      "title": "eksisozluk.com",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:26.165Z",
+      "url": "https://eksisozluk.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "greatergood.berkeley.edu",
+      "tags": [
+        "health"
+      ],
+      "title": "Greater Good Podcasts",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:30.638Z",
+      "url": "https://greatergood.berkeley.edu/"
+    },
+    {
+      "category": "Tech",
+      "domain": "hackernoon.com",
+      "tags": [],
+      "title": "HackerNoon",
+      "type": "site",
+      "url": "https://hackernoon.com/"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "medium.com",
+      "tags": [],
+      "title": "Medium",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:31.180Z",
+      "url": "https://medium.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "my.clevelandclinic.org",
+      "tags": [
+        "health"
+      ],
+      "title": "Cleveland Clinic",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:35.378Z",
+      "url": "https://my.clevelandclinic.org/"
+    },
+    {
+      "category": "Health",
+      "domain": "practicaldermatology.com",
+      "tags": [
+        "health"
+      ],
+      "title": "PracticalDermatology",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:40.494Z",
+      "url": "https://practicaldermatology.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "psychcentral.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Psych Central",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:42.648Z",
+      "url": "https://psychcentral.com/"
+    },
+    {
+      "category": "Tech",
+      "domain": "thehackernews.com",
+      "tags": [
+        "tech"
+      ],
+      "title": "The Hacker News",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:40.622Z",
+      "url": "https://thehackernews.com/"
+    },
+    {
+      "category": "Social",
+      "domain": "twitter.com",
+      "tags": [
+        "social"
+      ],
+      "title": "X (formerly Twitter)",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:47.551Z",
+      "url": "https://twitter.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.aad.org",
+      "tags": [
+        "health"
+      ],
+      "title": "American Academy of Dermatology",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:44.342Z",
+      "url": "https://www.aad.org/"
+    },
+    {
+      "category": "Lifestyle",
+      "domain": "www.allure.com",
+      "tags": [
+        "lifestyle"
+      ],
+      "title": "Allure",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:44.534Z",
+      "url": "https://www.allure.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.apa.org",
+      "tags": [
+        "health"
+      ],
+      "title": "www.apa.org",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:49.515Z",
+      "url": "https://www.apa.org"
+    },
+    {
+      "category": "Lifestyle",
+      "domain": "www.byrdie.com",
+      "tags": [
+        "lifestyle"
+      ],
+      "title": "The latest from www.byrdie.com",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:48.116Z",
+      "url": "https://www.byrdie.com/"
+    },
+    {
+      "category": "Tech",
+      "domain": "www.freecodecamp.org",
+      "tags": [
+        "tech"
+      ],
+      "title": "www.freecodecamp.org",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:50.080Z",
+      "url": "https://www.freecodecamp.org/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.health.harvard.edu",
+      "tags": [
+        "health"
+      ],
+      "title": "Harvard Health",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:52.383Z",
+      "url": "https://www.health.harvard.edu/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.healthline.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Healthline",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:54.297Z",
+      "url": "https://www.healthline.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.mayoclinic.org",
+      "tags": [
+        "health"
+      ],
+      "title": "Mayo Clinic",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:57.231Z",
+      "url": "https://www.mayoclinic.org/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.mindful.org",
+      "tags": [
+        "health"
+      ],
+      "title": "Mindful",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:55.352Z",
+      "url": "https://www.mindful.org/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.nhs.uk",
+      "tags": [
+        "health"
+      ],
+      "title": "nhs.uk",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:56.701Z",
+      "url": "https://www.nhs.uk/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.precisionnutrition.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Precision Nutrition",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:59.915Z",
+      "url": "https://www.precisionnutrition.com/"
+    },
+    {
+      "category": "Science",
+      "domain": "www.quantamagazine.org",
+      "tags": [
+        "science"
+      ],
+      "title": "Quanta Magazine – Illuminating science",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:02.612Z",
+      "url": "https://www.quantamagazine.org/"
+    },
+    {
+      "category": "Tech",
+      "domain": "www.smashingmagazine.com",
+      "tags": [
+        "tech"
+      ],
+      "title": "Smashing Magazine",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:59.971Z",
+      "url": "https://www.smashingmagazine.com/"
+    },
+    {
+      "category": "Lifestyle",
+      "domain": "www.theschooloflife.com",
+      "tags": [
+        "lifestyle"
+      ],
+      "title": "The School of Life",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:13.612Z",
+      "url": "https://www.theschooloflife.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.verywellfit.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Verywell Fit | trusted nutrition and fitness information",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:02.997Z",
+      "url": "https://www.verywellfit.com/"
+    },
+    {
+      "category": "Social",
+      "domain": "x.com",
+      "tags": [
+        "social"
+      ],
+      "title": "X (formerly Twitter)",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:06.954Z",
+      "url": "https://x.com/"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "www.instagram.com",
+      "tags": [],
+      "title": "Raja Muhammad Mustansar Javaid (@charlie.mj.official) • Instagram photos and videos",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:07.416Z",
+      "url": "https://www.instagram.com/charlie.mj.official/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.bayhealth.org",
+      "tags": [
+        "health"
+      ],
+      "title": "Health & Wellness Blog",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:22.964Z",
+      "url": "https://www.bayhealth.org/community-wellness/blog?"
+    },
+    {
+      "category": "Health",
+      "domain": "www.everydayhealth.com",
+      "tags": [
+        "health"
+      ],
+      "title": "EverydayHealth.com",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:11.666Z",
+      "url": "https://www.everydayhealth.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.verywellhealth.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Verywell Health | Expert Health Information and Advice",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:13.525Z",
+      "url": "https://www.verywellhealth.com/"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "health.calm.com",
+      "tags": [],
+      "title": "Calm Health",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:18.863Z",
+      "url": "https://health.calm.com/resources/blog/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.health.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Health | Trusted Health and Wellness Information",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:16.224Z",
+      "url": "https://www.health.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.webmd.com",
+      "tags": [
+        "health"
+      ],
+      "title": "WebMD",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:19.774Z",
+      "url": "https://www.webmd.com/"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "www.sutterhealth.org",
+      "tags": [],
+      "title": "www.sutterhealth.org",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:20.392Z",
+      "url": "https://www.sutterhealth.org/health/health-wellness-blog"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "goop.com",
+      "tags": [],
+      "title": "goop",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:27.243Z",
+      "url": "https://goop.com/editorial/?sort=newest"
+    },
+    {
+      "category": "Health",
+      "domain": "www.mindbodygreen.com",
+      "tags": [
+        "health"
+      ],
+      "title": "mindbodygreen RSS Feed",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:22.243Z",
+      "url": "https://www.mindbodygreen.com//"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "wellnessmama.com",
+      "tags": [],
+      "title": "Wellness Mama®",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:23.054Z",
+      "url": "https://wellnessmama.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "draxe.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Root-Cause Natural Health You Can Trust",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:30.747Z",
+      "url": "https://draxe.com/"
+    },
+    {
+      "category": "Health",
+      "domain": "www.dukehealth.org",
+      "tags": [
+        "health"
+      ],
+      "title": "Duke Health - Connect with your health care at Duke Health",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:30.352Z",
+      "url": "https://www.dukehealth.org/blog"
+    },
+    {
+      "autoCategory": true,
+      "category": "General",
+      "domain": "www.anytimefitness.com",
+      "tags": [],
+      "title": "Anytime Fitness",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:33.984Z",
+      "url": "https://www.anytimefitness.com/blog"
+    },
+    {
+      "category": "Health",
+      "domain": "www.totalhealthandfitness.com",
+      "tags": [
+        "health"
+      ],
+      "title": "Total Health and Fitness",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:27:33.336Z",
+      "url": "https://www.totalhealthandfitness.com/blog/"
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "www.learnturkishwithseda.com",
+      "enabled": true,
+      "focus": true,
+      "languageLearning": true,
+      "learningLanguage": "en",
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T14:26:29.517Z",
+      "version": 1,
+      "vocabulary": true
+    }
+  ],
+  "ttsRate": 1,
+  "ttsPitch": 1,
+  "audioHighlightMode": "combined",
+  "audioAutoScroll": true,
+  "audioVoiceURI": "",
+  "aiProvider": "openai-compatible",
+  "aiEndpoint": "",
+  "aiModel": "",
+  "aiKey": "",
+  "aiConsent": false,
+  "mediumAlerts": true,
+  "mediumEnabled": true,
+  "mediumDetectUrls": true,
+  "mediumUseCanonical": true,
+  "mediumAutoSave": false,
+  "mediumMonitor": true,
+  "mediumExtractMetadata": true,
+  "mediumExtractPublication": true,
+  "mediumExtractImages": true,
+  "mediumExtractCanonical": true,
+  "mediumExtractContent": true,
+  "freediumEnabled": true,
+  "freediumAutoOpen": true,
+  "freediumMediaButton": true,
+  "freediumFallback": true,
+  "freediumNewTab": true,
+  "freediumServiceUrl": "https://freedium-mirror.cfd/",
+  "mediumAdapterEnabled": true,
+  "mediumUserAdapters": true,
+  "mediumAdapterDiagnostics": true,
+  "mediumAdapterConfirm": true,
+  "mediumAdapterReplace": true,
+  "adapterMaxPackageMB": 25,
+  "adapterMaxFiles": 500,
+  "libraryAutoCategory": true,
+  "libraryAllowManualCategory": true,
+  "libraryFetchCompleteArticle": true,
+  "libraryFetchSeoOnSave": true,
+  "articleGoogleAuditOnSave": true,
+  "libraryDefaultArticleCategory": "General",
+  "libraryCustomCategories": [
+    "Tech",
+    "Health",
+    "Science",
+    "Business",
+    "Lifestyle",
+    "Education",
+    "Sports",
+    "Entertainment",
+    "Social",
+    "News",
+    "General"
+  ],
+  "libraryAutoTags": true,
+  "libraryAutoLabels": true,
+  "intelligenceEnabled": true,
+  "intelligenceUsePublisherRules": true,
+  "intelligenceUseKeywordScoring": true,
+  "intelligenceMinConfidence": 0.6,
+  "intelligenceAutoCategoryArticles": true,
+  "intelligenceLearnFromEdits": true,
+  "notifications": {
+    "enabled": true,
+    "position": "bottom-right",
+    "durationMs": 2600,
+    "events": {
+      "bookmark": true,
+      "article": true,
+      "vocabulary": true,
+      "quote": true,
+      "paragraph": true,
+      "selection": true,
+      "opened": true,
+      "completed": true,
+      "restored": true,
+      "export": true,
+      "error": true
+    }
+  },
+  "cmjFreedium112Migrated": true
+}

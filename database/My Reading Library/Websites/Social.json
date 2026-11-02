@@ -1,0 +1,35 @@
+[
+  {
+    "category": "Social",
+    "domain": "eksisozluk.com",
+    "tags": [
+      "social"
+    ],
+    "title": "eksisozluk.com",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:26:26.165Z",
+    "url": "https://eksisozluk.com/"
+  },
+  {
+    "category": "Social",
+    "domain": "twitter.com",
+    "tags": [
+      "social"
+    ],
+    "title": "X (formerly Twitter)",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:26:47.551Z",
+    "url": "https://twitter.com/"
+  },
+  {
+    "category": "Social",
+    "domain": "x.com",
+    "tags": [
+      "social"
+    ],
+    "title": "X (formerly Twitter)",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:27:06.954Z",
+    "url": "https://x.com/"
+  }
+]

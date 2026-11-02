@@ -1,0 +1,35 @@
+[
+  {
+    "category": "Lifestyle",
+    "domain": "www.allure.com",
+    "tags": [
+      "lifestyle"
+    ],
+    "title": "Allure",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:26:44.534Z",
+    "url": "https://www.allure.com/"
+  },
+  {
+    "category": "Lifestyle",
+    "domain": "www.byrdie.com",
+    "tags": [
+      "lifestyle"
+    ],
+    "title": "The latest from www.byrdie.com",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:26:48.116Z",
+    "url": "https://www.byrdie.com/"
+  },
+  {
+    "category": "Lifestyle",
+    "domain": "www.theschooloflife.com",
+    "tags": [
+      "lifestyle"
+    ],
+    "title": "The School of Life",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:27:13.612Z",
+    "url": "https://www.theschooloflife.com/"
+  }
+]

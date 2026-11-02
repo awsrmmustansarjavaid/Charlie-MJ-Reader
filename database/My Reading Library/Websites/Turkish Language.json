@@ -1,0 +1,27 @@
+[
+  {
+    "autoCategory": true,
+    "autoSave": false,
+    "autoTranslate": false,
+    "category": "Turkish Language",
+    "domain": "www.learnturkishwithseda.com",
+    "enabled": true,
+    "focus": true,
+    "languageLearning": true,
+    "learningLanguage": "en",
+    "media": true,
+    "nativeReading": true,
+    "position": "top",
+    "productivity": true,
+    "tags": [
+      "turkish language"
+    ],
+    "toolbar": true,
+    "toolbarTheme": "midnight",
+    "toolbarType": "floating",
+    "type": "site",
+    "updatedAt": "2026-11-02T14:26:29.517Z",
+    "version": 1,
+    "vocabulary": true
+  }
+]
