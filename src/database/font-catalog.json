@@ -1,0 +1,806 @@
+{
+  "schemaVersion": 1,
+  "stacks": [
+    {
+      "languages": [
+        "ur"
+      ],
+      "families": [
+        "Noto Nastaliq Urdu",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Jameel Noori Nastaleeq",
+        "Arial"
+      ],
+      "fallback": "\"Noto Nastaliq Urdu\", \"Noto Naskh Arabic\", \"Noto Sans Arabic\", serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "ar"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "Scheherazade New",
+        "Arial"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "tr"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "Helvetica Neue",
+        "Roboto"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "en"
+      ],
+      "families": [
+        "Inter",
+        "Roboto",
+        "Arial",
+        "Georgia",
+        "Source Sans 3"
+      ],
+      "fallback": "Inter, Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "hi"
+      ],
+      "families": [
+        "Noto Sans Devanagari",
+        "Noto Serif Devanagari",
+        "Mangal",
+        "Kokila"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "script": "Deva"
+    },
+    {
+      "languages": [
+        "bn"
+      ],
+      "families": [
+        "Noto Sans Bengali",
+        "Noto Serif Bengali",
+        "Vrinda"
+      ],
+      "fallback": "\"Noto Sans Bengali\", Vrinda, sans-serif",
+      "script": "Beng"
+    },
+    {
+      "languages": [
+        "ru"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "PT Sans"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "zh"
+      ],
+      "families": [
+        "Noto Sans SC",
+        "Noto Serif SC",
+        "Noto Sans TC",
+        "Microsoft YaHei",
+        "PingFang SC"
+      ],
+      "fallback": "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif",
+      "script": "Hans/Hant"
+    },
+    {
+      "languages": [
+        "ja"
+      ],
+      "families": [
+        "Noto Sans JP",
+        "Noto Serif JP",
+        "Yu Gothic",
+        "Meiryo"
+      ],
+      "fallback": "\"Noto Sans JP\", \"Yu Gothic\", sans-serif",
+      "script": "Jpan"
+    },
+    {
+      "languages": [
+        "ko"
+      ],
+      "families": [
+        "Noto Sans KR",
+        "Noto Serif KR",
+        "Malgun Gothic"
+      ],
+      "fallback": "\"Noto Sans KR\", \"Malgun Gothic\", sans-serif",
+      "script": "Kore"
+    },
+    {
+      "languages": [
+        "fa"
+      ],
+      "families": [
+        "Vazirmatn",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "Vazirmatn, \"Noto Naskh Arabic\", serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "he"
+      ],
+      "families": [
+        "Noto Sans Hebrew",
+        "Noto Serif Hebrew",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans Hebrew\", Arial, sans-serif",
+      "script": "Hebr"
+    },
+    {
+      "languages": [
+        "th"
+      ],
+      "families": [
+        "Noto Sans Thai",
+        "Noto Serif Thai",
+        "Tahoma"
+      ],
+      "fallback": "\"Noto Sans Thai\", Tahoma, sans-serif",
+      "script": "Thai"
+    },
+    {
+      "languages": [
+        "el"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial",
+        "Roboto"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Grek"
+    },
+    {
+      "languages": [
+        "es"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "fr"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "de"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "it"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "pt"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "nl"
+      ],
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "pl"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "Georgia"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, Georgia, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "vi"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "id"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "ms"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "sw"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "pa"
+      ],
+      "families": [
+        "Noto Sans Gurmukhi",
+        "Noto Serif Gurmukhi"
+      ],
+      "fallback": "\"Noto Sans Gurmukhi\", \"Noto Serif Gurmukhi\", sans-serif",
+      "script": "Guru"
+    },
+    {
+      "languages": [
+        "gu"
+      ],
+      "families": [
+        "Noto Sans Gujarati",
+        "Noto Serif Gujarati"
+      ],
+      "fallback": "\"Noto Sans Gujarati\", \"Noto Serif Gujarati\", sans-serif",
+      "script": "Gujr"
+    },
+    {
+      "languages": [
+        "ta"
+      ],
+      "families": [
+        "Noto Sans Tamil",
+        "Noto Serif Tamil"
+      ],
+      "fallback": "\"Noto Sans Tamil\", \"Noto Serif Tamil\", sans-serif",
+      "script": "Taml"
+    },
+    {
+      "languages": [
+        "te"
+      ],
+      "families": [
+        "Noto Sans Telugu",
+        "Noto Serif Telugu"
+      ],
+      "fallback": "\"Noto Sans Telugu\", \"Noto Serif Telugu\", sans-serif",
+      "script": "Telu"
+    },
+    {
+      "languages": [
+        "kn"
+      ],
+      "families": [
+        "Noto Sans Kannada",
+        "Noto Serif Kannada"
+      ],
+      "fallback": "\"Noto Sans Kannada\", \"Noto Serif Kannada\", sans-serif",
+      "script": "Knda"
+    },
+    {
+      "languages": [
+        "ml"
+      ],
+      "families": [
+        "Noto Sans Malayalam",
+        "Noto Serif Malayalam"
+      ],
+      "fallback": "\"Noto Sans Malayalam\", \"Noto Serif Malayalam\", sans-serif",
+      "script": "Mlym"
+    },
+    {
+      "languages": [
+        "or"
+      ],
+      "families": [
+        "Noto Sans Oriya",
+        "Noto Serif Oriya"
+      ],
+      "fallback": "\"Noto Sans Oriya\", \"Noto Serif Oriya\", sans-serif",
+      "script": "Orya"
+    },
+    {
+      "languages": [
+        "si"
+      ],
+      "families": [
+        "Noto Sans Sinhala"
+      ],
+      "fallback": "\"Noto Sans Sinhala\", sans-serif",
+      "script": "Sinh"
+    },
+    {
+      "languages": [
+        "my"
+      ],
+      "families": [
+        "Noto Sans Myanmar"
+      ],
+      "fallback": "\"Noto Sans Myanmar\", sans-serif",
+      "script": "Mymr"
+    },
+    {
+      "languages": [
+        "km"
+      ],
+      "families": [
+        "Noto Sans Khmer"
+      ],
+      "fallback": "\"Noto Sans Khmer\", sans-serif",
+      "script": "Khmr"
+    },
+    {
+      "languages": [
+        "lo"
+      ],
+      "families": [
+        "Noto Sans Lao"
+      ],
+      "fallback": "\"Noto Sans Lao\", sans-serif",
+      "script": "Laoo"
+    },
+    {
+      "languages": [
+        "ka"
+      ],
+      "families": [
+        "Noto Sans Georgian"
+      ],
+      "fallback": "\"Noto Sans Georgian\", sans-serif",
+      "script": "Geor"
+    },
+    {
+      "languages": [
+        "hy"
+      ],
+      "families": [
+        "Noto Sans Armenian"
+      ],
+      "fallback": "\"Noto Sans Armenian\", sans-serif",
+      "script": "Armn"
+    },
+    {
+      "languages": [
+        "am"
+      ],
+      "families": [
+        "Noto Sans Ethiopic"
+      ],
+      "fallback": "\"Noto Sans Ethiopic\", sans-serif",
+      "script": "Ethi"
+    },
+    {
+      "languages": [
+        "ti"
+      ],
+      "families": [
+        "Noto Sans Ethiopic"
+      ],
+      "fallback": "\"Noto Sans Ethiopic\", sans-serif",
+      "script": "Ethi"
+    },
+    {
+      "languages": [
+        "sr"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl/Latn"
+    },
+    {
+      "languages": [
+        "uk"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "bg"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "mk"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "kk"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "mn"
+      ],
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif",
+      "script": "Cyrl"
+    },
+    {
+      "languages": [
+        "az"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "uz"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "ha"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "yo"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "ig"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "zu"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "xh"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "fil"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "jv"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "su"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif",
+      "script": "Latn"
+    },
+    {
+      "languages": [
+        "ne"
+      ],
+      "families": [
+        "Noto Sans Devanagari",
+        "Mangal"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "script": "Deva"
+    },
+    {
+      "languages": [
+        "mr"
+      ],
+      "families": [
+        "Noto Sans Devanagari",
+        "Mangal"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "script": "Deva"
+    },
+    {
+      "languages": [
+        "sa"
+      ],
+      "families": [
+        "Noto Sans Devanagari"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", sans-serif",
+      "script": "Deva"
+    },
+    {
+      "languages": [
+        "ps"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", sans-serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "sd"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", sans-serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "ug"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", sans-serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "ckb"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", sans-serif",
+      "script": "Arab"
+    },
+    {
+      "languages": [
+        "yi"
+      ],
+      "families": [
+        "Noto Sans Hebrew",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans Hebrew\", Arial, sans-serif",
+      "script": "Hebr"
+    },
+    {
+      "languages": [
+        "bo"
+      ],
+      "families": [
+        "Noto Serif Tibetan",
+        "Noto Sans Tibetan"
+      ],
+      "fallback": "\"Noto Serif Tibetan\", \"Noto Sans Tibetan\", sans-serif",
+      "script": "Tibt"
+    }
+  ],
+  "genericFamilies": [
+    "system-ui",
+    "sans-serif",
+    "serif",
+    "monospace",
+    "ui-sans-serif",
+    "ui-serif",
+    "Arial",
+    "Georgia",
+    "Times New Roman",
+    "Verdana",
+    "Tahoma",
+    "Trebuchet MS",
+    "Courier New",
+    "Inter",
+    "Roboto",
+    "Noto Sans",
+    "Noto Serif",
+    "Noto Sans Arabic",
+    "Noto Naskh Arabic",
+    "Noto Nastaliq Urdu",
+    "Noto Sans Devanagari",
+    "Noto Sans Bengali",
+    "Noto Sans Tamil",
+    "Noto Sans Thai",
+    "Noto Sans Hebrew",
+    "Noto Sans Ethiopic",
+    "Noto Sans Georgian",
+    "Noto Sans Armenian",
+    "Noto Sans Khmer",
+    "Noto Sans Myanmar",
+    "Noto Sans Gurmukhi",
+    "Noto Sans Gujarati",
+    "Noto Sans Telugu",
+    "Noto Sans Kannada",
+    "Noto Sans Malayalam",
+    "Noto Sans Sinhala",
+    "Noto Serif Tibetan"
+  ]
+}

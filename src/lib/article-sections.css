@@ -1,0 +1,243 @@
+/**
+ * Shared styles for the two-section article layout used by both the
+ * Productivity Reader and the Language Learning Reader.
+ *
+ *   .cmj-ad  = Section 1, "Article Details"   (ad = article details)
+ *   .cmj-oa  = Section 2, "Original Article"  (oa = original article)
+ *
+ * Colours come from each page's own :root variables (--panel, --line,
+ * --muted, --accent), so both modes and all themes stay consistent.
+ */
+
+/* ---------- Layout column that stacks Section 1 above Section 2 ---------- */
+.cmj-article-column {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* ---------- Shared section label ("SECTION 1  Article Details") ---------- */
+.cmj-section-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.cmj-section-label h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+.cmj-section-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(137, 119, 255, .22);
+  color: #d6d0ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.cmj-section-hint {
+  margin-left: auto;
+  color: var(--muted, #9aa7c4);
+  font-size: 12px;
+}
+
+/* ---------- Section 1: Article Details card ---------- */
+.cmj-ad {
+  display: grid;
+  gap: 20px;
+  padding: clamp(16px, 2.4vw, 24px);
+  border: 1px solid var(--line, #293653);
+  border-radius: 16px;
+  background: var(--panel, #131c32);
+}
+.cmj-ad-top {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 24px;
+}
+.cmj-ad-thumb {
+  margin: 0;
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+}
+.cmj-ad-thumb-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+}
+.cmj-ad-thumb-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 220px;
+  color: var(--muted, #9aa7c4);
+  font-size: 13px;
+}
+.cmj-ad-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.cmj-ad-title {
+  margin: 0;
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.cmj-ad-subtitle {
+  margin: 0;
+  color: var(--muted, #9aa7c4);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.cmj-ad-description {
+  margin: 0;
+  color: #c9d1ea;
+  font-size: 14px;
+  line-height: 1.6;
+}
+/* Clamp long descriptions to four lines until the reader expands them. */
+.cmj-ad-description[data-clamped="true"] {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cmj-ad-toggle {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent, #8977ff);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cmj-ad-toggle:hover { text-decoration: underline; }
+
+/* ---------- Author block (shared by both sections) ---------- */
+.cmj-ad-author,
+.cmj-oa-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cmj-ad-author {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line, #293653);
+}
+.cmj-ad-avatar,
+.cmj-oa-avatar {
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, .1);
+}
+.cmj-ad-avatar { width: 44px; height: 44px; }
+.cmj-oa-avatar { width: 40px; height: 40px; }
+.cmj-ad-avatar-fallback,
+.cmj-oa-avatar-fallback {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.cmj-ad-author-copy,
+.cmj-oa-author-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.cmj-ad-author-copy strong,
+.cmj-oa-author-copy strong { font-size: 14px; }
+.cmj-ad-author-copy span,
+.cmj-oa-author-copy span {
+  color: var(--muted, #9aa7c4);
+  font-size: 12px;
+}
+
+/* ---------- Statistics grid ---------- */
+.cmj-ad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.cmj-ad-tile {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line, #293653);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .18);
+}
+.cmj-ad-tile-label {
+  color: var(--muted, #9aa7c4);
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.cmj-ad-tile-value {
+  font-size: 20px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.cmj-ad-tile-note {
+  color: var(--muted, #9aa7c4);
+  font-size: 12px;
+}
+.cmj-ad-link {
+  color: var(--accent, #8977ff);
+  font-size: 15px;
+  text-decoration: none;
+}
+.cmj-ad-link:hover { text-decoration: underline; }
+
+/* ---------- Section 2: Original Article header ---------- */
+.cmj-oa-header {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  margin: 0 auto 28px;
+}
+.cmj-oa-title {
+  margin: 0;
+  font-family: var(--cmj-title-font, var(--article-title-font, inherit));
+  font-size: var(--cmj-title-size, var(--article-title-size, clamp(28px, 4vw, 38px)));
+  line-height: 1.18;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+.cmj-oa-subtitle {
+  margin: 0;
+  color: var(--muted, #9aa7c4);
+  font-family: var(--cmj-subtitle-font, var(--article-subtitle-font, inherit));
+  font-size: var(--cmj-subtitle-size, var(--article-subtitle-size, 18px));
+  line-height: 1.5;
+}
+.cmj-oa-hero { margin: 0; }
+.cmj-oa-hero img {
+  display: block;
+  width: 100%;
+  max-height: 460px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* ---------- Responsive: stack on narrow screens ---------- */
+@media (max-width: 900px) {
+  .cmj-ad-top { grid-template-columns: minmax(0, 1fr); }
+  .cmj-ad-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cmj-section-hint { display: none; }
+}
+@media (max-width: 520px) {
+  .cmj-ad-grid { grid-template-columns: minmax(0, 1fr); }
+}

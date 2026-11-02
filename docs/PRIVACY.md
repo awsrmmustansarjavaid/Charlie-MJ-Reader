@@ -1,28 +1,35 @@
 # Privacy, Permissions & Security
 
-Charlie MJ Reader is designed local-first.
+Charlie MJ Reader is local-first.
+
+## Where it runs
+The extension acts only on websites in **Settings → Supported Websites**. On every other website it is asleep: it adds no interface or styles, observes nothing, tracks nothing and stores nothing. On such pages the page script only reads your supported-site list from local storage and stops. Requests that come from a web page are accepted by the background worker only when the page is a supported website.
 
 ## Data handling
-- Saved articles, notes, highlights, vocabulary and settings are stored in Chrome extension local storage.
-- No account or remote database is included in this starter package.
-- Exported files are created locally in the browser.
-- AI settings are configuration only; this build does not send article text to an AI endpoint.
+- Articles, notes, highlights, quotes, vocabulary, bookmarks and settings are stored in Chrome extension local storage on your computer.
+- There is no account and no remote database. Exports and backups are created locally in the browser.
+- AI settings are configuration only; the extension does not send article text to any AI service.
+
+## Network use
+- **Translation:** when you press Translate, only the selected text (up to 1,800 characters) is sent to `api.mymemory.translated.net`.
+- **Dictionary:** word lookups use `api.dictionaryapi.dev` on request.
+- **Medium:** article pages are fetched through the configured Freedium mirror over HTTPS.
+- **Library data:** adding or refreshing a website fetches that website and public ranking / PageSpeed data on request.
 
 ## Permissions
-- `activeTab`, `scripting`: user-triggered capture and speech actions on the active tab.
-- `storage`: local library and settings.
-- `tabs`: opening the workspace and querying the active tab.
-- `contextMenus`: save selected text or page.
-- `notifications`: future reminders.
-- Optional HTTP/HTTPS host permissions are requested only when the extension needs site access.
+- `storage`, `unlimitedStorage`: local library and settings.
+- `activeTab`, `scripting`, `tabs`: user-initiated capture, adding page styles on supported sites, opening the workspace.
+- `contextMenus`: save page / selection and the link menu.
+- `notifications`: short confirmations.
+- Host access to `http://*/*` and `https://*/*`: required so the page script can exist; it does nothing outside Supported Websites. Also used for library fetching and the Freedium mirror.
 
-## Important boundaries
-- Only process content visible and accessible to the user.
-- Do not bypass paywalls, subscription checks, authentication or server-side reading quotas.
-- Medium Access Manager is a reminder and official-link feature; it cannot reset a server-enforced limit.
+## Security
+- Fetched third-party HTML is stripped of inline event handlers and `javascript:` URLs; article HTML is rebuilt from an allow-list of tags and attributes. The strict extension content security policy is kept.
+- UI text from pages is escaped before it is rendered.
+- Imported adapter packages are validated and stored as data; their JavaScript is never executed.
+
+## Boundaries
+- Only content visible and accessible to you is processed.
+- No bypassing of paywalls, subscription checks, authentication or server-side quotas.
 - Treat article text and page metadata as untrusted input.
-- Keep API keys private. A key embedded in a distributed extension can be extracted by users or attackers.
-
-
-### Vocabulary translation
-The selection toolbar is local and appears only on enabled hostnames. When the user explicitly clicks Translate, selected text is sent to the public MyMemory translation endpoint (`api.mymemory.translated.net`) using the configured source and target language pair. Translation availability, retention and rate limits are controlled by that external service, not by this extension. Do not send confidential or sensitive text. Saving vocabulary without translation remains local.
+- Keep API keys private; a key shipped inside an extension can be extracted.

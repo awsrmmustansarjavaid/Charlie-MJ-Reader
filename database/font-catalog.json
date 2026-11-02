@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "note": "Font availability depends on the operating system. These are preferred font stacks and fallbacks, not bundled font files.",
+  "stacks": [
+    {
+      "script": "Latin",
+      "languages": [
+        "en",
+        "fr",
+        "de",
+        "es",
+        "it",
+        "pt",
+        "tr"
+      ],
+      "families": [
+        "Inter",
+        "Arial",
+        "Noto Sans",
+        "Segoe UI",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Arabic",
+      "languages": [
+        "ar",
+        "ur",
+        "fa",
+        "ps"
+      ],
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Urdu Nastaliq",
+      "languages": [
+        "ur"
+      ],
+      "families": [
+        "Noto Nastaliq Urdu",
+        "Noto Nastaliq",
+        "Jameel Noori Nastaleeq",
+        "serif"
+      ]
+    },
+    {
+      "script": "Cyrillic",
+      "languages": [
+        "ru",
+        "uk",
+        "bg",
+        "sr"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Devanagari",
+      "languages": [
+        "hi",
+        "mr",
+        "ne"
+      ],
+      "families": [
+        "Noto Sans Devanagari",
+        "Mangal",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "CJK",
+      "languages": [
+        "zh",
+        "ja",
+        "ko"
+      ],
+      "families": [
+        "Noto Sans CJK",
+        "Yu Gothic",
+        "Malgun Gothic",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Greek",
+      "languages": [
+        "el"
+      ],
+      "families": [
+        "Noto Sans",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Hebrew",
+      "languages": [
+        "he"
+      ],
+      "families": [
+        "Noto Sans Hebrew",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    {
+      "script": "Thai",
+      "languages": [
+        "th"
+      ],
+      "families": [
+        "Noto Sans Thai",
+        "Tahoma",
+        "sans-serif"
+      ]
+    }
+  ]
+}

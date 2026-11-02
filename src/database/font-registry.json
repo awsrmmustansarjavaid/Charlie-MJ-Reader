@@ -1,0 +1,622 @@
+{
+  "schemaVersion": 1,
+  "description": "Language-to-font recommendations with script-aware fallback chains. These are recommendations, not a guaranteed inventory of fonts installed on the device.",
+  "genericFamilies": [
+    "system-ui",
+    "sans-serif",
+    "serif",
+    "monospace",
+    "ui-sans-serif",
+    "ui-serif",
+    "Arial",
+    "Georgia",
+    "Times New Roman",
+    "Verdana",
+    "Tahoma",
+    "Trebuchet MS",
+    "Courier New"
+  ],
+  "languages": {
+    "ur": {
+      "name": "Urdu",
+      "script": "Arab",
+      "families": [
+        "Noto Nastaliq Urdu",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Jameel Noori Nastaleeq",
+        "Arial"
+      ],
+      "fallback": "\"Noto Nastaliq Urdu\", \"Noto Naskh Arabic\", \"Noto Sans Arabic\", serif"
+    },
+    "ar": {
+      "name": "Arabic",
+      "script": "Arab",
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "Scheherazade New",
+        "Arial"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif"
+    },
+    "tr": {
+      "name": "Turkish",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "Helvetica Neue",
+        "Roboto"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif"
+    },
+    "en": {
+      "name": "English",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Roboto",
+        "Arial",
+        "Georgia",
+        "Source Sans 3"
+      ],
+      "fallback": "Inter, Roboto, Arial, sans-serif"
+    },
+    "hi": {
+      "name": "Hindi",
+      "script": "Deva",
+      "families": [
+        "Noto Sans Devanagari",
+        "Noto Serif Devanagari",
+        "Mangal",
+        "Kokila"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif"
+    },
+    "bn": {
+      "name": "Bengali",
+      "script": "Beng",
+      "families": [
+        "Noto Sans Bengali",
+        "Noto Serif Bengali",
+        "Vrinda"
+      ],
+      "fallback": "\"Noto Sans Bengali\", Vrinda, sans-serif"
+    },
+    "ru": {
+      "name": "Russian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "Roboto",
+        "Arial",
+        "PT Sans"
+      ],
+      "fallback": "\"Noto Sans\", Roboto, Arial, sans-serif"
+    },
+    "zh": {
+      "name": "Chinese",
+      "script": "Hans/Hant",
+      "families": [
+        "Noto Sans SC",
+        "Noto Serif SC",
+        "Noto Sans TC",
+        "Microsoft YaHei",
+        "PingFang SC"
+      ],
+      "fallback": "\"Noto Sans SC\", \"Microsoft YaHei\", sans-serif"
+    },
+    "ja": {
+      "name": "Japanese",
+      "script": "Jpan",
+      "families": [
+        "Noto Sans JP",
+        "Noto Serif JP",
+        "Yu Gothic",
+        "Meiryo"
+      ],
+      "fallback": "\"Noto Sans JP\", \"Yu Gothic\", sans-serif"
+    },
+    "ko": {
+      "name": "Korean",
+      "script": "Kore",
+      "families": [
+        "Noto Sans KR",
+        "Noto Serif KR",
+        "Malgun Gothic"
+      ],
+      "fallback": "\"Noto Sans KR\", \"Malgun Gothic\", sans-serif"
+    },
+    "fa": {
+      "name": "Persian",
+      "script": "Arab",
+      "families": [
+        "Vazirmatn",
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic"
+      ],
+      "fallback": "Vazirmatn, \"Noto Naskh Arabic\", serif"
+    },
+    "he": {
+      "name": "Hebrew",
+      "script": "Hebr",
+      "families": [
+        "Noto Sans Hebrew",
+        "Noto Serif Hebrew",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans Hebrew\", Arial, sans-serif"
+    },
+    "th": {
+      "name": "Thai",
+      "script": "Thai",
+      "families": [
+        "Noto Sans Thai",
+        "Noto Serif Thai",
+        "Tahoma"
+      ],
+      "fallback": "\"Noto Sans Thai\", Tahoma, sans-serif"
+    },
+    "el": {
+      "name": "Greek",
+      "script": "Grek",
+      "families": [
+        "Noto Sans",
+        "Arial",
+        "Roboto"
+      ],
+      "fallback": "\"Noto Sans\", Arial, sans-serif"
+    }
+  },
+  "languageFallbacks": {
+    "am": {
+      "name": "Amharic",
+      "script": "Ethi",
+      "families": [
+        "Noto Sans Ethiopic",
+        "Abyssinica SIL"
+      ],
+      "fallback": "\"Noto Sans Ethiopic\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "hy": {
+      "name": "Armenian",
+      "script": "Armn",
+      "families": [
+        "Noto Sans Armenian",
+        "Noto Serif Armenian"
+      ],
+      "fallback": "\"Noto Sans Armenian\", serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "as": {
+      "name": "Assamese",
+      "script": "Beng",
+      "families": [
+        "Noto Sans Bengali",
+        "Noto Serif Bengali",
+        "Vrinda"
+      ],
+      "fallback": "\"Noto Sans Bengali\", Vrinda, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "az": {
+      "name": "Azerbaijani",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "be": {
+      "name": "Belarusian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "PT Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", \"PT Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "bg": {
+      "name": "Bulgarian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "PT Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", \"PT Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "my": {
+      "name": "Burmese",
+      "script": "Mymr",
+      "families": [
+        "Noto Sans Myanmar",
+        "Myanmar Text"
+      ],
+      "fallback": "\"Noto Sans Myanmar\", \"Myanmar Text\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "nl": {
+      "name": "Dutch",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "fr": {
+      "name": "French",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ka": {
+      "name": "Georgian",
+      "script": "Geor",
+      "families": [
+        "Noto Sans Georgian",
+        "Noto Serif Georgian"
+      ],
+      "fallback": "\"Noto Sans Georgian\", serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "de": {
+      "name": "German",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "gu": {
+      "name": "Gujarati",
+      "script": "Gujr",
+      "families": [
+        "Noto Sans Gujarati",
+        "Shruti"
+      ],
+      "fallback": "\"Noto Sans Gujarati\", Shruti, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "id": {
+      "name": "Indonesian",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "it": {
+      "name": "Italian",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "kn": {
+      "name": "Kannada",
+      "script": "Knda",
+      "families": [
+        "Noto Sans Kannada",
+        "Tunga"
+      ],
+      "fallback": "\"Noto Sans Kannada\", Tunga, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "km": {
+      "name": "Khmer",
+      "script": "Khmr",
+      "families": [
+        "Noto Sans Khmer",
+        "Khmer OS"
+      ],
+      "fallback": "\"Noto Sans Khmer\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ku": {
+      "name": "Kurdish",
+      "script": "Arab",
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "serif"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "lo": {
+      "name": "Lao",
+      "script": "Laoo",
+      "families": [
+        "Noto Sans Lao",
+        "Phetsarath OT"
+      ],
+      "fallback": "\"Noto Sans Lao\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "mk": {
+      "name": "Macedonian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "PT Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", \"PT Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ms": {
+      "name": "Malay (macrolanguage)",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ml": {
+      "name": "Malayalam",
+      "script": "Mlym",
+      "families": [
+        "Noto Sans Malayalam",
+        "Kartika"
+      ],
+      "fallback": "\"Noto Sans Malayalam\", Kartika, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "mr": {
+      "name": "Marathi",
+      "script": "Deva",
+      "families": [
+        "Noto Sans Devanagari",
+        "Noto Serif Devanagari",
+        "Mangal"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ne": {
+      "name": "Nepali (macrolanguage)",
+      "script": "Deva",
+      "families": [
+        "Noto Sans Devanagari",
+        "Noto Serif Devanagari",
+        "Mangal"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "pa": {
+      "name": "Panjabi",
+      "script": "Guru",
+      "families": [
+        "Noto Sans Gurmukhi",
+        "Raavi"
+      ],
+      "fallback": "\"Noto Sans Gurmukhi\", Raavi, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "pt": {
+      "name": "Portuguese",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ps": {
+      "name": "Pushto",
+      "script": "Arab",
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "serif"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "sa": {
+      "name": "Sanskrit",
+      "script": "Deva",
+      "families": [
+        "Noto Sans Devanagari",
+        "Noto Serif Devanagari",
+        "Mangal"
+      ],
+      "fallback": "\"Noto Sans Devanagari\", Mangal, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "sr": {
+      "name": "Serbian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "PT Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", \"PT Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "sd": {
+      "name": "Sindhi",
+      "script": "Arab",
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "serif"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "es": {
+      "name": "Spanish",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "sw": {
+      "name": "Swahili (macrolanguage)",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ta": {
+      "name": "Tamil",
+      "script": "Taml",
+      "families": [
+        "Noto Sans Tamil",
+        "Latha"
+      ],
+      "fallback": "\"Noto Sans Tamil\", Latha, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "te": {
+      "name": "Telugu",
+      "script": "Telu",
+      "families": [
+        "Noto Sans Telugu",
+        "Gautami"
+      ],
+      "fallback": "\"Noto Sans Telugu\", Gautami, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "bo": {
+      "name": "Tibetan",
+      "script": "Tibt",
+      "families": [
+        "Noto Sans Tibetan"
+      ],
+      "fallback": "\"Noto Sans Tibetan\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ti": {
+      "name": "Tigrinya",
+      "script": "Ethi",
+      "families": [
+        "Noto Sans Ethiopic",
+        "Abyssinica SIL"
+      ],
+      "fallback": "\"Noto Sans Ethiopic\", sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "ug": {
+      "name": "Uighur",
+      "script": "Arab",
+      "families": [
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "serif"
+      ],
+      "fallback": "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", Amiri, serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "uk": {
+      "name": "Ukrainian",
+      "script": "Cyrl",
+      "families": [
+        "Noto Sans",
+        "PT Sans",
+        "Roboto",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans\", \"PT Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "uz": {
+      "name": "Uzbek",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "vi": {
+      "name": "Vietnamese",
+      "script": "Latn",
+      "families": [
+        "Inter",
+        "Noto Sans",
+        "Arial",
+        "system-ui"
+      ],
+      "fallback": "Inter, \"Noto Sans\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    },
+    "yi": {
+      "name": "Yiddish",
+      "script": "Hebr",
+      "families": [
+        "Noto Sans Hebrew",
+        "Noto Serif Hebrew",
+        "Arial"
+      ],
+      "fallback": "\"Noto Sans Hebrew\", Arial, sans-serif",
+      "note": "Script-based recommendation; actual font availability depends on the operating system."
+    }
+  }
+}

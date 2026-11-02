@@ -1,54 +1,42 @@
 # User Guide
 
+## Choose where Charlie MJ Reader works
+Open **Settings → Supported Websites**. The extension is **active only** on websites in this list and **sleeps everywhere else** (no toolbar, highlighter, tracking, text-to-speech, article detection or page changes).
+
+- **Add** a domain, or **Disable / Remove** one. Open tabs wake or sleep immediately.
+- Open **Restrictions & per-site features** on a website card to set subdomains, path rules and individual features (toolbar, selection toolbar / highlighter, vocabulary, listen, focus, Pomodoro, native reading, reading tracking, auto-scroll, article detection).
+- **Test a page** tells you whether a given address would be Active or Sleeping.
+- The popup always shows whether the current tab is *Active* or *Sleeping*, and the toolbar icon shows **zzz** on sleeping sites.
+
+## The floating toolbar
+On an active website the main toolbar offers **Reader Workspace, Vocabulary, Productivity Reader, Focus, Productivity** and a night toggle. Press a tool to open its panel and press it again to close it. Use **×** to hide the toolbar; selecting text brings it back.
+
 ## Save an article
-Open an accessible article page and select **Save current article** in the popup or **Save** in the floating toolbar. The article is stored locally.
+- Popup → **Save current article**, or the toolbar's Reader Workspace button, or right-click → **Save page to Charlie MJ Reader**.
+- Right-click any **link** → **Charlie MJ Reader** → **Save article to Saved Articles**.
+Saving the same article again does not duplicate it; an incomplete earlier copy is refreshed when the new capture is longer.
 
-## Read
-Open the popup's **Reader** action or the full-page workspace. Select an item and choose **Read**.
+## Open an article in the Reader Workspace
+Toolbar → **Reader Workspace**, the popup's **Reader**, or right-click a link → **Charlie MJ Reader** → **Open article in Reader Workspace**.
 
-## Highlight
-Select text on a webpage and use the toolbar or right-click context menu. The saved highlight retains its source URL.
+## Highlight, quote, paragraph and vocabulary
+Select text on an active website. The selection toolbar offers **See Translate, Meaning, ＋ Vocabulary, Quote, Paragraph, Selection, Copy, Notes, Pronunciation**. Everything you save keeps its source article and appears under **See Saved** and in the matching Reader Workspace section.
 
 ## Listen
-Use the popup or toolbar's Listen action. Playback uses the browser's installed speech voices. Voice availability depends on the operating system and browser.
+Use **Listen** in the popup or toolbar. Playback uses your system's speech voices. In the Productivity Reader you get play / pause / stop, sentence navigation, speed, voice, highlight mode, auto-scroll, sleep timer, bookmarks and notes at the current position, repeat word and keyboard shortcuts (Space, Left / Right, B).
 
-## Notes and vocabulary
-Open the workspace and use the Notes or Vocabulary sections to add personal records. The vocabulary review action presents a saved word for recall.
+## Focus and productivity
+- **Focus**: brightness, contrast, opacity, dimming, blur, warmth, font scale, hide images, Day / Night / Auto, best-effort ad hiding, native word-by-word reading.
+- **Productivity**: Pomodoro and 80/20 timers.
+
+## Vocabulary
+Open the workspace → **Vocabulary**. Create headings and subheadings, add entries with translations, definitions, examples, pronunciation, part of speech, tags and notes, copy, edit, mark mastered, run the revision quiz, and export Markdown, CSV or JSON. Translation sends only the selected text, only when you press Translate.
+
+## My Reading Library
+Add websites, newspapers and writer profiles, browse by category and tags, open **Details** for SEO and ranking data, and manage saved articles. Library entries are organised data; only the Supported Websites list controls where the extension is active.
 
 ## Export and backup
-The Export Center provides Markdown, TXT and JSON article exports and a complete JSON backup. Settings includes import/restore.
+Export articles as Markdown, TXT, HTML or JSON, export vocabulary and captures, create a full JSON backup, restore it from Settings → Storage & Backup, or export the database ZIP.
 
-## Medium Access Manager
-Use the official Medium membership link and save articles to a reading queue. The extension does not clear cookies or bypass Medium's server-side reading restrictions.
-
-## Read-aloud media controls
-
-Open a saved article with **Read** to enter the reader. Select **Read aloud** or **Play** to start text-to-speech. The media panel provides **Play**, **Pause**, and **Stop**, plus a word-count progress bar and percentage. Pause preserves the current position; Play resumes from that position. Stop cancels speech and resets the current article's progress to the beginning. Progress is stored with the article as speech boundaries are reported by the browser's speech engine.
-
-From the extension popup, select **Listen** to extract text that is already available on the active page and reveal a compact Play/Pause/Stop panel. Keep the popup open while using this popup-level player; closing the popup ends that playback. For persistent article progress and resume, save the article and use the full Reader workspace.
-
-Text-to-speech availability and word-boundary precision depend on the voice and speech engine supplied by the browser/operating system.
-
-## Medium and access-restricted pages
-
-The extension reads text that is already available to the signed-in browser session or otherwise legitimately accessible. It does not bypass Medium membership checks, access controls, paywalls, or server-side reading limits. If a page only exposes a membership prompt, save/read-aloud may have no article text to capture. Use the publisher's access options or an authorized copy.
-
-
-## Vocabulary Studio (version 1.0.0 feature expansion)
-
-### Enable the selection toolbar
-1. Open extension Settings → Vocabulary.
-2. Keep **Enable selection vocabulary toolbar** enabled.
-3. Review the comma-separated domain list. Defaults are `eksisozluk.com`, `x.com`, and `twitter.com`.
-4. Add any hostname you want to support, such as `reddit.com`, separated by commas.
-5. Reload already-open tabs after changing the domain list.
-
-The toolbar appears beside a selected text passage only on enabled domains. It offers Translate, Save, Copy and Notes. Translation defaults to Turkish → English and can be changed in Settings → Vocabulary. The public MyMemory endpoint is used without an API key; public-service limits and availability apply.
-
-### Manage vocabulary
-Open the workspace → Vocabulary. Create headings and subheadings, then add entries with translations, definitions, examples, pronunciation, part of speech, tags, notes and source context. The original expression is rendered in bold and the translation in regular weight.
-
-You can edit translations/definitions/notes, copy entries, mark them mastered, delete entries, search the library, and export Markdown, CSV or JSON. Category deletion leaves vocabulary intact and makes entries in that category uncategorized.
-
-### Privacy and reliability
-Vocabulary and categories are stored in local Chrome extension storage. Selected text is sent to the configured public translation endpoint only when you press Translate. Avoid translating private or sensitive text through a public service. Website-specific toolbar activation is local and configurable. Some sites may change their DOM or selection behavior; reload the page if the toolbar does not appear.
+## Medium
+Medium stories open through the configured Freedium mirror. The mirror takes on Medium's status in Supported Websites. The extension reads what Medium or Freedium returns; it does not bypass membership checks, paywalls or quotas.

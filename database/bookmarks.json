@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "description": "Bookmark export/import shape. Runtime records are stored in the shared Reader database collection data.bookmarks.",
+  "bookmarks": []
+}

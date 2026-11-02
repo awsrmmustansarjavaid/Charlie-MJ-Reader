@@ -1,7 +1,9 @@
+/**
+ * Browser action popup controller for quick Reader actions and active-tab status.
+ */
 import { getAll, saveAll } from "../lib/storage.js";
 import { exportBackup } from "../lib/export.js";
 import { addFromUrl } from "../lib/sites.js";
-
 // Keep popup controls and counters small, predictable, and easy to maintain.
 const $ = (id) => document.getElementById(id);
 const data = await getAll();
@@ -10,98 +12,138 @@ let utterance = null;
 let wordCount = 0;
 let spokenWords = 0;
 let playbackState = "idle";
-
 $("article-count").textContent = data.articles.length;
 $("highlight-count").textContent = data.highlights.length;
 $("word-count").textContent = data.vocabulary.length;
 const toast = (message) => { $("toast").textContent = message; };
-
+/** Shows whether Charlie MJ Reader is active or sleeping on the current tab. */
+async function showSiteState() {
+    const box = $("site-state");
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!/^https?:\/\//i.test(tab?.url || "")) {
+            box.textContent = "This browser page is not a website. Open an article to use Charlie MJ Reader.";
+            box.className = "site-state sleep";
+            return;
+        }
+        const supported = globalThis.CMJSiteGate.isSupported(data.settings, tab.url);
+        if (supported) {
+            box.textContent = "● Active on this website";
+            box.className = "site-state active";
+        }
+        else {
+            box.textContent = "😴 Sleeping — this website is not in your Supported Websites list.";
+            box.className = "site-state sleep";
+        }
+    }
+    catch {
+        box.hidden = true;
+    }
+}
+showSiteState();
 async function activeTab() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) throw new Error("No active browser tab was found.");
-  return tab;
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id)
+        throw new Error("No active browser tab was found.");
+    return tab;
 }
-
+/** Asks the page for its article; explains clearly when the website is sleeping. */
+async function askPage(tab) {
+    if (!globalThis.CMJSiteGate.isSupported(data.settings, tab.url))
+        throw new Error("Charlie MJ Reader is sleeping on this website. Add it to Supported Websites first.");
+    try {
+        return await chrome.tabs.sendMessage(tab.id, { type: "CMJ_GET_PAGE_DATA" });
+    }
+    catch {
+        throw new Error("The page is not ready. Refresh this tab and try again.");
+    }
+}
 function updateMedia(position = spokenWords, status = playbackState) {
-  const percent = wordCount ? Math.min(100, Math.round((position / wordCount) * 100)) : 0;
-  $("media-toolbar").hidden = false;
-  $("media-progress").style.width = `${percent}%`;
-  $("media-percent").textContent = `${percent}%`;
-  $("media-position").textContent = `${position} / ${wordCount} words`;
-  $("media-status").textContent = status === "playing" ? "Playing" : status === "paused" ? "Paused" : status === "stopped" ? "Stopped" : "Ready";
-}
-
-function stopReading() {
-  window.speechSynthesis.cancel();
-  utterance = null;
-  playbackState = "stopped";
-  spokenWords = 0;
-  updateMedia(0, "stopped");
-}
-
-function playReading() {
-  if (!currentText) return;
-  if (playbackState === "paused" && window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
-    playbackState = "playing";
-    updateMedia();
-    return;
-  }
-  window.speechSynthesis.cancel();
-  utterance = new SpeechSynthesisUtterance(currentText);
-  utterance.rate = 1;
-  utterance.onstart = () => { playbackState = "playing"; updateMedia(); };
-  utterance.onboundary = (event) => {
-    if (event.name !== "word") return;
-    spokenWords = currentText.slice(0, event.charIndex).trim().split(/\s+/).filter(Boolean).length;
-    updateMedia();
-  };
-  utterance.onend = () => { playbackState = "stopped"; spokenWords = wordCount; updateMedia(wordCount, "stopped"); };
-  utterance.onerror = () => { playbackState = "stopped"; updateMedia(spokenWords, "stopped"); };
-  playbackState = "playing";
-  window.speechSynthesis.speak(utterance);
-  updateMedia();
-}
-
-async function startReadingCurrentPage() {
-  try {
-    const tab = await activeTab();
-    const response = await chrome.tabs.sendMessage(tab.id, {type:"CMJ_GET_PAGE_DATA"});
-    if (!response?.ok || !response.article?.text) throw new Error(response?.error || "No readable text is available on this page.");
-    currentText = String(response.article.text).trim();
-    wordCount = currentText.split(/\s+/).filter(Boolean).length;
-    spokenWords = 0;
+    const percent = wordCount ? Math.min(100, Math.round((position / wordCount) * 100)) : 0;
     $("media-toolbar").hidden = false;
-    playReading();
-    toast("Reading toolbar is ready. Use Play, Pause, or Stop below.");
-  } catch (error) {
-    toast(error.message || "This page cannot be read aloud.");
-  }
+    $("media-progress").style.width = `${percent}%`;
+    $("media-percent").textContent = `${percent}%`;
+    $("media-position").textContent = `${position} / ${wordCount} words`;
+    $("media-status").textContent = status === "playing" ? "Playing" : status === "paused" ? "Paused" : status === "stopped" ? "Stopped" : "Ready";
 }
-
+function stopReading() {
+    window.speechSynthesis.cancel();
+    utterance = null;
+    playbackState = "stopped";
+    spokenWords = 0;
+    updateMedia(0, "stopped");
+}
+function playReading() {
+    if (!currentText)
+        return;
+    if (playbackState === "paused" && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        playbackState = "playing";
+        updateMedia();
+        return;
+    }
+    window.speechSynthesis.cancel();
+    utterance = new SpeechSynthesisUtterance(currentText);
+    utterance.rate = 1;
+    utterance.onstart = () => { playbackState = "playing"; updateMedia(); };
+    utterance.onboundary = (event) => {
+        if (event.name !== "word")
+            return;
+        spokenWords = currentText.slice(0, event.charIndex).trim().split(/\s+/).filter(Boolean).length;
+        updateMedia();
+    };
+    utterance.onend = () => { playbackState = "stopped"; spokenWords = wordCount; updateMedia(wordCount, "stopped"); };
+    utterance.onerror = () => { playbackState = "stopped"; updateMedia(spokenWords, "stopped"); };
+    playbackState = "playing";
+    window.speechSynthesis.speak(utterance);
+    updateMedia();
+}
+async function startReadingCurrentPage() {
+    try {
+        const tab = await activeTab();
+        const response = await askPage(tab);
+        if (!response?.ok || !response.article?.text)
+            throw new Error(response?.error || "No readable text is available on this page.");
+        currentText = String(response.article.text).trim();
+        wordCount = currentText.split(/\s+/).filter(Boolean).length;
+        spokenWords = 0;
+        $("media-toolbar").hidden = false;
+        playReading();
+        toast("Reading toolbar is ready. Use Play, Pause, or Stop below.");
+    }
+    catch (error) {
+        toast(error.message || "This page cannot be read aloud.");
+    }
+}
 $("save-page").addEventListener("click", async () => {
-  try {
-    const tab = await activeTab();
-    const response = await chrome.tabs.sendMessage(tab.id, {type:"CMJ_GET_PAGE_DATA"});
-    if (!response?.ok || !response.article?.text) throw new Error(response?.error || "No readable article text was found.");
-    const result = response.article;
-    const latest = await getAll();
-    if (!latest.articles.some((article) => article.url === result.url)) latest.articles.unshift(result);
-    await saveAll(latest);
-    toast("Article saved to your library.");
-  } catch (error) {
-    toast(error.message || "This page cannot be captured. Open a regular article tab.");
-  }
+    try {
+        const tab = await activeTab();
+        const response = await askPage(tab);
+        if (!response?.ok || !response.article?.text)
+            throw new Error(response?.error || "No readable article text was found.");
+        const result = response.article;
+        const latest = await getAll();
+        if (!latest.articles.some((article) => article.url === result.url))
+            latest.articles.unshift(result);
+        await saveAll(latest);
+        toast("Article saved to your library.");
+    }
+    catch (error) {
+        toast(error.message || "This page cannot be captured. Open a regular article tab.");
+    }
 });
-
 $("add-site").addEventListener("click", async () => {
-  try {
-    const tab = await activeTab();
-    if (!/^https?:\/\//i.test(tab.url || "")) throw new Error("Open a normal http/https website tab first.");
-    toast("Fetching website data…");
-    const r = await addFromUrl(tab.url, { kind: "auto" });
-    toast(`${r.isNew ? "Added" : "Updated"} ${r.label} → ${r.category}.`);
-  } catch (error) { toast(error.message || "Could not add this website."); }
+    try {
+        const tab = await activeTab();
+        if (!/^https?:\/\//i.test(tab.url || ""))
+            throw new Error("Open a normal http/https website tab first.");
+        toast("Fetching website data…");
+        const r = await addFromUrl(tab.url, { kind: "auto" });
+        toast(`${r.isNew ? "Added" : "Updated"} ${r.label} → ${r.category}.`);
+    }
+    catch (error) {
+        toast(error.message || "Could not add this website.");
+    }
 });
 $("open-reader").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("src/reader/reader.html") }));
 $("open-library").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("src/library/library.html") }));
@@ -111,9 +153,11 @@ $("export-backup").addEventListener("click", async () => exportBackup(await getA
 $("listen").addEventListener("click", startReadingCurrentPage);
 $("media-play").addEventListener("click", playReading);
 $("media-pause").addEventListener("click", () => {
-  if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-    window.speechSynthesis.pause(); playbackState = "paused"; updateMedia();
-  }
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        playbackState = "paused";
+        updateMedia();
+    }
 });
 $("media-stop").addEventListener("click", stopReading);
 window.addEventListener("beforeunload", () => window.speechSynthesis.cancel());

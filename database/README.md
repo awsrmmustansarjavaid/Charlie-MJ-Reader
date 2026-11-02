@@ -1,17 +1,9 @@
-# Charlie MJ Reader database layout
+# Database resources
 
-This directory documents the portable database layout. The current extension runtime stores active records in `chrome.storage.local`; it does not yet write one file per record directly into the installed extension directory. Use Settings → Database to export a portable snapshot.
+The extension uses `chrome.storage.local` for live user records. JSON files in this directory are bundled registries and documented import/export shapes, not writable runtime databases.
 
-Planned file layout:
+- `languages.json`: ISO 639 language identifiers bundled for language selectors.
+- `font-catalog.json`: script-aware preferred font stacks; availability depends on installed operating-system fonts.
+- `bookmarks.json`: bookmark backup schema. Live bookmarks are stored in the shared `data.bookmarks` collection and can be exported as JSON.
 
-- `articles/<category>/<article-id>.json`
-- `highlights/<highlight-id>.json`
-- `notes/<note-id>.json`
-- `quotes/<quote-id>.json`
-- `vocabulary/<vocabulary-id>.json`
-- `topics/<topic-id>.json`
-- `websites/<hostname>.json`
-- `sync/manifest.json`
-- `backups/`
-
-Every record should carry `id`, `schemaVersion`, `createdAt`, and `updatedAt`. Topic/article relationships should use IDs, not duplicate article bodies.
+The browser extension cannot write into its own packaged extension directory at runtime. Exported backups are downloaded by the user instead.

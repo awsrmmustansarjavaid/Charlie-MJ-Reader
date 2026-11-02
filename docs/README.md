@@ -1,8 +1,11 @@
 # Documentation
 
 - [Installation Guide](INSTALLATION.md)
-- [Feature Matrix & Roadmap](FEATURES.md)
-- [Architecture & Developer Guide](DEVELOPMENT.md)
-- [Privacy, Permissions & Security](PRIVACY.md)
 - [User Guide](USER-GUIDE.md)
-- [QA Checklist](../tests/QA-CHECKLIST.md)
+- [Feature Matrix](FEATURES.md)
+- [Privacy, Permissions & Security](PRIVACY.md)
+- [Architecture & Developer Guide](DEVELOPMENT.md)
+- [Smart Audio Reader](SMART-AUDIO-READER.md)
+- [Adapter Packages](ADAPTER-PACKAGES.md)
+- [QA Checklist](QA-CHECKLIST.md)
+- [Project source specification](PROJECT-BLUEPRINT-SOURCE.md)

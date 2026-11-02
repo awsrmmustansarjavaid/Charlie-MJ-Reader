@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!-- Language Learning page markup for the Charlie MJ Reader extension. -->
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta content="dark" name="color-scheme"/>
+  <title>
+   Charlie MJ &middot; Language Learning
+  </title>
+  <link href="language-learning.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="app-shell">
+   <aside class="sidebar">
+    <a class="brand" href="../reader/reader.html">
+     <img class="brand-mark-image" src="../../assets/logo.svg" alt="Charlie MJ Reader logo">
+     <span>
+      <strong>
+       Charlie MJ
+      </strong>
+      <small>
+       LANGUAGE LEARNING
+      </small>
+     </span>
+    </a>
+    <div class="sidebar-label">
+     LEARNING WORKSPACE
+    </div>
+    <nav aria-label="Language learning navigation" id="learning-nav">
+     <button class="nav-item active" data-view="overview">
+      ▦
+      <span>
+       Overview
+      </span>
+     </button>
+     <button class="nav-item" data-view="articles">
+      ▤
+      <span>
+       Learning Articles
+      </span>
+     </button>
+     <button class="nav-item" data-view="vocabulary">
+      Aa
+      <span>
+       Vocabulary Library
+      </span>
+     </button>
+     <button class="nav-item" data-view="grammar">
+      ⌘
+      <span>
+       Grammar Collection
+      </span>
+     </button>
+     <button class="nav-item" data-view="bookmarks">
+      🔖
+      <span>
+       Bookmarks
+      </span>
+     </button>
+     <button class="nav-item" data-view="progress">
+      ◷
+      <span>
+       Language Progress
+      </span>
+     </button>
+    </nav>
+    <div class="sidebar-bottom">
+     <a href="../reader/reader.html">
+      &larr; Back to Reader Workspace
+     </a>
+     <span>
+      Version 1.0.0
+     </span>
+    </div>
+   </aside>
+   <main class="main-panel">
+    <header class="topbar">
+     <div>
+      <span class="eyebrow">
+       READ &middot; UNDERSTAND &middot; ANALYZE &middot; LEARN
+      </span>
+      <h1 id="page-heading">
+       Language Learning
+      </h1>
+      <p id="page-subtitle">
+       Turn real-world articles into practical language lessons.
+      </p>
+     </div>
+     <div class="topbar-actions">
+      <label class="level-control">
+       Target language
+       <select aria-label="Target learning language" id="learning-target-language"><option value="en">English</option></select>
+      </label>
+      <label class="level-control">
+       My level
+       <select aria-label="My CEFR level" id="learner-level">
+        <option>
+         A1
+        </option>
+        <option>
+         A2
+        </option>
+        <option selected="">
+         B1
+        </option>
+        <option>
+         B2
+        </option>
+        <option>
+         C1
+        </option>
+        <option>
+         C2
+        </option>
+       </select>
+      </label>
+      <button class="button button-primary" id="capture-current">
+       ＋ Learn from current page
+      </button>
+     </div>
+    </header>
+    <nav class="learning-tools-navbar" aria-label="Language learning tools">
+     <button data-tool-view="articles">Articles</button>
+     <button data-tool-view="vocabulary">Vocabulary</button>
+     <button data-tool-view="grammar">Grammar</button>
+     <button data-tool-view="sentences">Sentences</button>
+     <button data-tool-view="expressions">Expressions</button>
+     <button data-tool-action="idiom">Idioms</button>
+     <button data-tool-action="phrase">Phrases</button>
+     <button data-tool-action="proverb">Proverbs</button>
+     <button data-tool-action="slang">Slang</button>
+     <button data-tool-action="suffix">Suffixes</button>
+     <button data-tool-action="translate">Translate</button>
+     <button data-tool-action="pronunciation">Pronunciation</button>
+     <button data-tool-action="listen">Listen</button>
+     <button data-tool-action="note">Notes</button>
+     <button data-tool-action="level-check">Level Check</button>
+     <button data-tool-action="bookmark">Bookmark</button>
+     <button data-tool-action="analyze">Analyze</button>
+     <button data-tool-view="progress">Progress</button>
+     <button data-tool-view="settings">Learning settings</button>
+     <button id="learning-export-json">Export JSON</button>
+     <button id="learning-export-csv">Export CSV</button>
+     <button id="learning-export-md">Export Markdown</button>
+     <button id="learning-import-button">Import backup</button>
+     <input id="learning-import-file" type="file" accept="application/json,.json" hidden>
+    </nav>
+    <section aria-live="polite" id="learning-view">
+    </section>
+    <dialog class="learning-details-dialog" id="learning-article-details">
+     <div class="learning-details-heading">
+      <div><span class="eyebrow">ARTICLE INFORMATION</span><h2 id="learning-details-title">Article details</h2></div>
+      <button class="button" id="close-learning-details" type="button" aria-label="Close article details">Close</button>
+     </div>
+     <div class="learning-details-content" id="learning-details-content"></div>
+    </dialog>
+    <div aria-live="polite" class="toast" id="learning-toast" role="status">
+    </div>
+   </main>
+  </div>
+  <script src="language-learning.js" type="module">
+  </script>
+ </body>
+</html>

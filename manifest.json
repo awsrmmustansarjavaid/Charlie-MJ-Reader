@@ -3,7 +3,7 @@
   "name": "Charlie MJ Reader",
   "short_name": "CMJ Reader",
   "version": "1.0.0",
-  "description": "A local-first reading workspace with responsive saved-library grids and article metadata refresh.",
+  "description": "A local-first reading workspace that runs only on the websites you choose, with a responsive saved-library and article metadata refresh.",
   "permissions": [
     "storage",
     "activeTab",
@@ -25,7 +25,13 @@
   },
   "action": {
     "default_title": "Charlie MJ Reader",
-    "default_popup": "src/popup/popup.html"
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
   },
   "options_page": "src/options/options.html",
   "content_scripts": [
@@ -36,10 +42,8 @@
       ],
       "js": [
         "src/lib/reading-engine.js",
+        "src/lib/site-gate.js",
         "src/content/content.js"
-      ],
-      "css": [
-        "src/content/content.css"
       ],
       "run_at": "document_idle"
     }
@@ -49,5 +53,18 @@
     "32": "assets/icons/icon32.png",
     "48": "assets/icons/icon48.png",
     "128": "assets/icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/logo.svg",
+        "assets/icons/*.png",
+        "assets/icons/*.svg"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ]
 }

@@ -1,233 +1,1737 @@
+/**
+ * Settings controller for extension preferences, supported websites and backup operations.
+ */
 import { getAll, saveAll } from "../lib/storage.js";
 let data = await getAll();
-const panel=document.getElementById("panel");
-const saved=document.getElementById("saved");
-const tabs=document.getElementById("tabs");
-let active=(location.hash||"").replace("#","")||"general";
+const panel = document.getElementById("panel");
+const saved = document.getElementById("saved");
+const tabs = document.getElementById("tabs");
+let active = (location.hash || "").replace("#", "") || "general";
 const timestamp = new Date().toISOString();
 function askConfirmation(message) {
-  return new Promise(resolve => {
-    const overlay=document.createElement("div"); overlay.className="cmj-confirm-overlay";
-    overlay.innerHTML=`<section class="cmj-confirm-card" role="dialog" aria-modal="true"><h3>Confirm action</h3><p>${escapeHtml(message)}</p><div class="cmj-confirm-actions"><button data-choice="cancel">Cancel</button><button data-choice="ok">Continue</button></div></section>`;
-    overlay.addEventListener("click",e=>{if(e.target===overlay){overlay.remove();resolve(false);return;}const c=e.target.closest("[data-choice]")?.dataset.choice;if(c){overlay.remove();resolve(c==="ok");}});
-    document.body.append(overlay); overlay.querySelector('[data-choice="ok"]')?.focus();
-  });
+    return new Promise(resolve => {
+        const overlay = document.createElement("div");
+        overlay.className = "cmj-confirm-overlay";
+        overlay.innerHTML = `<section class="cmj-confirm-card" role="dialog" aria-modal="true">\
+<h3>Confirm action</h3>\
+<p>${escapeHtml(message)}</p>\
+<div class="cmj-confirm-actions">\
+<button data-choice="cancel">Cancel</button>\
+<button data-choice="ok">Continue</button>\
+</div>\
+</section>`;
+        overlay.addEventListener("click", e => {
+            if (e.target === overlay) {
+                overlay.remove();
+                resolve(false);
+                return;
+            }
+            const c = e.target.closest("[data-choice]")?.dataset.choice;
+            if (c) {
+                overlay.remove();
+                resolve(c === "ok");
+            }
+        });
+        document.body.append(overlay);
+        overlay.querySelector('[data-choice="ok"]')?.focus();
+    });
 }
-const configs={
- general:[["Default theme","theme","select",["dark","light","system"]],["Confirm before deleting","confirmDelete","check"],["Automatically detect article pages","autoDetect","check"]],
- appearance:[["Dashboard theme","dashboardTheme","select",["dark","light","system"]],["Reading theme","readingTheme","select",["default-dark","midnight","charcoal","slate","pure-white","soft-white","sepia","warm-paper"]],["Accent color","accent","color"],["Font size (px)","fontSize","range",12,30],["Reading width (px)","readingWidth","range",520,1100],["Line height","lineHeight","range",1.2,2.4]],
- toolbar:[["Enable toolbar","toolbarEnabled","check"],["Toolbar position","toolbarPosition","select",["top","bottom","left","right"]],["Toolbar opacity","toolbarOpacity","range",40,100]],
- reading:[["Default font size","fontSize","range",12,30],["Reading width","readingWidth","range",520,1100],["Line height","lineHeight","range",1.2,2.4],["Restore last reading position","restorePosition","check"]],
- highlight:[["Default highlight color","highlightColor","select",["yellow","green","blue","pink","orange","purple"]],["Enable line hover tracking","lineTracking","check"],["Automatically save selected words","autoSaveWords","check"]],
- tts:[["Speech rate","ttsRate","range",0.5,3],["Speech pitch","ttsPitch","range",0.5,2],["Continue reading across paragraphs","ttsContinue","check"]],
- vocabulary:[["Enable selection vocabulary toolbar","vocabularyToolbarEnabled","check"],["Translation source language","translationSource","select",["tr","en","ur","es","fr","de"]],["Translation target language","translationTarget","select",["en","tr","ur","es","fr","de"]],["Dictionary language","dictionaryLanguage","select",["en","ur","es","fr","de"]],["Revision reminder","revisionReminder","check"]],
- ai:[["AI provider","aiProvider","select",["openai-compatible","custom-endpoint"]],["API endpoint","aiEndpoint","text"],["Model name","aiModel","text"],["API key","aiKey","password"],["Allow article text to be sent to configured AI","aiConsent","check"]],
- notifications:[["Reading reminders","readingReminders","check"],["Vocabulary reminders","vocabularyReminders","check"],["Medium access reminders","mediumAlerts","check"]],
- privacy:[["Only process pages after user action","manualCapture","check"],["External AI requests require consent","aiConsent","check"]],
- medium:[["Enable access reminders","mediumAlerts","check"],["Monitor page access notices (best-effort)","mediumMonitor","check"]],
- focus:[["Enable Focus mode","focusEnabled","check"],["Block common ads","adBlockEnabled","check"],["Day / Night mode","dayNightMode","select",["day","night","auto"]],["Brightness","focusBrightness","range",50,150],["Contrast","focusContrast","range",50,150],["Page opacity","focusOpacity","range",40,100],["Background dimming","focusDimBackground","check"],["Blur strength","focusBlur","range",0,8],["Warmth","focusWarmth","range",0,100],["Font scale","focusFontScale","range",80,130],["Hide large images","focusHideImages","check"],["Native reading timer (seconds)","nativeReadingTimer","range",1,60],["Native reading start delay (seconds)","nativeReadingDelay","range",0,120],["Native reading enabled","nativeReadingEnabled","check"],["Current word bold","nativeCurrentWordBold","check"],["Native word highlight color","nativeHighlightWordColor","select",["orange","yellow","green","blue","pink","purple"]],["Native line highlight color","nativeHighlightLineColor","select",["purple","blue","green","orange","yellow"]]]
+const configs = {
+    general: [["Default theme", "theme", "select", ["dark", "light", "system"]],
+    ["Confirm before deleting", "confirmDelete", "check"],
+    ["Automatically detect article pages", "autoDetect", "check"]],
+    appearance: [["Dashboard theme", "dashboardTheme", "select", ["dark", "light", "system"]],
+    ["Reading theme", "readingTheme", "select", ["default-dark", "midnight", "charcoal", "slate", "pure-white", "soft-white", "sepia", "warm-paper"]],
+    ["Accent color", "accent", "color"],
+    ["Font size (px)", "fontSize", "range", 12, 30],
+    ["Reading width (px)", "readingWidth", "range", 520, 1100],
+    ["Line height", "lineHeight", "range", 1.2, 2.4]],
+    toolbar: [["Enable toolbar", "toolbarEnabled", "check"],
+    ["Toolbar position", "toolbarPosition", "select", ["top", "bottom", "left", "right"]],
+    ["Toolbar opacity", "toolbarOpacity", "range", 40, 100]],
+    reading: [["Default font size", "fontSize", "range", 12, 30],
+    ["Reading width", "readingWidth", "range", 520, 1100],
+    ["Line height", "lineHeight", "range", 1.2, 2.4],
+    ["Restore last reading position", "restorePosition", "check"]],
+    highlight: [["Default highlight color", "highlightColor", "select", ["yellow", "green", "blue", "pink", "orange", "purple"]],
+    ["Enable line hover tracking", "lineTracking", "check"],
+    ["Automatically save selected words", "autoSaveWords", "check"]],
+    tts: [["Speech rate", "ttsRate", "range", 0.5, 3], ["Speech pitch", "ttsPitch", "range", 0.5, 2], ["Continue reading across paragraphs", "ttsContinue", "check"]],
+    vocabulary: [["Enable selection vocabulary toolbar", "vocabularyToolbarEnabled", "check"],
+    ["Translation source language", "translationSource", "select", ["tr", "en", "ur", "es", "fr", "de"]],
+    ["Translation target language", "translationTarget", "select", ["en", "tr", "ur", "es", "fr", "de"]],
+    ["Dictionary language", "dictionaryLanguage", "select", ["en", "ur", "es", "fr", "de"]],
+    ["Revision reminder", "revisionReminder", "check"]],
+    ai: [["AI provider", "aiProvider", "select", ["openai-compatible", "custom-endpoint"]],
+    ["API endpoint", "aiEndpoint", "text"],
+    ["Model name", "aiModel", "text"],
+    ["API key", "aiKey", "password"],
+    ["Allow article text to be sent to configured AI", "aiConsent", "check"]],
+    notifications: [["Reading reminders", "readingReminders", "check"],
+    ["Vocabulary reminders", "vocabularyReminders", "check"],
+    ["Medium access reminders", "mediumAlerts", "check"]],
+    privacy: [["Only process pages after user action", "manualCapture", "check"], ["External AI requests require consent", "aiConsent", "check"]],
+    medium: [["Enable access reminders", "mediumAlerts", "check"], ["Monitor page access notices (best-effort)", "mediumMonitor", "check"]],
+    focus: [["Enable Focus mode", "focusEnabled", "check"],
+    ["Block common ads", "adBlockEnabled", "check"],
+    ["Day / Night mode", "dayNightMode", "select", ["day", "night", "auto"]],
+    ["Brightness", "focusBrightness", "range", 50, 150],
+    ["Contrast", "focusContrast", "range", 50, 150],
+    ["Page opacity", "focusOpacity", "range", 40, 100],
+    ["Background dimming", "focusDimBackground", "check"],
+    ["Blur strength", "focusBlur", "range", 0, 8],
+    ["Warmth", "focusWarmth", "range", 0, 100],
+    ["Font scale", "focusFontScale", "range", 80, 130],
+    ["Hide large images", "focusHideImages", "check"],
+    ["Native reading timer (seconds)", "nativeReadingTimer", "range", 1, 60],
+    ["Native reading start delay (seconds)", "nativeReadingDelay", "range", 0, 120],
+    ["Native reading enabled", "nativeReadingEnabled", "check"],
+    ["Current word bold", "nativeCurrentWordBold", "check"],
+    ["Native word highlight color", "nativeHighlightWordColor", "select", ["orange", "yellow", "green", "blue", "pink", "purple"]],
+    ["Native line highlight color", "nativeHighlightLineColor", "select", ["purple", "blue", "green", "orange", "yellow"]]]
 };
-const labels={library:"My Reading Library",smartAudio:"Smart Audio Reader",general:"General",appearance:"Appearance & Themes",toolbar:"Toolbars",websites:"Supported Websites",reading:"Reading Preferences",highlight:"Highlight Preferences",tts:"Text-to-Speech",vocabulary:"Vocabulary",ai:"AI Configuration",notifications:"Notifications",storage:"Storage & Backup",privacy:"Privacy & Permissions",medium:"Medium Compatibility",intelligence:"Knowledge Intelligence",topics:"Topics & Knowledge",productivity:"Productivity Centre",performance:"Performance",database:"Database Manager",sync:"GitHub Data Sync"};
-function inputFor([label,key,type,opts,min,max]){
- const val=data.settings[key] ?? (type==="check"?false:type==="range"?(min+max)/2:"");
- if(type==="check")return `<input type="checkbox" data-key="${key}" ${val?"checked":""}>`;
- if(type==="select")return `<select data-key="${key}">${opts.map(v=>`<option ${v===val?"selected":""} value="${v}">${v}</option>`).join("")}</select>`;
- if(type==="range")return `<input type="range" data-key="${key}" min="${min}" max="${max}" step="${(max-min)>10?1:.1}" value="${val}"><output>${val}</output>`;
- return `<input type="${type==="color"?"color":type==="password"?"password":"text"}" data-key="${key}" value="${String(val).replace(/"/g,"&quot;")}">`;
+const labels = {
+    library: "My Reading Library",
+    smartAudio: "Smart Audio Reader",
+    general: "General",
+    appearance: "Appearance & Themes",
+    toolbar: "Toolbars",
+    websites: "Supported Websites",
+    reading: "Reading Preferences",
+    highlight: "Highlight Preferences",
+    tts: "Text-to-Speech",
+    vocabulary: "Vocabulary",
+    ai: "AI Configuration",
+    notifications: "Notifications",
+    storage: "Storage & Backup",
+    privacy: "Privacy & Permissions",
+    medium: "Medium Compatibility",
+    intelligence: "Knowledge Intelligence",
+    topics: "Topics & Knowledge",
+    productivity: "Productivity Centre",
+    performance: "Performance",
+    database: "Database Manager",
+    sync: "GitHub Data Sync"
+};
+function inputFor([label, key, type, opts, min, max]) {
+    const val = data.settings[key] ?? (type === "check" ? false : type === "range" ? (min + max) / 2 : "");
+    if (type === "check")
+        return `<input type="checkbox" data-key="${key}" ${val ? "checked" : ""}>`;
+    if (type === "select")
+        return `<select data-key="${key}">${opts.map(v => `<option ${v === val ? "selected" : ""} value="${v}">${v}</option>`).join("")}</select>`;
+    if (type === "range")
+        return `<input type="range" data-key="${key}" min="${min}" max="${max}" step="${(max - min) > 10 ? 1 : .1}" value="${val}">\
+<output>${val}</output>`;
+    return `<input type="${type === "color" ? "color" : type === "password" ? "password" : "text"}" data-key="${key}" value="${String(val).replace(/"/g, "&quot;")}">`;
 }
-function row(item){return `<div class="setting"><div><strong>${item[0]}</strong><small>${helpText(item[1])}</small></div>${inputFor(item)}</div>`;}
-function helpText(key){return ({aiConsent:"External services receive article text only after you enable this option.",aiKey:"Stored locally in Chrome extension storage. Do not share your profile.",mediumAlerts:"Reminders only; the extension cannot reset server-enforced reading quotas.",readingWidth:"Controls the preferred content width in the reader workspace."})[key]||"Saved locally in this browser.";}
-
-function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function downloadJson(name,value){const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function crc32(bytes){let c=0xffffffff;for(let i=0;i<bytes.length;i++){c^=bytes[i];for(let k=0;k<8;k++)c=(c>>>1)^(0xedb88320&-(c&1));}return (c^0xffffffff)>>>0;}
-function u16(n){return new Uint8Array([n&255,(n>>>8)&255]);} function u32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
-function catName(s){return String(s||'General').replace(/[\\/:*?"<>|]+/g,'-').trim()||'General';}
-function zipStore(entries){const enc=new TextEncoder(),local=[],central=[];let off=0;for(const e of entries){const name=enc.encode(e.path),body=typeof e.data==='string'?enc.encode(e.data):e.data,crc=crc32(body);const x=new Uint8Array(30+name.length+body.length);let p=0;const put=(a)=>{x.set(a,p);p+=a.length};put(new Uint8Array([80,75,3,4]));put(u16(20));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(crc));put(u32(body.length));put(u32(body.length));put(u16(name.length));put(u16(0));put(name);put(body);local.push(x);central.push({name,crc,size:body.length,off});off+=x.length;}let cd=0,cs=[];for(const c of central){const x=new Uint8Array(46+c.name.length);let p=0;const put=a=>{x.set(a,p);p+=a.length};put(new Uint8Array([80,75,1,2]));put(u16(20));put(u16(20));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(c.crc));put(u32(c.size));put(u32(c.size));put(u16(c.name.length));put(u16(0));put(u16(0));put(u16(0));put(u16(0));put(u32(0));put(u32(c.off));put(c.name);cs.push(x);cd+=x.length;}const end=new Uint8Array(22);let p=0;const put=a=>{end.set(a,p);p+=a.length};put(new Uint8Array([80,75,5,6]));put(u16(0));put(u16(0));put(u16(central.length));put(u16(central.length));put(u32(cd));put(u32(off));put(u16(0));return new Blob([...local,...cs,end],{type:'application/zip'});}
-async function readAdapterZip(file){
- const maxMB=Math.max(1,Math.min(100,Number(data.settings.adapterMaxPackageMB||25)));
- const maxFiles=Math.max(1,Math.min(500,Number(data.settings.adapterMaxFiles||500)));
- if(file.size>maxMB*1024*1024) throw Error(`ZIP exceeds the ${maxMB} MB package limit.`);
- const bytes=new Uint8Array(await file.arrayBuffer());
- const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
- const u16=(o)=>view.getUint16(o,true),u32=(o)=>view.getUint32(o,true);
- let eocd=-1; for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){if(u32(i)===0x06054b50){eocd=i;break;}}
- if(eocd<0) throw Error('Invalid ZIP: end-of-central-directory record not found.');
- const count=u16(eocd+10),centralSize=u32(eocd+12),centralOffset=u32(eocd+16);
- if(count>maxFiles) throw Error(`ZIP contains ${count} files; limit is ${maxFiles}.`);
- if(centralOffset+centralSize>bytes.length) throw Error('Invalid ZIP central directory.');
- const decoder=new TextDecoder(),entries=[];let pos=centralOffset,total=0;
- for(let i=0;i<count;i++){
-  if(u32(pos)!==0x02014b50) throw Error('Invalid ZIP central directory entry.');
-  const method=u16(pos+10),compressed=u32(pos+20),expanded=u32(pos+24),nameLen=u16(pos+28),extraLen=u16(pos+30),commentLen=u16(pos+32),localOffset=u32(pos+42);
-  const name=decoder.decode(bytes.slice(pos+46,pos+46+nameLen));pos+=46+nameLen+extraLen+commentLen;
-  if(!name||name.startsWith('/')||name.startsWith('\\')||/^[a-z]:/i.test(name)||name.split(/[\\/]/).includes('..')||name.includes('\\')) throw Error(`Unsafe ZIP path: ${name}`);
-  if(name.endsWith('/')) continue;
-  if(method!==0&&method!==8) throw Error(`Unsupported ZIP compression method for ${name}.`);
-  if(expanded>10*1024*1024) throw Error(`File is too large: ${name}`);
-  total+=expanded;if(total>maxMB*1024*1024) throw Error('Expanded ZIP exceeds package size limit.');
-  if(u32(localOffset)!==0x04034b50) throw Error(`Invalid ZIP local header: ${name}`);
-  const localName=u16(localOffset+26),localExtra=u16(localOffset+28),start=localOffset+30+localName+localExtra,end=start+compressed;
-  if(end>bytes.length) throw Error(`Truncated ZIP entry: ${name}`);
-  let body=bytes.slice(start,end);
-  if(method===8){if(typeof DecompressionStream==='undefined')throw Error('This Chrome version cannot decompress deflate ZIP entries.');const stream=new Blob([body]).stream().pipeThrough(new DecompressionStream('deflate-raw'));body=new Uint8Array(await new Response(stream).arrayBuffer());}
-  if(body.length!==expanded) throw Error(`ZIP size check failed for ${name}.`);
-  entries.push({path:name.replace(/^\.\//,''),data:decoder.decode(body)});
- }
- const manifestEntry=entries.find(x=>x.path==='adapter.json'||x.path.endsWith('/adapter.json'));
- if(!manifestEntry) throw Error('ZIP must contain adapter.json at its root or inside one package folder.');
- let manifest;try{manifest=JSON.parse(manifestEntry.data);}catch{throw Error('adapter.json is not valid JSON.');}
- if(!manifest||typeof manifest!=='object')throw Error('adapter.json must contain an object.');
- if(!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id||''))throw Error('Invalid adapter id.');
- if(!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version||'')))throw Error('Adapter version must use semantic versioning, e.g. 1.0.0.');
- const prefix=manifestEntry.path.slice(0,-'adapter.json'.length);
- const files=entries.filter(x=>x.path.startsWith(prefix)).map(x=>({path:x.path.slice(prefix.length),type:'text',content:x.data}));
- if(manifest.entry&&!files.some(x=>x.path===manifest.entry))throw Error(`Declared entry file not found: ${manifest.entry}`);
- return {id:manifest.id,manifest,enabled:true,installedAt:new Date().toISOString(),files,storagePath:`extensions/adapters/${manifest.id}/`};
+function row(item) {
+    return `<div class="setting">\
+<div>\
+<strong>${item[0]}</strong>\
+<small>${helpText(item[1])}</small>\
+</div>${inputFor(item)}</div>`;
 }
-
-function dlBlob(name,blob){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-function dbEntries(d){const l=d.readingLibrary||{}, sites=(d.settings.websites||[]).map(x=>typeof x==='string'?{domain:x}:x), profiles=l.profiles||[], arts=d.articles||[], cats=[...new Set([...(d.settings.libraryCustomCategories||[]),...sites.map(x=>x.category||'General'),...profiles.map(x=>x.category||'General'),...arts.map(x=>x.category||'General'),...Object.keys(l.categories||{})])].sort(), news=sites.filter(x=>x.type==='news'||l.websiteData?.[x.domain]?.kind==='news'), fav=new Set(l.favorites||[]), out=[], add=(p,v)=>out.push({path:'database/'+p,data:JSON.stringify(v,null,2)}), cat=(a,c)=>a.filter(x=>(x.category||l.websiteData?.[x.domain]?.category||'General')===c); add('README.md',`# Charlie MJ Reader database\\nGenerated ${new Date().toISOString()}\\n`); for(const c of cats){add(`My Reading Library/Websites/${catName(c)}.json`,cat(sites,c));add(`My Reading Library/Favorites/${catName(c)}.json`,cat(sites,c).filter(x=>fav.has(x.domain)));add(`My Reading Library/Tags/${catName(c)}.json`,{category:c,tags:[...new Set(cat(sites,c).flatMap(x=>x.tags||[]).concat(cat(arts,c).flatMap(x=>x.tags||[])))]});add(`My Reading Library/Labels/${catName(c)}.json`,{category:c,labels:[...new Set(cat(arts,c).flatMap(x=>x.labels||[]))]});add(`My Reading Library/Newspapers/${catName(c)}.json`,cat(news,c));add(`My Reading Library/Profile Pages/${catName(c)}.json`,cat(profiles,c));add(`My Reading Library/Saved Articles/${catName(c)}.json`,cat(arts,c));}add('My Reading Library/index.json',{version:1,categories:cats}); for(const k of ['articles','highlights','notes','vocabulary','bookmarks','collections','topics','readingHistory','categories'])add(`Core/${k}.json`,d[k]||[]); add('Core/settings.json',d.settings||{}); return out;}
-function dbZipEntries(d,libraryOnly=false){return dbEntries(d).filter(e=>!libraryOnly||e.path.startsWith('database/My Reading Library/'));}
-function downloadDbZip(name='charlie-mj-database.zip',libraryOnly=false){dlBlob(name,zipStore(dbZipEntries(data,libraryOnly)));}
-
-function safeJson(value){try{JSON.parse(value);return true;}catch{return false;}}
-function makeManifest(d){return dbEntries(d).map(e=>({path:e.path,size:e.data.length}));}
-function render(){
- tabs.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.tab===active));
- if(active==="toolbar") {
-   const tm=data.settings.toolbarModules||{reader:true,vocabulary:true,media:true,focus:true,productivity:true}; const th=data.settings.toolbarThemes||{main:"midnight",media:"midnight",vocabulary:"violet",productivity:"focus"};
-   const themeSelect=(key,values)=>`<select data-theme-key="${key}">${values.map(v=>`<option value="${v}" ${th[key]===v?'selected':''}>${v}</option>`).join('')}</select>`;
-   const types=['floating','navbar','sidebar','right-sidebar','bottom-navbar','bubble'];
-   panel.innerHTML=`<h2>Toolbars</h2><p class="help">The restored Main Toolbar is site-gated. Global settings define defaults; each website can override toolbar type, theme, position and modules from My Reading Library.</p>
+function helpText(key) {
+    return ({
+        aiConsent: "External services receive article text only after you enable this option.",
+        aiKey: "Stored locally in Chrome extension storage. Do not share your profile.",
+        mediumAlerts: "Reminders only; the extension cannot reset server-enforced reading quotas.",
+        readingWidth: "Controls the preferred content width in the reader workspace."
+    })[key] || "Saved locally in this browser.";
+}
+function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function downloadJson(name, value) {
+    const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function crc32(bytes) {
+    let c = 0xffffffff;
+    for (let i = 0; i < bytes.length; i++) {
+        c ^= bytes[i];
+        for (let k = 0; k < 8; k++)
+            c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+    }
+    return (c ^ 0xffffffff) >>> 0;
+}
+function u16(n) { return new Uint8Array([n & 255, (n >>> 8) & 255]); }
+function u32(n) { return new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]); }
+function catName(s) { return String(s || 'General').replace(/[\\/:*?"<>|]+/g, '-').trim() || 'General'; }
+function zipStore(entries) {
+    const enc = new TextEncoder(), local = [], central = [];
+    let off = 0;
+    for (const e of entries) {
+        const name = enc.encode(e.path), body = typeof e.data === 'string' ? enc.encode(e.data) : e.data, crc = crc32(body);
+        const x = new Uint8Array(30 + name.length + body.length);
+        let p = 0;
+        const put = (a) => { x.set(a, p); p += a.length; };
+        put(new Uint8Array([80, 75, 3, 4]));
+        put(u16(20));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u32(crc));
+        put(u32(body.length));
+        put(u32(body.length));
+        put(u16(name.length));
+        put(u16(0));
+        put(name);
+        put(body);
+        local.push(x);
+        central.push({ name, crc, size: body.length, off });
+        off += x.length;
+    }
+    let cd = 0, cs = [];
+    for (const c of central) {
+        const x = new Uint8Array(46 + c.name.length);
+        let p = 0;
+        const put = a => { x.set(a, p); p += a.length; };
+        put(new Uint8Array([80, 75, 1, 2]));
+        put(u16(20));
+        put(u16(20));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u32(c.crc));
+        put(u32(c.size));
+        put(u32(c.size));
+        put(u16(c.name.length));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u16(0));
+        put(u32(0));
+        put(u32(c.off));
+        put(c.name);
+        cs.push(x);
+        cd += x.length;
+    }
+    const end = new Uint8Array(22);
+    let p = 0;
+    const put = a => { end.set(a, p); p += a.length; };
+    put(new Uint8Array([80, 75, 5, 6]));
+    put(u16(0));
+    put(u16(0));
+    put(u16(central.length));
+    put(u16(central.length));
+    put(u32(cd));
+    put(u32(off));
+    put(u16(0));
+    return new Blob([...local, ...cs, end], { type: 'application/zip' });
+}
+async function readAdapterZip(file) {
+    const maxMB = Math.max(1, Math.min(100, Number(data.settings.adapterMaxPackageMB || 25)));
+    const maxFiles = Math.max(1, Math.min(500, Number(data.settings.adapterMaxFiles || 500)));
+    if (file.size > maxMB * 1024 * 1024)
+        throw Error(`ZIP exceeds the ${maxMB} MB package limit.`);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const u16 = (o) => view.getUint16(o, true), u32 = (o) => view.getUint32(o, true);
+    let eocd = -1;
+    for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+        if (u32(i) === 0x06054b50) {
+            eocd = i;
+            break;
+        }
+    }
+    if (eocd < 0)
+        throw Error('Invalid ZIP: end-of-central-directory record not found.');
+    const count = u16(eocd + 10), centralSize = u32(eocd + 12), centralOffset = u32(eocd + 16);
+    if (count > maxFiles)
+        throw Error(`ZIP contains ${count} files; limit is ${maxFiles}.`);
+    if (centralOffset + centralSize > bytes.length)
+        throw Error('Invalid ZIP central directory.');
+    const decoder = new TextDecoder(), entries = [];
+    let pos = centralOffset, total = 0;
+    for (let i = 0; i < count; i++) {
+        if (u32(pos) !== 0x02014b50)
+            throw Error('Invalid ZIP central directory entry.');
+        const method = u16(pos + 10), compressed = u32(pos + 20), expanded = u32(pos + 24), nameLen = u16(pos + 28), extraLen = u16(pos + 30), commentLen = u16(pos + 32), localOffset = u32(pos + 42);
+        const name = decoder.decode(bytes.slice(pos + 46, pos + 46 + nameLen));
+        pos += 46 + nameLen + extraLen + commentLen;
+        if (!name || name.startsWith('/') || name.startsWith('\\') || /^[a-z]:/i.test(name) || name.split(/[\\/]/).includes('..') || name.includes('\\'))
+            throw Error(`Unsafe ZIP path: ${name}`);
+        if (name.endsWith('/'))
+            continue;
+        if (method !== 0 && method !== 8)
+            throw Error(`Unsupported ZIP compression method for ${name}.`);
+        if (expanded > 10 * 1024 * 1024)
+            throw Error(`File is too large: ${name}`);
+        total += expanded;
+        if (total > maxMB * 1024 * 1024)
+            throw Error('Expanded ZIP exceeds package size limit.');
+        if (u32(localOffset) !== 0x04034b50)
+            throw Error(`Invalid ZIP local header: ${name}`);
+        const localName = u16(localOffset + 26), localExtra = u16(localOffset + 28), start = localOffset + 30 + localName + localExtra, end = start + compressed;
+        if (end > bytes.length)
+            throw Error(`Truncated ZIP entry: ${name}`);
+        let body = bytes.slice(start, end);
+        if (method === 8) {
+            if (typeof DecompressionStream === 'undefined')
+                throw Error('This Chrome version cannot decompress deflate ZIP entries.');
+            const stream = new Blob([body]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+            body = new Uint8Array(await new Response(stream).arrayBuffer());
+        }
+        if (body.length !== expanded)
+            throw Error(`ZIP size check failed for ${name}.`);
+        entries.push({ path: name.replace(/^\.\//, ''), data: decoder.decode(body) });
+    }
+    const manifestEntry = entries.find(x => x.path === 'adapter.json' || x.path.endsWith('/adapter.json'));
+    if (!manifestEntry)
+        throw Error('ZIP must contain adapter.json at its root or inside one package folder.');
+    let manifest;
+    try {
+        manifest = JSON.parse(manifestEntry.data);
+    }
+    catch {
+        throw Error('adapter.json is not valid JSON.');
+    }
+    if (!manifest || typeof manifest !== 'object')
+        throw Error('adapter.json must contain an object.');
+    if (!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id || ''))
+        throw Error('Invalid adapter id.');
+    if (!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version || '')))
+        throw Error('Adapter version must use semantic versioning, e.g. 1.0.0.');
+    const prefix = manifestEntry.path.slice(0, -'adapter.json'.length);
+    const files = entries.filter(x => x.path.startsWith(prefix)).map(x => ({ path: x.path.slice(prefix.length), type: 'text', content: x.data }));
+    if (manifest.entry && !files.some(x => x.path === manifest.entry))
+        throw Error(`Declared entry file not found: ${manifest.entry}`);
+    return { id: manifest.id, manifest, enabled: true, installedAt: new Date().toISOString(), files, storagePath: `extensions/adapters/${manifest.id}/` };
+}
+function dlBlob(name, blob) { const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); }
+function dbEntries(d) {
+    const l = d.readingLibrary || {}, sites = (d.settings.websites || []).map(x => typeof x === 'string' ? { domain: x } : x), profiles = l.profiles || [], arts = d.articles || [], cats = [...new Set([...(d.settings.libraryCustomCategories || []),
+    ...sites.map(x => x.category || 'General'),
+    ...profiles.map(x => x.category || 'General'),
+    ...arts.map(x => x.category || 'General'),
+    ...Object.keys(l.categories || {})])].sort(), news = sites.filter(x => x.type === 'news' || l.websiteData?.[x.domain]?.kind === 'news'), fav = new Set(l.favorites || []), out = [], add = (p, v) => out.push({ path: 'database/' + p, data: JSON.stringify(v, null, 2) }), cat = (a, c) => a.filter(x => (x.category || l.websiteData?.[x.domain]?.category || 'General') === c);
+    add('README.md', `# Charlie MJ Reader database\\nGenerated ${new Date().toISOString()}\\n`);
+    for (const c of cats) {
+        add(`My Reading Library/Websites/${catName(c)}.json`, cat(sites, c));
+        add(`My Reading Library/Favorites/${catName(c)}.json`, cat(sites, c).filter(x => fav.has(x.domain)));
+        add(`My Reading Library/Tags/${catName(c)}.json`, { category: c, tags: [...new Set(cat(sites, c).flatMap(x => x.tags || []).concat(cat(arts, c).flatMap(x => x.tags || [])))] });
+        add(`My Reading Library/Labels/${catName(c)}.json`, { category: c, labels: [...new Set(cat(arts, c).flatMap(x => x.labels || []))] });
+        add(`My Reading Library/Newspapers/${catName(c)}.json`, cat(news, c));
+        add(`My Reading Library/Profile Pages/${catName(c)}.json`, cat(profiles, c));
+        add(`My Reading Library/Saved Articles/${catName(c)}.json`, cat(arts, c));
+    }
+    add('My Reading Library/index.json', { version: 1, categories: cats });
+    for (const k of ['articles', 'highlights', 'notes', 'vocabulary', 'bookmarks', 'collections', 'topics', 'readingHistory', 'categories'])
+        add(`Core/${k}.json`, d[k] || []);
+    add('Core/settings.json', d.settings || {});
+    return out;
+}
+function dbZipEntries(d, libraryOnly = false) { return dbEntries(d).filter(e => !libraryOnly || e.path.startsWith('database/My Reading Library/')); }
+function downloadDbZip(name = 'charlie-mj-database.zip', libraryOnly = false) { dlBlob(name, zipStore(dbZipEntries(data, libraryOnly))); }
+function safeJson(value) {
+    try {
+        JSON.parse(value);
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+function makeManifest(d) { return dbEntries(d).map(e => ({ path: e.path, size: e.data.length })); }
+/** Load the bundled ISO 639 registry and populate translation language selectors. */
+async function populateTranslationLanguages() {
+    const keys = ["translationSource", "translationTarget", "dictionaryLanguage"];
+    const selects = [...keys.map((key) => panel.querySelector(`[data-key="${key}"]`)), panel.querySelector("#options-learning-target-language")].filter(Boolean);
+    if (!selects.length) return;
+    try {
+        const response = await fetch(chrome.runtime.getURL("src/database/languages.json"));
+        if (!response.ok) throw new Error("Language registry unavailable.");
+        const registry = await response.json();
+        for (const select of selects) {
+            const current = select.value || (select.dataset.key === "translationSource" ? "tr" : "en");
+            const list = [...registry.languages].sort((a, b) => Number(Boolean(b.commonSelectable)) - Number(Boolean(a.commonSelectable)) || a.name.localeCompare(b.name));
+            select.innerHTML = list.map((language) => {
+                const code = language.alpha2 || language.alpha3;
+                return `<option value="${escapeHtml(code)}" ${code === current ? "selected" : ""}>${escapeHtml(language.name)}${language.nativeName ? ` · ${escapeHtml(language.nativeName)}` : ""} (${escapeHtml(code)})</option>`;
+            }).join("");
+        }
+        const search = panel.querySelector("#options-learning-language-search");
+        const target = panel.querySelector("#options-learning-target-language");
+        search?.addEventListener("input", () => {
+            const query = search.value.trim().toLocaleLowerCase();
+            const current = target?.value || "en";
+            const matches = registry.languages.filter((language) => [language.name, language.nativeName, language.alpha2, language.alpha3, language.bibliographic, language.terminologic].filter(Boolean).some((value) => String(value).toLocaleLowerCase().includes(query)));
+            if (target) target.innerHTML = matches.map((language) => { const code = language.alpha2 || language.alpha3; return `<option value="${escapeHtml(code)}" ${code === current ? "selected" : ""}>${escapeHtml(language.name)}${language.nativeName ? ` · ${escapeHtml(language.nativeName)}` : ""} (${escapeHtml(code)})</option>`; }).join("") || `<option value="">No matching languages</option>`;
+        });
+    } catch (error) {
+        console.warn("Charlie MJ Reader: could not load language registry.", error);
+    }
+}
+function render() {
+    tabs.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.tab === active));
+    if (active === "languageLearning") {
+        const learning = data.languageLearning || {};
+        const settings = learning.settings || {};
+        const grammarCategories = ["noun", "verb", "pronoun", "adjective", "adverb", "conjunction", "preposition", "article", "determiner", "tense", "case", "clause", "sentence-structure", "morphology", "modal", "conditional", "passive-voice", "reported-speech", "gerund", "infinitive", "collocation", "idiom", "phrasal-verb", "prefix", "suffix", "punctuation"];
+        const labels = grammarCategories.map((key) => `<label class="setting"><div><strong>${key.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())}</strong><small>Text color, background, font and decoration</small></div><input type="color" aria-label="${key} text color" data-learning-color="${key}" value="${escapeHtml(settings.grammarColors?.[key] || "#9b8cff")}"><input type="color" aria-label="${key} highlight color" data-learning-background="${key}" value="${escapeHtml(settings.grammarBackgrounds?.[key] || "#24314a")}"><select aria-label="${key} font family" data-learning-font="${key}"><option value="inherit" ${(settings.grammarFonts?.[key] || "inherit") === "inherit" ? "selected" : ""}>Default font</option><option value="system-ui" ${settings.grammarFonts?.[key] === "system-ui" ? "selected" : ""}>System</option><option value="Georgia" ${settings.grammarFonts?.[key] === "Georgia" ? "selected" : ""}>Georgia</option><option value="Arial" ${settings.grammarFonts?.[key] === "Arial" ? "selected" : ""}>Arial</option><option value="Inter" ${settings.grammarFonts?.[key] === "Inter" ? "selected" : ""}>Inter</option></select><select data-learning-style="${key}"><option value="normal" ${(settings.grammarStyles?.[key] || "normal") === "normal" ? "selected" : ""}>Normal</option><option value="bold" ${settings.grammarStyles?.[key] === "bold" ? "selected" : ""}>Bold</option><option value="italic" ${settings.grammarStyles?.[key] === "italic" ? "selected" : ""}>Italic</option><option value="underline" ${settings.grammarStyles?.[key] === "underline" ? "selected" : ""}>Underline</option></select></label>`).join("");
+        panel.innerHTML = `<h2>Language Learning Mode</h2>
+            <p class="help">Independent learning preferences. These settings do not change Productivity Reader preferences or the shared article and vocabulary records.</p>
+            <div class="toolbar-grid">
+                <article class="toolbar-card"><h3>Learning language &amp; proficiency</h3>
+                    <div class="setting language-search-setting"><div><strong>Search language database</strong><small>Search by English name, native name or ISO code</small></div><input type="search" id="options-learning-language-search" placeholder="Search all languages…"></div>
+                    <div class="setting language-target-setting"><div><strong>Target language</strong><small>Complete ISO 639 registry · languages.json</small></div><select data-learning-setting="targetLanguage" id="options-learning-target-language"><option value="${escapeHtml(settings.targetLanguage || "en")}">${escapeHtml(settings.targetLanguage || "en")}</option></select></div>
+                    <div class="setting"><div><strong>Language database</strong><small>Bundled source: src/database/languages.json</small></div><a href="${chrome.runtime.getURL("src/database/languages.json")}" target="_blank" rel="noopener">Open languages.json ↗</a></div>
+                    <div class="setting"><div><strong>My CEFR level</strong></div><select data-learning-setting="learnerLevel">${["A1", "A2", "B1", "B2", "C1", "C2"].map((level) => `<option ${settings.learnerLevel === level ? "selected" : ""}>${level}</option>`).join("")}</select></div>
+                    <div class="setting"><div><strong>Target CEFR level</strong></div><select data-learning-setting="targetLevel">${["A1", "A2", "B1", "B2", "C1", "C2"].map((level) => `<option ${settings.targetLevel === level ? "selected" : ""}>${level}</option>`).join("")}</select></div>
+                    <div class="setting"><div><strong>Daily learning goal (minutes)</strong></div><input type="number" min="1" max="600" data-learning-setting="dailyGoalMinutes" value="${Number(settings.dailyGoalMinutes || 15)}"></div>
+                    <div class="setting"><div><strong>Revision reminders</strong><small>Enable local reminder preference</small></div><input type="checkbox" data-learning-setting="revisionReminders" ${settings.revisionReminders !== false ? "checked" : ""}></div>
+                </article>
+                <article class="toolbar-card"><h3>Reader appearance</h3>
+                    <div class="setting"><div><strong>Font family</strong></div><select data-learning-setting="fontFamily"><option value="system-ui" ${settings.fontFamily === "system-ui" ? "selected" : ""}>System</option><option value="Georgia" ${settings.fontFamily === "Georgia" ? "selected" : ""}>Georgia</option><option value="Arial" ${settings.fontFamily === "Arial" ? "selected" : ""}>Arial</option><option value="Inter" ${settings.fontFamily === "Inter" ? "selected" : ""}>Inter</option></select></div>
+                    <div class="setting"><div><strong>Font size (px)</strong></div><input type="number" min="12" max="32" data-learning-setting="fontSize" value="${Number(settings.fontSize || 17)}"></div>
+                    <div class="setting"><div><strong>Highlight style</strong></div><select data-learning-setting="highlightStyle"><option value="soft" ${settings.highlightStyle === "soft" ? "selected" : ""}>Soft background</option><option value="underline" ${settings.highlightStyle === "underline" ? "selected" : ""}>Underline</option><option value="text" ${settings.highlightStyle === "text" ? "selected" : ""}>Text color only</option></select></div>
+                </article>
+            </div>
+            <article class="toolbar-card"><h3>Grammar categories &amp; styles</h3>${labels}</article>`;
+        panel.querySelectorAll("[data-learning-setting]").forEach((control) => control.addEventListener("change", async () => {
+            const key = control.dataset.learningSetting;
+            const value = control.type === "checkbox" ? control.checked : control.type === "number" ? Number(control.value) : control.value;
+            data.languageLearning = data.languageLearning || { version: 1, items: [], grammar: [], progress: {}, settings: {} };
+            data.languageLearning.settings = { ...(data.languageLearning.settings || {}), [key]: value };
+            await persist();
+        }));
+        panel.querySelectorAll("[data-learning-color]").forEach((control) => control.addEventListener("change", async () => {
+            const key = control.dataset.learningColor;
+            data.languageLearning.settings = { ...(data.languageLearning.settings || {}), grammarColors: { ...(data.languageLearning.settings?.grammarColors || {}), [key]: control.value } };
+            await persist();
+        }));
+        panel.querySelectorAll("[data-learning-background]").forEach((control) => control.addEventListener("change", async () => {
+            const key = control.dataset.learningBackground;
+            data.languageLearning.settings = { ...(data.languageLearning.settings || {}), grammarBackgrounds: { ...(data.languageLearning.settings?.grammarBackgrounds || {}), [key]: control.value } };
+            await persist();
+        }));
+        panel.querySelectorAll("[data-learning-font]").forEach((control) => control.addEventListener("change", async () => {
+            const key = control.dataset.learningFont;
+            data.languageLearning.settings = { ...(data.languageLearning.settings || {}), grammarFonts: { ...(data.languageLearning.settings?.grammarFonts || {}), [key]: control.value } };
+            await persist();
+        }));
+        panel.querySelectorAll("[data-learning-style]").forEach((control) => control.addEventListener("change", async () => {
+            const key = control.dataset.learningStyle;
+            data.languageLearning.settings = { ...(data.languageLearning.settings || {}), grammarStyles: { ...(data.languageLearning.settings?.grammarStyles || {}), [key]: control.value } };
+            await persist();
+        }));
+    }
+    else if (active === "toolbar") {
+        const tm = data.settings.toolbarModules || { reader: true, vocabulary: true, languageLearning: true, media: true, focus: true, productivity: true };
+        const th = data.settings.toolbarThemes || { main: "midnight", media: "midnight", vocabulary: "violet", productivity: "focus" };
+        const themeSelect = (key, values) => `<select data-theme-key="${key}">${values.map(v => `<option value="${v}" ${th[key] === v ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
+        const types = ['floating', 'navbar', 'sidebar', 'right-sidebar', 'bottom-navbar', 'bubble'];
+        panel.innerHTML = `<h2>Toolbars</h2>\
+<p class="help">The restored Main Toolbar is site-gated. Global settings define defaults; each website can override toolbar type, theme, position and modules from My Reading Library.</p>
    <div class="toolbar-grid">
-    <article class="toolbar-card"><h3>Main Toolbar</h3><p>Primary toolbar and quick access buttons.</p><div class="setting"><div><strong>Enable main toolbar</strong></div><input type="checkbox" data-key="toolbarEnabled" ${data.settings.toolbarEnabled!==false?'checked':''}></div><div class="setting"><div><strong>Show Toolbar On</strong><small>Restrict the Main Toolbar to explicitly allowed websites. Recommended: Supported + My Reading Library Websites.</small></div><select data-key="mainToolbarVisibility"><option value="all" ${(data.settings.mainToolbarVisibility||'supported_and_library')==='all'?'selected':''}>All websites</option><option value="supported" ${(data.settings.mainToolbarVisibility||'supported_and_library')==='supported'?'selected':''}>Supported Websites</option><option value="library" ${(data.settings.mainToolbarVisibility||'supported_and_library')==='library'?'selected':''}>My Reading Library Websites</option><option value="supported_and_library" ${(data.settings.mainToolbarVisibility||'supported_and_library')==='supported_and_library'?'selected':''}>Supported + My Reading Library Websites</option></select></div><div class="setting"><div><strong>Default type</strong><small>Floating, navbar, sidebar and compact modes.</small></div><select data-key="toolbarType">${types.map(v=>`<option value="${v}" ${data.settings.toolbarType===v?'selected':''}>${v}</option>`).join('')}</select></div><div class="setting"><div><strong>Default position</strong></div><select data-key="toolbarPosition">${['top','bottom','left','right'].map(v=>`<option value="${v}" ${data.settings.toolbarPosition===v?'selected':''}>${v}</option>`).join('')}</select></div><div class="setting"><div><strong>Theme</strong></div>${themeSelect('main',['midnight','graphite','paper','ocean','forest'])}</div><div class="setting"><div><strong>Opacity</strong></div><input type="range" data-key="toolbarOpacity" min="40" max="100" value="${data.settings.toolbarOpacity??92}"><output>${data.settings.toolbarOpacity??92}</output></div><h4>Main buttons</h4>${[['Reader','reader'],['Vocabulary','vocabulary'],['Media','media'],['Focus','focus'],['Productivity','productivity']].map(([l,k])=>`<label class="setting"><div><strong>${l}</strong></div><input type="checkbox" data-module="${k}" ${tm[k]!==false?'checked':''}></label>`).join('')}</article>
-    <article class="toolbar-card"><h3>Toolbar Types</h3><p>Additional presentation styles available globally and per supported website.</p>${types.map(v=>`<div class="setting"><div><strong>${v}</strong><small>${({floating:'Floating overlay',navbar:'Full-width top navigation',sidebar:'Left reading sidebar','right-sidebar':'Right reading sidebar','bottom-navbar':'Bottom navigation',bubble:'Compact floating bubble'})[v]}</small></div><span>Available</span></div>`).join('')}</article>
-    <article class="toolbar-card"><h3>Media Toolbar</h3><p>Play, pause, stop, progress and Media Reader.</p><div class="setting"><div><strong>Enable</strong></div><input type="checkbox" data-key="mediaToolbarEnabled" ${data.settings.mediaToolbarEnabled!==false?'checked':''}></div><div class="setting"><div><strong>Theme</strong></div>${themeSelect('media',['midnight','sunset','ocean'])}</div><div class="setting"><div><strong>Auto-play</strong></div><input type="checkbox" data-key="mediaAutoPlay" ${data.settings.mediaAutoPlay?'checked':''}></div><div class="setting"><div><strong>Default speed</strong></div><input type="range" data-key="mediaSpeed" min="0.5" max="2.5" step="0.1" value="${data.settings.mediaSpeed??1}"><output>${data.settings.mediaSpeed??1}×</output></div></article>
-    <article class="toolbar-card"><h3>Vocabulary Toolbar</h3><p>Copy, Save, See Translate, Meaning, Notes and Pronunciation.</p><div class="setting"><div><strong>Theme</strong></div>${themeSelect('vocabulary',['violet','amber','mint'])}</div>${[['Auto translate','vocabularyAutoTranslate'],['Auto-save','vocabularyAutoSave'],['Show meaning','vocabularyShowMeaning'],['Show pronunciation','vocabularyShowPronunciation'],['Show notes','vocabularyShowNotes']].map(([l,k])=>`<label class="setting"><div><strong>${l}</strong></div><input type="checkbox" data-key="${k}" ${data.settings[k]?'checked':''}></label>`).join('')}</article>
-    <article class="toolbar-card"><h3>Productivity Toolbar</h3><p>Focus, Day/Night, Pomodoro, 80/20 and native reading controls.</p><div class="setting"><div><strong>Theme</strong></div>${themeSelect('productivity',['focus','green','orange'])}</div>${[['Enable productivity toolbar','productivityToolbarEnabled'],['Pomodoro','pomodoroEnabled'],['80/20','eightyTwentyEnabled']].map(([l,k])=>`<label class="setting"><div><strong>${l}</strong></div><input type="checkbox" data-key="${k}" ${data.settings[k]!==false?'checked':''}></label>`).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Main Toolbar</h3>\
+<p>Primary toolbar and quick access buttons.</p>\
+<div class="setting">\
+<div>\
+<strong>Enable main toolbar</strong>\
+</div>\
+<input type="checkbox" data-key="toolbarEnabled" ${data.settings.toolbarEnabled !== false ? 'checked' : ''}>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Activation rule</strong>\
+<small>Charlie MJ Reader runs only on websites enabled in Supported Websites. Every other website stays asleep: no toolbar, no highlighter, no tracking.</small>\
+</div>\
+<b>Supported Websites only</b>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Default type</strong>\
+<small>Floating, navbar, sidebar and compact modes.</small>\
+</div>\
+<select data-key="toolbarType">${types.map(v => `<option value="${v}" ${data.settings.toolbarType === v ? 'selected' : ''}>${v}</option>`).join('')}</select>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Default position</strong>\
+</div>\
+<select data-key="toolbarPosition">${['top', 'bottom', 'left', 'right'].map(v => `<option value="${v}" ${data.settings.toolbarPosition === v ? 'selected' : ''}>${v}</option>`).join('')}</select>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Theme</strong>\
+</div>${themeSelect('main', ['midnight', 'graphite', 'paper', 'ocean', 'forest'])}</div>\
+<div class="setting">\
+<div>\
+<strong>Opacity</strong>\
+</div>\
+<input type="range" data-key="toolbarOpacity" min="40" max="100" value="${data.settings.toolbarOpacity ?? 92}">\
+<output>${data.settings.toolbarOpacity ?? 92}</output>\
+</div>\
+<h4>Main buttons</h4>${[['Reader', 'reader'],
+            ['Vocabulary', 'vocabulary'],
+            ['Language Learning', 'languageLearning'],
+            ['Media', 'media'],
+            ['Focus', 'focus'],
+            ['Productivity', 'productivity']].map(([l, k]) => `<label class="setting">\
+<div>\
+<strong>${l}</strong>\
+</div>\
+<input type="checkbox" data-module="${k}" ${tm[k] !== false ? 'checked' : ''}>\
+</label>`).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Toolbar Types</h3>\
+<p>Additional presentation styles available globally and per supported website.</p>${types.map(v => `<div class="setting">\
+<div>\
+<strong>${v}</strong>\
+<small>${({
+                    floating: 'Floating overlay',
+                    navbar: 'Full-width top navigation',
+                    sidebar: 'Left reading sidebar',
+                    'right-sidebar': 'Right reading sidebar',
+                    'bottom-navbar': 'Bottom navigation',
+                    bubble: 'Compact floating bubble'
+                })[v]}</small>\
+</div>\
+<span>Available</span>\
+</div>`).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Media Toolbar</h3>\
+<p>Play, pause, stop, progress and Media Reader.</p>\
+<div class="setting">\
+<div>\
+<strong>Enable</strong>\
+</div>\
+<input type="checkbox" data-key="mediaToolbarEnabled" ${data.settings.mediaToolbarEnabled !== false ? 'checked' : ''}>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Theme</strong>\
+</div>${themeSelect('media', ['midnight', 'sunset', 'ocean'])}</div>\
+<div class="setting">\
+<div>\
+<strong>Auto-play</strong>\
+</div>\
+<input type="checkbox" data-key="mediaAutoPlay" ${data.settings.mediaAutoPlay ? 'checked' : ''}>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Default speed</strong>\
+</div>\
+<input type="range" data-key="mediaSpeed" min="0.5" max="2.5" step="0.1" value="${data.settings.mediaSpeed ?? 1}">\
+<output>${data.settings.mediaSpeed ?? 1}×</output>\
+</div>\
+</article>
+    <article class="toolbar-card">\
+<h3>Vocabulary Toolbar</h3>\
+<p>Copy, Save, See Translate, Meaning, Notes and Pronunciation.</p>\
+<div class="setting">\
+<div>\
+<strong>Theme</strong>\
+</div>${themeSelect('vocabulary', ['violet', 'amber', 'mint'])}</div>${[['Auto translate', 'vocabularyAutoTranslate'],
+            ['Auto-save', 'vocabularyAutoSave'],
+            ['Show meaning', 'vocabularyShowMeaning'],
+            ['Show pronunciation', 'vocabularyShowPronunciation'],
+            ['Show notes', 'vocabularyShowNotes']].map(([l, k]) => `<label class="setting">\
+<div>\
+<strong>${l}</strong>\
+</div>\
+<input type="checkbox" data-key="${k}" ${data.settings[k] ? 'checked' : ''}>\
+</label>`).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Productivity Toolbar</h3>\
+<p>Focus, Day/Night, Pomodoro, 80/20 and native reading controls.</p>\
+<div class="setting">\
+<div>\
+<strong>Theme</strong>\
+</div>${themeSelect('productivity', ['focus', 'green', 'orange'])}</div>${[['Enable productivity toolbar', 'productivityToolbarEnabled'], ['Pomodoro', 'pomodoroEnabled'], ['80/20', 'eightyTwentyEnabled']].map(([l, k]) => `<label class="setting">\
+<div>\
+<strong>${l}</strong>\
+</div>\
+<input type="checkbox" data-key="${k}" ${data.settings[k] !== false ? 'checked' : ''}>\
+</label>`).join('')}</article>
    </div>`;
-   panel.querySelectorAll('[data-module]').forEach(el=>el.addEventListener('change',async()=>{data.settings.toolbarModules={...(data.settings.toolbarModules||{}),[el.dataset.module]:el.checked};await persist();}));
-   panel.querySelectorAll('[data-theme-key]').forEach(el=>el.addEventListener('change',async()=>{data.settings.toolbarThemes={...(data.settings.toolbarThemes||{}),[el.dataset.themeKey]:el.value};await persist();}));
-  } else if(active==="smartAudio") {
-   const settings=[["Default playback speed","ttsRate","range",0.5,2.5],["Default speech pitch","ttsPitch","range",0.5,2],["Auto-scroll active word","audioAutoScroll","check"],["Resume from saved position","restorePosition","check"]];
-   panel.innerHTML=`<h2>Smart Audio Reader</h2><p class="help">Controls the synchronized reader available when you click Read on an article. Word-boundary support varies by operating system; the reader includes an estimated-timing fallback.</p>${settings.map(row).join("")}<div class="setting"><div><strong>Default word highlighting</strong><small>Combined mode highlights the active sentence and spoken word.</small></div><select data-key="audioHighlightMode"><option value="combined" ${(data.settings.audioHighlightMode||"combined")==="combined"?"selected":""}>Word + sentence</option><option value="word" ${data.settings.audioHighlightMode==="word"?"selected":""}>Word only</option><option value="sentence" ${data.settings.audioHighlightMode==="sentence"?"selected":""}>Sentence only</option></select></div><div class="setting"><div><strong>Keyboard shortcuts</strong><small>Space: play/pause · Left/Right: previous/next sentence · B: bookmark position.</small></div><span>Enabled in Reader workspace</span></div><div class="setting"><div><strong>Reading progress</strong><small>Saved to the current article as you listen.</small></div><span>Automatic</span></div>`;
- } else if(active==="websites"){
-   const sites=data.settings.websites||[]; const normalize=(v)=>String(v||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); const profile=(site)=>typeof site==='string'?{domain:site,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true,nativeReading:true,autoTranslate:false,autoSave:false,position:'top',toolbarType:'floating',toolbarTheme:'midnight'}:site;
-   panel.innerHTML=`<h2>Supported Websites</h2><p class="help">Website-specific feature settings have moved to <strong>My Reading Library</strong> where each website has a larger card. This page keeps only the general allow-list controls and a compact safety overview.</p><div class="setting"><div><strong>Open My Reading Library</strong><small>Add websites, configure toolbar type/theme, feature toggles, categories, tags and fetched data there.</small></div><button class="btn" id="open-library-from-sites">Open Library</button></div><div class="setting"><div><strong>Add supported website</strong><small>Adds a site to the allow-list; detailed settings can then be changed in My Reading Library.</small></div><div><input id="new-site" placeholder="example.com"><button class="btn" id="add-site">Add</button></div></div><div class="setting"><div><strong>General toolbar gate</strong><small>Only enabled websites in this list can show the on-page toolbar.</small></div><b>${sites.filter(x=>profile(x).enabled!==false).length} / ${sites.length} enabled</b></div><div class="setting"><div><strong>Import / Export allow-list</strong></div><div><input id="site-import" type="file" accept=".json,application/json"><button class="btn" id="site-export">Export JSON</button><button class="btn" id="site-refresh">Validate</button></div></div><div id="site-status" class="help"></div><div class="website-grid">${sites.map((raw,i)=>{const x=profile(raw);return `<article class="website-card"><div class="website-card-head"><div><span class="site-icon">🌐</span><strong>${escapeHtml(x.domain)}</strong><small>${x.enabled===false?'Disabled':'Enabled'} · ${escapeHtml(x.toolbarType||'floating')} · ${escapeHtml(x.category||'General')}</small></div><div><button class="btn" data-site-enable="${i}">${x.enabled===false?'Enable':'Disable'}</button><button class="btn" data-site-remove="${i}">Remove</button></div></div><p class="help">Configure full settings in My Reading Library.</p></article>`}).join('')}</div>`;
-   panel.querySelector('#open-library-from-sites').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('src/library/library.html')});
-   panel.querySelector('#add-site').onclick=async()=>{const v=normalize(panel.querySelector('#new-site').value);if(!v||!/^[a-z0-9.-]+$/.test(v))return alert('Enter a valid hostname.');if(!sites.some(x=>profile(x).domain===v)){sites.push({domain:v,version:1,enabled:true,toolbar:true,vocabulary:true,media:true,focus:true,productivity:true,nativeReading:true,autoTranslate:false,autoSave:false,position:'top',toolbarType:'floating',toolbarTheme:'midnight',category:'General',tags:[],updatedAt:new Date().toISOString()});data.settings.websites=sites;await persist();render();}};
-   panel.querySelectorAll('[data-site-enable]').forEach(b=>b.onclick=async()=>{const i=+b.dataset.siteEnable,x=profile(sites[i]);sites[i]={...x,enabled:x.enabled===false,version:(x.version||1)+1,updatedAt:new Date().toISOString()};data.settings.websites=sites;await persist();render();});
-   panel.querySelectorAll('[data-site-remove]').forEach(b=>b.onclick=async()=>{const i=+b.dataset.siteRemove;if(await askConfirmation(`Remove ${profile(sites[i]).domain} from the allow-list?`)){sites.splice(i,1);data.settings.websites=sites;await persist();render();}});
-   panel.querySelector('#site-export').onclick=()=>downloadJson('charlie-mj-websites.json',sites); panel.querySelector('#site-refresh').onclick=()=>{panel.querySelector('#site-status').textContent=`Validated ${sites.length} website profiles at ${new Date().toLocaleString()}.`}; panel.querySelector('#site-import').onchange=async e=>{try{const parsed=JSON.parse(await e.target.files[0].text());const incoming=(Array.isArray(parsed)?parsed:parsed.websites||[parsed]).map(x=>({...profile(x),domain:normalize(x.domain)}));if(incoming.some(x=>!/^[a-z0-9.-]+$/.test(x.domain)))throw Error('Invalid website hostname.');data.settings.websites=[...sites.filter(a=>!incoming.some(b=>profile(a).domain===b.domain)),...incoming];await persist();render();}catch(err){alert('Import failed: '+err.message);}};
- } else if(active==="library"){
-   panel.innerHTML=`<h2>My Reading Library</h2><p class="help">Manage website data and saved articles by independent categories. Each category is stored as its own JSON record inside the library data namespace and can be imported/exported.</p><div class="setting"><div><strong>Open full Library page</strong><small>Use the dedicated library workspace for search, hints, category management and website refresh.</small></div><button class="btn" id="open-library-page">Open My Reading Library ↗</button></div><div class="setting"><div><strong>Library categories</strong><small>${Object.keys(data.readingLibrary?.categories||{}).length} categories · ${(data.articles||[]).length} saved articles</small></div><button class="btn" id="export-library">Export Library JSON</button><input id="import-library" type="file" accept=".json,application/json"></div>`;
-   panel.querySelector('#open-library-page').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('src/library/library.html')}); panel.querySelector('#export-library').onclick=()=>downloadJson('my-reading-library.json',data.readingLibrary||{version:1,categories:{},websiteData:{}}); panel.querySelector('#import-library').onchange=async e=>{try{data.readingLibrary=JSON.parse(await e.target.files[0].text());await persist();render();}catch(err){alert('Library import failed: '+err.message);}};
- } else if(active==="medium"){
-   const adapters=data.settings.mediumAdapters||[]; const ap=data.adapterPackages||[];
-   panel.innerHTML=`<h2>Medium Compatibility</h2><p class="help">All Medium/Freedium compatibility controls and Compatibility Adapters are grouped here. Imported JavaScript remains inactive package data and is never executed automatically. These features do not bypass paywalls, account controls or server-side restrictions.</p>
+        panel.querySelectorAll('[data-module]').forEach(el => el.addEventListener('change', async () => { data.settings.toolbarModules = { ...(data.settings.toolbarModules || {}), [el.dataset.module]: el.checked }; await persist(); }));
+        panel.querySelectorAll('[data-theme-key]').forEach(el => el.addEventListener('change', async () => { data.settings.toolbarThemes = { ...(data.settings.toolbarThemes || {}), [el.dataset.themeKey]: el.value }; await persist(); }));
+    }
+    else if (active === "smartAudio") {
+        const settings = [["Default playback speed", "ttsRate", "range", 0.5, 2.5],
+        ["Default speech pitch", "ttsPitch", "range", 0.5, 2],
+        ["Auto-scroll active word", "audioAutoScroll", "check"],
+        ["Resume from saved position", "restorePosition", "check"]];
+        panel.innerHTML = `<h2>Smart Audio Reader</h2>\
+<p class="help">Controls the synchronized reader available when you click Read on an article. Word-boundary support varies by operating system; the reader includes an estimated-timing fallback.</p>${settings.map(row).join("")}<div class="setting">\
+<div>\
+<strong>Default word highlighting</strong>\
+<small>Combined mode highlights the active sentence and spoken word.</small>\
+</div>\
+<select data-key="audioHighlightMode">\
+<option value="combined" ${(data.settings.audioHighlightMode || "combined") === "combined" ? "selected" : ""}>Word + sentence</option>\
+<option value="word" ${data.settings.audioHighlightMode === "word" ? "selected" : ""}>Word only</option>\
+<option value="sentence" ${data.settings.audioHighlightMode === "sentence" ? "selected" : ""}>Sentence only</option>\
+</select>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Keyboard shortcuts</strong>\
+<small>Space: play/pause · Left/Right: previous/next sentence · B: bookmark position.</small>\
+</div>\
+<span>Enabled in Reader workspace</span>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Reading progress</strong>\
+<small>Saved to the current article as you listen.</small>\
+</div>\
+<span>Automatic</span>\
+</div>`;
+    }
+    else if (active === "websites") {
+        const sites = data.settings.websites || [];
+        const normalize = (v) => String(v || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
+        const profile = (site) => typeof site === 'string' ? { domain: site, enabled: true } : site;
+        const FEATS = [['toolbar', 'Floating toolbar'],
+        ['selectionToolbar', 'Selection toolbar / highlighter'],
+        ['vocabulary', 'Vocabulary & translation'],
+        ['media', 'Listen / text-to-speech'],
+        ['focus', 'Focus mode & ad hiding'],
+        ['productivity', 'Pomodoro / 80-20'],
+        ['nativeReading', 'Native reading'],
+        ['readingTracking', 'Reading tracking'],
+        ['autoScroll', 'Auto-scroll'],
+        ['articleDetection', 'Article detection (Reader / Save)']];
+        const listText = (v) => Array.isArray(v) ? v.join(', ') : String(v || '');
+        const toList = (v) => String(v || '').split(/[\n,]/).map(x => x.trim()).filter(Boolean);
+        const newSite = (domain) => ({
+            domain,
+            version: 1,
+            enabled: true,
+            activation: true,
+            includeSubdomains: true,
+            includedPaths: [],
+            excludedPaths: [],
+            toolbar: true,
+            selectionToolbar: true,
+            vocabulary: true,
+            media: true,
+            focus: true,
+            productivity: true,
+            nativeReading: true,
+            readingTracking: true,
+            autoScroll: true,
+            articleDetection: true,
+            autoTranslate: false,
+            autoSave: false,
+            position: 'top',
+            toolbarType: 'floating',
+            toolbarTheme: 'midnight',
+            category: 'General',
+            tags: [],
+            updatedAt: new Date().toISOString()
+        });
+        const enabledCount = sites.filter(x => profile(x).enabled !== false).length;
+        panel.innerHTML = `<h2>Supported Websites</h2>
+   <p class="help">This list is the master switch. Charlie MJ Reader is <strong>active only</strong> on the websites below and <strong>sleeps everywhere else</strong> (no toolbar, highlighter, tracking, text-to-speech, article detection or page changes). My Reading Library membership alone never activates a website.</p>
    <div class="toolbar-grid">
-    <article class="toolbar-card"><h3>Medium Detection</h3>${[['Enable Medium detection','mediumEnabled'],['Detect Medium article URLs','mediumDetectUrls'],['Use canonical URL','mediumUseCanonical'],['Auto-save detected articles','mediumAutoSave'],['Show access reminders','mediumAlerts'],['Monitor page notices','mediumMonitor']].map(([l,k])=>row([l,k,'check'])).join('')}</article>
-    <article class="toolbar-card"><h3>Freedium Reader</h3>${[['Enable Freedium option','freediumEnabled'],['Auto-open Medium articles with Freedium','freediumAutoOpen'],['Open with Freedium from Media Reader','freediumMediaButton'],['Fallback to direct Medium parser','freediumFallback'],['Open in new tab','freediumNewTab']].map(([l,k])=>row([l,k,'check'])).join('')}<div class="setting"><div><strong>Freedium service URL</strong><small>Configurable external reader endpoint.</small></div><input data-key="freediumServiceUrl" value="${escapeHtml(data.settings.freediumServiceUrl||'https://freedium-mirror.cfd/')}"></div></article>
-    <article class="toolbar-card"><h3>Article Extraction</h3>${[['Extract title/author/date','mediumExtractMetadata'],['Extract publication/category','mediumExtractPublication'],['Extract images','mediumExtractImages'],['Extract canonical URL','mediumExtractCanonical'],['Save complete article content','mediumExtractContent']].map(([l,k])=>row([l,k,'check'])).join('')}</article>
-    <article class="toolbar-card"><h3>Compatibility Adapter Settings</h3>${[['Enable Medium adapter registry','mediumAdapterEnabled'],['Allow user adapters','mediumUserAdapters'],['Show adapter diagnostics','mediumAdapterDiagnostics'],['Require install confirmation','mediumAdapterConfirm'],['Allow adapter replacement','mediumAdapterReplace']].map(([l,k])=>row([l,k,'check'])).join('')}<div class="setting"><div><strong>Maximum adapter package size (MB)</strong></div><input data-key="adapterMaxPackageMB" type="number" min="1" max="100" value="${data.settings.adapterMaxPackageMB||25}"></div><div class="setting"><div><strong>Maximum adapter files</strong></div><input data-key="adapterMaxFiles" type="number" min="1" max="500" value="${data.settings.adapterMaxFiles||500}"></div></article>
-    <article class="toolbar-card"><h3>Adapter Package Manager</h3><p>Install a complete ZIP package into the logical <code>extensions/adapters/&lt;adapter-id&gt;/</code> namespace. The package is retained intact; executable code stays inactive until a future signed runtime is explicitly enabled.</p><div class="setting"><div><strong>ZIP package</strong><small>Includes adapter.json and all package assets.</small></div><input id="medium-adapter-zip" type="file" accept=".zip,application/zip"></div><div class="setting"><div><strong>JSON adapter</strong><small>Existing JSON workflow remains supported.</small></div><input id="medium-adapter-json" type="file" accept=".json,application/json"></div><div class="setting"><div><strong>Package guide</strong><small>Structure, validation, install and security rules.</small></div><button class="btn" id="medium-adapter-help">How to Use</button></div></article>
+    <article class="toolbar-card">\
+<h3>Extension mode</h3>
+     <div class="setting">\
+<div>\
+<strong>🟢 Active on supported websites</strong>\
+<small>Default and recommended. Locked: the extension cannot be switched on for all websites.</small>\
+</div>\
+<b>${enabledCount} / ${sites.length} enabled</b>\
+</div>
+     <div class="setting">\
+<div>\
+<strong>😴 Sleep everywhere else</strong>\
+<small>The toolbar icon shows “zzz” on sleeping websites. Open tabs wake or sleep immediately when you change this list.</small>\
+</div>\
+<b>Always on</b>\
+</div>
+     <div class="setting">\
+<div>\
+<strong>Add supported website</strong>\
+<small>Domain only, for example medium.com. Subdomains are included unless you turn that off for the site.</small>\
+</div>\
+<div>\
+<input id="new-site" placeholder="example.com">\
+<button class="btn" id="add-site">Add</button>\
+</div>\
+</div>
+    </article>
+    <article class="toolbar-card">\
+<h3>Test a page</h3>
+     <div class="setting">\
+<div>\
+<strong>Will it run here?</strong>\
+<small>Paste a page address to see whether Charlie MJ Reader would be Active or Sleeping there (includes path rules).</small>\
+</div>\
+<div>\
+<input id="test-url" placeholder="https://example.com/articles/hello">\
+<button class="btn" id="test-site">Test</button>\
+</div>\
+</div>
+     <div id="test-result" class="help">\
+</div>
+     <div class="setting">\
+<div>\
+<strong>Import / export list</strong>\
+</div>\
+<div>\
+<input id="site-import" type="file" accept=".json,application/json">\
+<button class="btn" id="site-export">Export JSON</button>\
+<button class="btn" id="site-refresh">Validate</button>\
+</div>\
+</div>
+     <div class="setting">\
+<div>\
+<strong>Open My Reading Library</strong>\
+<small>Categories, tags, fetched data and SEO per website.</small>\
+</div>\
+<button class="btn" id="open-library-from-sites">Open Library</button>\
+</div>
+    </article>
    </div>
-   <h3>Legacy / Custom Medium Profiles</h3>${adapters.map((a,i)=>`<div class="setting"><div><strong>${escapeHtml(a.name||a.filename)}</strong><small>${escapeHtml(a.kind)} · ${escapeHtml(String(a.version||'unversioned'))}</small></div><button class="btn" data-adapter-remove="${i}">Remove</button></div>`).join('')||'<p class="help">No custom Medium profiles installed.</p>'}
-   <div class="setting"><div><strong>Import legacy JSON/JS profile</strong></div><input id="adapter-file" type="file" accept=".json,.js,application/json,text/javascript"><button class="btn" id="adapter-export">Export Profiles</button><button class="btn" id="adapter-test">Validate</button></div><div id="adapter-status" class="help"></div>
-   <h3>Installed Compatibility Packages</h3>${ap.map((a,i)=>`<div class="setting"><div><strong>${escapeHtml(a.manifest?.name||a.id)}</strong><small>${escapeHtml(a.id)} · v${escapeHtml(a.manifest?.version||'')} · ${a.files?.length||0} files</small></div><div><button class="btn" data-ap-toggle="${i}">${a.enabled===false?'Enable':'Disable'}</button><button class="btn" data-ap-details="${i}">Details</button><button class="btn" data-ap-export="${i}">Export</button><button class="btn" data-ap-delete="${i}">Delete</button></div></div>`).join('')||'<p class="help">No compatibility packages installed yet.</p>'}`;
-   panel.querySelector('#adapter-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const text=await f.text(),isJson=f.name.toLowerCase().endsWith('.json');if(isJson){const cfg=JSON.parse(text);if(!cfg||typeof cfg!=='object')throw Error('JSON profile must be an object.');}const item={id:crypto.randomUUID(),name:f.name,filename:f.name,kind:isJson?'json-profile':'javascript-source-inactive',version:isJson?(JSON.parse(text).version||1):'manual-review',content:text,importedAt:new Date().toISOString()};data.settings.mediumAdapters=[...adapters,item];await persist();render();}catch(err){alert(`Adapter import failed: ${err.message}`)}};
-   panel.querySelector('#adapter-export').onclick=()=>downloadJson('charlie-mj-medium-adapters.json',adapters); panel.querySelector('#adapter-test').onclick=()=>{const bad=adapters.filter(a=>a.kind==='json-profile'&&!safeJson(a.content));panel.querySelector('#adapter-status').textContent=bad.length?`${bad.length} invalid JSON adapter(s).`:`${adapters.length} custom profile(s) passed validation.`};
-   panel.querySelector('#medium-adapter-help').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('src/options/adapter-help.html')});
-   panel.querySelector('#medium-adapter-json').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const obj=JSON.parse(await f.text());const manifest=obj.manifest||obj;if(!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id||''))throw Error('Invalid adapter id.');if(!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version||'')))throw Error('Adapter version must use semver like 1.0.0.');const pkg={id:manifest.id,manifest,enabled:true,installedAt:new Date().toISOString(),files:[{path:'adapter.json',type:'text',content:JSON.stringify(obj,null,2)}],storagePath:`extensions/adapters/${manifest.id}/`};data.adapterPackages=[...ap.filter(a=>a.id!==pkg.id),pkg];await persist();render();}catch(err){alert('Adapter import failed: '+err.message)}};
-   panel.querySelector('#medium-adapter-zip').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const pkg=await readAdapterZip(f);const summary=`Adapter: ${pkg.manifest.name||pkg.id}\nID: ${pkg.id}\nVersion: ${pkg.manifest.version}\nFiles: ${pkg.files.length}\nCapabilities: ${(pkg.manifest.capabilities||[]).join(', ')||'Not declared'}\nStorage: ${pkg.storagePath}\n\nJavaScript is retained as inactive package data.`;if(data.settings.mediumAdapterConfirm!==false&&!await askConfirmation(summary,'Review Adapter Package'))return;const existing=ap.find(a=>a.id===pkg.id);if(existing&&data.settings.mediumAdapterReplace!==false&&!await askConfirmation(`Replace installed adapter ${pkg.id}?`))return;data.adapterPackages=[...ap.filter(a=>a.id!==pkg.id),pkg];await persist();render();alert(`Installed ${pkg.manifest.name||pkg.id} v${pkg.manifest.version}.`);}catch(err){alert('ZIP import failed: '+err.message)}};
-   panel.querySelectorAll('[data-ap-toggle]').forEach(b=>b.onclick=async()=>{const a=ap[+b.dataset.apToggle];a.enabled=a.enabled===false;await persist();render();});
-   panel.querySelectorAll('[data-ap-details]').forEach(b=>b.onclick=()=>{const a=ap[+b.dataset.apDetails],m=a.manifest||{};alert(`Adapter: ${m.name||a.id}\nID: ${a.id}\nVersion: ${m.version||''}\nPlatform: ${m.platform||''}\nFiles: ${(a.files||[]).map(x=>x.path).join(', ')}`);});
-   panel.querySelectorAll('[data-ap-export]').forEach(b=>b.onclick=()=>downloadJson(`adapter-${ap[+b.dataset.apExport].id}.json`,ap[+b.dataset.apExport]));
-   panel.querySelectorAll('[data-ap-delete]').forEach(b=>b.onclick=async()=>{const a=ap[+b.dataset.apDelete];if(await askConfirmation(`Delete adapter ${a.id}?`)){data.adapterPackages=ap.filter(x=>x.id!==a.id);await persist();render();}});
-   panel.querySelectorAll('[data-adapter-remove]').forEach(b=>b.onclick=async()=>{data.settings.mediumAdapters.splice(Number(b.dataset.adapterRemove),1);await persist();render();});
- } else if(active==="intelligence"){
-   panel.innerHTML=`<h2>Knowledge Intelligence</h2><p class="help">Local matching works without sending your library to an external service. Similarity is a suggestion, not proof of identical meaning.</p>${[['Enable quote and thought matching','similarityQuotes'],['Enable article similarity suggestions','similarityArticles'],['Enable vocabulary phrase matching','similarityVocabulary'],['Run scans after saving records','autoSimilarity'],['Show similarity notifications','similarityAlerts']].map(([l,k])=>row([l,k,'check'])).join('')}<div class="setting"><div><strong>Run library similarity scan</strong><small>Find exact and keyword-overlap matches across saved articles, quotes, notes and vocabulary.</small></div><button class="btn" id="run-similarity">Scan now</button></div><div id="similarity-results"></div>`;
-   panel.querySelector('#run-similarity').onclick=()=>{const records=[...(data.articles||[]).map(x=>({...x,_type:'Article',_text:x.title+' '+x.text})),...(data.highlights||[]).map(x=>({...x,_type:'Highlight',_text:x.text})),...(data.notes||[]).map(x=>({...x,_type:'Note',_text:x.text||x.note}))];const pairs=[];for(let i=0;i<records.length;i++)for(let j=i+1;j<records.length;j++){const a=new Set((records[i]._text||'').toLowerCase().match(/[a-z0-9]{4,}/g)||[]),b=new Set((records[j]._text||'').toLowerCase().match(/[a-z0-9]{4,}/g)||[]);const common=[...a].filter(w=>b.has(w));const score=common.length/Math.max(1,new Set([...a,...b]).size);if(score>=.22)pairs.push({a:records[i],b:records[j],score,common});}panel.querySelector('#similarity-results').innerHTML=pairs.length?`<h3>${pairs.length} possible relationship(s)</h3>`+pairs.slice(0,30).map(p=>`<div class="setting"><div><strong>${escapeHtml(p.a.title||p.a._text.slice(0,70))} ↔ ${escapeHtml(p.b.title||p.b._text.slice(0,70))}</strong><small>${p.a._type} / ${p.b._type} · ${Math.round(p.score*100)}% keyword overlap · Shared: ${escapeHtml(p.common.slice(0,10).join(', '))}</small></div></div>`).join(''):'<p class="help">No strong keyword overlaps found. Semantic AI matching requires an explicitly configured embedding/AI provider.</p>';};
- } else if(active==="topics"){
-   const topics=data.topics||[];panel.innerHTML=`<h2>Topics & Knowledge</h2><p class="help">Group multiple saved articles under one thought. Articles can belong to several topics without duplicating their content.</p><div class="setting"><div><strong>Create topic</strong><small>Give a topic a name and central research question.</small></div><button class="btn" id="topic-add">New topic</button></div>${topics.map((t,i)=>`<div class="setting"><div><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.thought||'')} · ${(t.articleIds||[]).length} linked article(s)</small></div><div><button class="btn" data-topic-edit="${i}">Edit</button><button class="btn" data-topic-link="${i}">Link article</button><button class="btn" data-topic-remove="${i}">Remove</button></div></div>`).join('')}`;
-   panel.querySelector('#topic-add').onclick=async()=>{const title=prompt('Topic name');if(!title?.trim())return;const thought=prompt('Main thought or research question','');data.topics=topics.concat({id:crypto.randomUUID(),title:title.trim(),thought:thought||'',articleIds:[],createdAt:new Date().toISOString()});await persist();render();};
-   panel.querySelectorAll('[data-topic-edit]').forEach(b=>b.onclick=async()=>{const t=topics[+b.dataset.topicEdit],v=prompt('Edit topic thought',t.thought);if(v!==null){t.thought=v;await persist();render();}});
-   panel.querySelectorAll('[data-topic-link]').forEach(b=>b.onclick=async()=>{const t=topics[+b.dataset.topicLink],choices=data.articles.map((a,i)=>`${i+1}. ${a.title}`).join('\n');const n=Number(prompt(`Enter article number to link:\n${choices}`))-1;if(data.articles[n]){t.articleIds=[...new Set([...(t.articleIds||[]),data.articles[n].id])];await persist();render();}});
-   panel.querySelectorAll('[data-topic-remove]').forEach(b=>b.onclick=async()=>{if(await askConfirmation('Remove this topic? Articles remain in your library.')){topics.splice(+b.dataset.topicRemove,1);data.topics=topics;await persist();render();}});
- } else if(active==="adapters"){
-   const adapters=data.adapterPackages||[];
-   panel.innerHTML=`<h2>Compatibility Adapters</h2><p class="help">Install JSON or ZIP adapter packages. ZIP packages are validated before storage. Imported JavaScript is stored as data and is never executed automatically.</p>
-   <div class="setting"><div><strong>Import Adapter Package (.zip)</strong><small>Package is validated for safe paths, manifest, ID and version before installation.</small></div><input id="adapter-zip" type="file" accept=".zip,application/zip"></div>
-   <div class="setting"><div><strong>Import JSON adapter</strong><small>Keep the existing JSON adapter workflow.</small></div><input id="adapter-json" type="file" accept=".json,application/json"></div>
-   <div class="setting"><div><strong>How to Use / Import</strong><small>Learn package structure, validation, security and install flow.</small></div><button class="btn" id="adapter-help">Open guide</button></div>
-   ${adapters.length?adapters.map((a,i)=>`<div class="setting"><div><strong>${escapeHtml(a.manifest?.name||a.id)}</strong><small>${escapeHtml(a.id)} · v${escapeHtml(a.manifest?.version||'1.0.0')} · ${a.enabled===false?'Disabled':'Enabled'} · ${a.files?.length||0} files</small></div><div><button class="btn" data-adapter-toggle="${i}">${a.enabled===false?'Enable':'Disable'}</button> <button class="btn" data-adapter-details="${i}">Details</button> <button class="btn" data-adapter-export="${i}">Export</button> <button class="btn" data-adapter-delete="${i}">Delete</button></div></div>`).join(''):'<div class="empty">No adapter packages installed.</div>'}`;
-   panel.querySelector('#adapter-help').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('src/options/adapter-help.html')});
-   panel.querySelector('#adapter-json').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const obj=JSON.parse(await f.text());const manifest=obj.manifest||obj; if(!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id||'')) throw Error('Invalid adapter id.'); if(!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version||''))) throw Error('Adapter version must use semver like 1.0.0.'); const pkg={id:manifest.id,manifest,enabled:true,installedAt:new Date().toISOString(),files:[{path:'adapter.json',type:'text',content:JSON.stringify(obj,null,2)}]};data.adapterPackages=[...adapters.filter(a=>a.id!==pkg.id),pkg];await persist();render();}catch(err){alert('Adapter import failed: '+err.message)}};
-   panel.querySelector('#adapter-zip').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const pkg=await readAdapterZip(f);const summary=`Adapter: ${pkg.manifest.name||pkg.id}\nID: ${pkg.id}\nVersion: ${pkg.manifest.version}\nFiles: ${pkg.files.length}\nCapabilities: ${(pkg.manifest.capabilities||[]).join(', ')||'Not declared'}\n\nImported JavaScript remains inactive data and will not be executed.`;if(!await askConfirmation(summary,'Review Adapter Package'))return;const existing=adapters.find(a=>a.id===pkg.id);if(existing&&!await askConfirmation(`Replace installed adapter ${pkg.id}?`))return;data.adapterPackages=[...adapters.filter(a=>a.id!==pkg.id),pkg];await persist();render();alert(`Installed ${pkg.manifest.name||pkg.id} v${pkg.manifest.version}.`);}catch(err){alert('ZIP import failed: '+err.message)}};
-   panel.querySelectorAll('[data-adapter-toggle]').forEach(b=>b.onclick=async()=>{const a=adapters[+b.dataset.adapterToggle];a.enabled=a.enabled===false;await persist();render();});
-   panel.querySelectorAll('[data-adapter-details]').forEach(b=>b.onclick=()=>{const a=adapters[+b.dataset.adapterDetails];const m=a.manifest||{};alert(`Adapter: ${m.name||a.id}\nID: ${a.id}\nVersion: ${m.version||''}\nPlatform: ${m.platform||''}\nCapabilities: ${(m.capabilities||[]).join(', ')||'Not declared'}\nFiles: ${(a.files||[]).map(x=>x.path).join(', ')}`);});
-   panel.querySelectorAll('[data-adapter-delete]').forEach(b=>b.onclick=async()=>{const i=+b.dataset.adapterDelete;if(await askConfirmation(`Delete adapter ${adapters[i].id}?`)){adapters.splice(i,1);data.adapterPackages=adapters;await persist();render();}});
-   panel.querySelectorAll('[data-adapter-export]').forEach(b=>b.onclick=()=>downloadJson(`adapter-${adapters[+b.dataset.adapterExport].id}.json`,adapters[+b.dataset.adapterExport]));
- } else if(active==="focus"){
-   const list=configs.focus; panel.innerHTML=`<h2>Focus</h2><p class="help">Focus tools are applied only on supported websites. Ad blocking is best-effort DOM/CSS filtering; it does not replace a network-level blocker.</p>${list.map(row).join('')}<div class="setting"><div><strong>Quick Day / Night</strong><small>Instantly switch the reading filter without changing the saved brightness controls.</small></div><div><button class="btn" data-focus-mode="day">Day</button><button class="btn" data-focus-mode="night">Night</button><button class="btn" data-focus-mode="auto">Auto</button></div></div>`;
-   panel.querySelectorAll('[data-focus-mode]').forEach(b=>b.onclick=async()=>{data.settings.dayNightMode=b.dataset.focusMode;await persist();render();});
- } else if(active==="productivity"){
-   panel.innerHTML=`<h2>Productivity</h2><p class="help">Configure the 80/20 and Pomodoro productivity toolbar plus reading targets.</p>${[['Daily reading goal (minutes)','dailyGoal','range',5,240],['Weekly reading goal (minutes)','weeklyGoal','range',30,1680],['Enable reading reminders','readingReminders','check'],['Enable vocabulary revision reminders','vocabularyReminders','check'],['Enable productivity toolbar','productivityToolbarEnabled','check'],['Enable 80/20 timer','eightyTwentyEnabled','check'],['Enable Pomodoro','pomodoroEnabled','check'],['Pomodoro work (minutes)','pomodoroWork','range',5,90],['Pomodoro short break (minutes)','pomodoroBreak','range',1,30],['Pomodoro long break (minutes)','pomodoroLongBreak','range',5,45]].map(row).join('')}<div class="setting"><div><strong>Reading summary</strong><small>${data.articles.length} saved articles · ${data.articles.filter(a=>a.status==='completed').length} completed</small></div><b>${data.readingHistory.length} sessions</b></div>`;
- } else if(active==="performance"){
-   panel.innerHTML=`<h2>Performance & Diagnostics</h2><p class="help">Local diagnostics only. Metrics are approximate and do not represent Chrome-wide resource usage.</p><div class="setting"><div><strong>Serialized library size</strong><small>Approximate JSON payload size</small></div><b>${(new Blob([JSON.stringify(data)]).size/1024).toFixed(1)} KB</b></div><div class="setting"><div><strong>Records</strong><small>Articles, highlights, notes, vocabulary and topics</small></div><b>${['articles','highlights','notes','vocabulary','topics'].reduce((n,k)=>n+(data[k]||[]).length,0)}</b></div>${[['Pause automatic similarity scans','pauseSimilarity'],['Enable lightweight mode','lightweightMode'],['Limit background processing','limitBackground']].map(row).join('')}<div class="setting"><div><strong>Validate local records</strong><small>Check core collection types.</small></div><button class="btn" id="db-check">Run check</button></div><div id="db-check-result" class="help"></div>`;
-   panel.querySelector('#db-check').onclick=()=>{const keys=['articles','highlights','notes','vocabulary','topics','collections'];const bad=keys.filter(k=>!Array.isArray(data[k]||[]));panel.querySelector('#db-check-result').textContent=bad.length?`Invalid collections: ${bad.join(', ')}`:'Database structure check passed.';};
- } else if(active==="library"){
-   panel.innerHTML=`<h2>My Reading Library</h2><p class="help">Settings for fetching, categorizing and storing library data.</p>${[["Automatically categorize websites and articles","libraryAutoCategory","check"],["Allow manual category editing","libraryAllowManualCategory","check"],["Fetch complete article data on save","libraryFetchCompleteArticle","check"],["Run SEO audit on save","libraryFetchSeoOnSave","check"],["Run Google SEO/PageSpeed audit on save","articleGoogleAuditOnSave","check"],["Automatically create tags","libraryAutoTags","check"],["Automatically create labels","libraryAutoLabels","check"]].map(row).join("")}<div class="setting"><div><strong>Categories</strong><small>One category per line.</small></div><textarea id="library-cats" rows="8">${escapeHtml((data.settings.libraryCustomCategories||[]).join("\n"))}</textarea></div>`;
-   panel.querySelector('#library-cats').onchange=async e=>{data.settings.libraryCustomCategories=[...new Set(e.target.value.split(/\n|,/).map(x=>x.trim()).filter(Boolean))];await persist();render();};
- } else if(active==="intelligence"){
-   panel.innerHTML=`<h2>Extension Intelligence</h2><p class="help">Local category intelligence; your library is not sent to an external AI service.</p>${[["Enable intelligence","intelligenceEnabled","check"],["Use known publisher rules","intelligenceUsePublisherRules","check"],["Use keyword scoring","intelligenceUseKeywordScoring","check"],["Auto-categorize saved articles","intelligenceAutoCategoryArticles","check"],["Learn from manual edits","intelligenceLearnFromEdits","check"],["Minimum confidence","intelligenceMinConfidence","range",0,1]].map(row).join("")}`;
- } else if(active==="database"){
-   panel.innerHTML=`<h2>Database Manager</h2><p class="help">The database is exported as a directory-shaped ZIP. My Reading Library contains separate folders for Websites, Favorites, Tags, Labels, Newspapers, Profile Pages and Saved Articles, with one JSON file per category.</p><div class="setting"><div><strong>Download complete database directory</strong></div><button class="btn" id="export-db-zip">Download database ZIP</button></div><div class="setting"><div><strong>Download My Reading Library</strong></div><button class="btn" id="export-library-zip">Download Library ZIP</button></div><div class="setting"><div><strong>Export JSON snapshot</strong></div><button class="btn" id="export-db">Export database JSON</button></div><div class="setting"><div><strong>Restore database backup</strong></div><input id="db-restore" type="file" accept="application/json"></div><div id="db-status" class="help"></div>`;
-   panel.querySelector('#export-db-zip').onclick=()=>downloadDbZip(); panel.querySelector('#export-library-zip').onclick=()=>downloadDbZip('charlie-mj-my-reading-library.zip',true); panel.querySelector('#export-db').onclick=()=>downloadJson('charlie-mj-database-snapshot.json',{schemaVersion:3,createdAt:new Date().toISOString(),data});
-   panel.querySelector('#db-restore').onchange=async e=>{try{const v=JSON.parse(await e.target.files[0].text());data={...data,...(v.data||v)};await persist();alert('Database restored.');render();}catch(err){alert(`Restore failed: ${err.message}`);}};
- } else if(active==="sync"){
-   panel.innerHTML=`<h2>GitHub Data Sync</h2><p class="help">Compare only <strong>database/My Reading Library/</strong>. Vocabulary and unrelated records are excluded.</p><div class="setting"><div><strong>Local database folder</strong><small>Select a folder to use as your manual database backup destination. Chrome asks for folder access when you choose it.</small></div><button class="btn" id="choose-db-folder">Choose folder</button></div><div id="db-folder-status" class="help">${escapeHtml(data.settings.localDatabaseFolderName||"No folder selected")}</div><div class="setting"><div><strong>Write backup to selected folder</strong><small>Creates or replaces charlie-mj-backup.json in the selected folder.</small></div><button class="btn" id="write-db-folder">Save database backup</button></div><div class="setting"><div><strong>GitHub username</strong></div><input id="gh-user" value="${escapeHtml(data.settings.githubUser||'awsrmmustansarjavaid')}"></div><div class="setting"><div><strong>Repository</strong></div><input id="gh-repo" value="${escapeHtml(data.settings.githubRepo||'')}"></div><div class="setting"><div><strong>Branch</strong></div><input id="gh-branch" value="${escapeHtml(data.settings.githubBranch||'main')}"></div><div class="setting"><div><strong>Token</strong><small>Stored locally.</small></div><input id="gh-token" type="password" placeholder="GitHub token"></div><div class="setting"><div><strong>Actions</strong></div><div class="site-actions"><button class="btn" id="gh-save">Save</button><button class="btn" id="gh-compare">Compare GitHub</button><button class="btn" id="gh-prepare">Prepare GitHub</button><button class="btn" id="gh-diff">Prepare Difference</button></div></div><div id="gh-result" class="help"></div>`;
-   panel.querySelector('#choose-db-folder').onclick=async()=>{try{if(!window.showDirectoryPicker)throw new Error('Folder access is not supported in this browser.');const handle=await window.showDirectoryPicker({mode:'readwrite'});data.settings.localDatabaseFolderName=handle.name;await persist();panel.querySelector('#db-folder-status').textContent=`Selected: ${handle.name}. Folder access may need to be granted again after browser restart.`;window.__cmjDatabaseFolderHandle=handle;}catch(err){if(err.name!=='AbortError')panel.querySelector('#db-folder-status').textContent=err.message;}};
-   panel.querySelector('#write-db-folder').onclick=async()=>{try{const h=window.__cmjDatabaseFolderHandle;if(!h)throw new Error('Choose the folder again in this settings session first.');const permission=await h.requestPermission({mode:'readwrite'});if(permission!=='granted')throw new Error('Folder write permission was not granted.');const f=await h.getFileHandle('charlie-mj-backup.json',{create:true});const w=await f.createWritable();await w.write(JSON.stringify({schemaVersion:1,data},null,2));await w.close();panel.querySelector('#db-folder-status').textContent=`Backup saved to ${h.name}/charlie-mj-backup.json`; }catch(err){panel.querySelector('#db-folder-status').textContent=err.message;}};
-   const cfg=()=>({u:panel.querySelector('#gh-user').value.trim()||'awsrmmustansarjavaid',r:panel.querySelector('#gh-repo').value.trim(),b:panel.querySelector('#gh-branch').value.trim()||'main',t:panel.querySelector('#gh-token').value||data.settings.githubToken||''});
-   panel.querySelector('#gh-save').onclick=async()=>{const c=cfg();data.settings.githubUser=c.u;data.settings.githubRepo=c.r;data.settings.githubBranch=c.b;if(c.t)data.settings.githubToken=c.t;await persist();panel.querySelector('#gh-result').textContent='Sync settings saved.';};
-   async function gf(path){const c=cfg();if(!c.r)throw Error('Enter a GitHub repository first.');const h={Accept:'application/vnd.github+json'};if(c.t)h.Authorization=`Bearer ${c.t}`;const r=await fetch(`https://api.github.com/${path}`,{headers:h});if(!r.ok)throw Error(`GitHub ${r.status}: ${await r.text()}`);return r.json();}
-   async function compare(){const c=cfg(),tree=await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/git/trees/${encodeURIComponent(c.b)}?recursive=1`),remote=(tree.tree||[]).filter(x=>x.type==='blob'&&x.path.startsWith('database/My Reading Library/')),local=dbZipEntries(data,true),rm=new Map();for(const x of remote){const b=await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/contents/${x.path}?ref=${encodeURIComponent(c.b)}`);rm.set(x.path,atob((b.content||'').replace(/\n/g,'')));}const lm=new Map(local.map(x=>[x.path,x.data])),paths=[...new Set([...lm.keys(),...rm.keys()])].sort();return paths.map(path=>({path,status:!lm.has(path)?'remote-only':!rm.has(path)?'local-only':lm.get(path)===rm.get(path)?'unchanged':'modified'}));}
-   panel.querySelector('#gh-compare').onclick=async()=>{const box=panel.querySelector('#gh-result');box.textContent='Comparing My Reading Library…';try{const rows=await compare();box.innerHTML=`<strong>My Reading Library comparison</strong><table><tr><th>File</th><th>Status</th></tr>${rows.map(x=>`<tr><td>${escapeHtml(x.path.replace('database/My Reading Library/',''))}</td><td>${escapeHtml(x.status)}</td></tr>`).join('')}</table>`;}catch(e){box.textContent=e.message;}};
-   panel.querySelector('#gh-prepare').onclick=()=>downloadDbZip('charlie-mj-database.zip');
-   panel.querySelector('#gh-diff').onclick=async()=>{const box=panel.querySelector('#gh-result');box.textContent='Finding changed files…';try{const rows=await compare(),changed=new Set(rows.filter(x=>x.status==='local-only'||x.status==='modified').map(x=>x.path)),entries=dbZipEntries(data,true).filter(x=>changed.has(x.path));if(!entries.length){box.textContent='No modified or new My Reading Library files found.';return;}dlBlob('charlie-mj-database-difference.zip',zipStore(entries));box.textContent=`Prepared ${entries.length} changed file(s).`;}catch(e){box.textContent=e.message;}};
- } else if(active==="notifications"){
-   const n=data.settings.notifications||{enabled:true,position:"bottom-right",durationMs:2600,events:{}}; const ev=n.events||{};
-   const checks=[['bookmark','Bookmark saved'],['article','Article saved/updated'],['vocabulary','Vocabulary saved'],['quote','Quote saved'],['paragraph','Paragraph saved'],['selection','Custom selection saved'],['opened','Article opened'],['completed','Article completed'],['restored','Reading position restored'],['export','Export/download completed'],['error','Errors'],['action','Button click feedback']];
-   panel.innerHTML=`<h2>Notifications</h2><p class="help">All reader feedback uses unobtrusive toast notifications instead of intrusive browser alerts. Default position is bottom-right.</p><div class="setting"><div><strong>Enable notifications</strong><small>Turn all Charlie MJ Reader toasts on or off.</small></div><input id="notif-enabled" type="checkbox" ${n.enabled!==false?'checked':''}></div><div class="setting"><div><strong>Position</strong></div><select id="notif-position"><option value="bottom-right">Bottom-right</option><option value="bottom-left">Bottom-left</option><option value="top-right">Top-right</option><option value="top-left">Top-left</option></select></div><div class="setting"><div><strong>Display duration</strong></div><input id="notif-duration" type="range" min="1000" max="7000" step="250" value="${Number(n.durationMs||2600)}"><output>${Number(n.durationMs||2600)} ms</output></div><div class="card"><h3>Notification events</h3>${checks.map(([k,l])=>`<label class="setting"><span><strong>${l}</strong></span><input type="checkbox" data-notif-event="${k}" ${ev[k]!==false?'checked':''}></label>`).join('')}</div><div class="setting"><div><strong>Test notification</strong></div><button class="btn" id="notif-test">Show test toast</button></div>`;
-   panel.querySelector('#notif-position').value=n.position||'bottom-right';
-   const persistNotif=async()=>{data.settings.notifications={...n,enabled:panel.querySelector('#notif-enabled').checked,position:panel.querySelector('#notif-position').value,durationMs:Number(panel.querySelector('#notif-duration').value),events:{...ev,...Object.fromEntries([...panel.querySelectorAll('[data-notif-event]')].map(x=>[x.dataset.notifEvent,x.checked]))}};await persist();};
-   panel.querySelectorAll('#notif-enabled,#notif-position,#notif-duration,[data-notif-event]').forEach(x=>x.addEventListener('change',persistNotif));
-   panel.querySelector('#notif-test').onclick=()=>{const host=document.getElementById('cmj-options-toast-host')||(()=>{const h=document.createElement('div');h.id='cmj-options-toast-host';document.body.append(h);return h;})();const e=document.createElement('div');e.className='cmj-options-toast';e.textContent='✓ Notification settings are working';host.append(e);setTimeout(()=>e.remove(),Number(panel.querySelector('#notif-duration').value||2600));};
- } else if(active==="storage"){
-   panel.innerHTML=`<h2>Storage & Backup</h2><p class="help">Your library is stored in Chrome local extension storage.</p><div class="setting"><div><strong>Export complete backup</strong><small>Download articles, highlights, notes, vocabulary and preferences as JSON.</small></div><button class="btn" id="backup">Export backup</button></div><div class="setting"><div><strong>Import backup</strong><small>Import a previously exported Charlie MJ Reader JSON file.</small></div><input id="backup-file" type="file" accept="application/json"></div><div class="setting"><div><strong>Storage usage</strong><small>Approximate serialized record size.</small></div><b>${(new Blob([JSON.stringify(data)]).size/1024).toFixed(1)} KB</b></div>`;
-   panel.querySelector("#backup").onclick=()=>{const blob=new Blob([JSON.stringify({schemaVersion:1,data},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="charlie-mj-backup.json";a.click();URL.revokeObjectURL(a.href);};
-   panel.querySelector("#backup-file").onchange=async e=>{const parsed=JSON.parse(await e.target.files[0].text());data=parsed.data||parsed;await persist();render();};
- } else {
-   const list=configs[active]||configs.general;
-   panel.innerHTML=`<h2>${labels[active]}</h2><p class="help">Preferences are saved locally and can be changed at any time.</p>${list.map(row).join("")}${active==="vocabulary" ? `<div class="setting"><div><strong>Toolbar websites</strong><small>Comma-separated hostnames. Defaults: eksisozluk.com, x.com, twitter.com. Subdomains are included.</small></div><textarea id="vocabulary-sites" rows="4">${escapeHtml((data.settings.vocabularySites||["eksisozluk.com","x.com","twitter.com"]).join(", "))}</textarea></div><div class="setting"><div><strong>Translation provider</strong><small>Uses the public MyMemory translation endpoint. It may apply rate limits; no API key is required.</small></div><span>MyMemory public API</span></div>` : ""}`;
-   if(active==="vocabulary"){
-     panel.querySelector("#vocabulary-sites").addEventListener("change",async event=>{
-       const sites=event.target.value.split(",").map(x=>x.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/\/$/,"")).filter(x=>/^[a-z0-9.-]+$/.test(x));
-       data.settings.vocabularySites=[...new Set(sites)];await persist();event.target.value=data.settings.vocabularySites.join(", ");
-     });
-   }
- }
- panel.querySelectorAll("[data-key]").forEach(el=>el.addEventListener("change",async()=>{
-   const key=el.dataset.key;let value=el.type==="checkbox"?el.checked:el.type==="range"?Number(el.value):el.value;
-   data.settings[key]=value;await persist();
-   if(el.type==="range")el.nextElementSibling.textContent=value;
- }));
+   <div class="setting">\
+<div>\
+<strong>Find a website</strong>\
+</div>\
+<input id="site-filter" placeholder="Type to filter the list…">\
+</div>
+   <div id="site-status" class="help">\
+</div>
+   <div class="website-grid">${sites.map((raw, i) => {
+            const x = profile(raw);
+            const flag = (k) => x[k] !== false;
+            return `<article class="website-card" data-domain="${escapeHtml(x.domain)}">\
+<div class="website-card-head">\
+<div>\
+<span class="site-icon">${x.enabled === false ? '😴' : '🟢'}</span>\
+<strong>${escapeHtml(x.domain)}</strong>\
+<small>${x.enabled === false ? 'Disabled (sleeping)' : 'Enabled (active)'} · ${escapeHtml(x.category || 'General')}</small>\
+</div>\
+<div>\
+<button class="btn" data-site-enable="${i}">${x.enabled === false ? 'Enable' : 'Disable'}</button>\
+<button class="btn" data-site-remove="${i}">Remove</button>\
+</div>\
+</div>
+    <details>\
+<summary>Restrictions &amp; per-site features</summary>
+     <label class="setting">\
+<div>\
+<strong>Include subdomains</strong>\
+<small>blog.${escapeHtml(x.domain)}, www.${escapeHtml(x.domain)} …</small>\
+</div>\
+<input type="checkbox" data-site-flag="includeSubdomains" data-i="${i}" ${flag('includeSubdomains') ? 'checked' : ''}>\
+</label>
+     <div class="setting">\
+<div>\
+<strong>Only these paths</strong>\
+<small>Optional, comma separated. Example: /articles/*</small>\
+</div>\
+<input data-site-list="includedPaths" data-i="${i}" value="${escapeHtml(listText(x.includedPaths))}" placeholder="all paths">\
+</div>
+     <div class="setting">\
+<div>\
+<strong>Never on these paths</strong>\
+<small>Optional. Example: /account, /login, /settings/*</small>\
+</div>\
+<input data-site-list="excludedPaths" data-i="${i}" value="${escapeHtml(listText(x.excludedPaths))}" placeholder="none">\
+</div>
+     ${FEATS.map(([k, l]) => `<label class="setting">\
+<div>\
+<strong>${l}</strong>\
+</div>\
+<input type="checkbox" data-site-flag="${k}" data-i="${i}" ${flag(k) ? 'checked' : ''}>\
+</label>`).join('')}
+    </details>\
+</article>`;
+        }).join('')}</div>`;
+        const saveSites = async () => { data.settings.websites = sites; await persist(); };
+        panel.querySelector('#open-library-from-sites').onclick = () => chrome.tabs.create({ url: chrome.runtime.getURL('src/library/library.html') });
+        panel.querySelector('#add-site').onclick = async () => {
+            const v = normalize(panel.querySelector('#new-site').value);
+            if (!v || !/^[a-z0-9.-]+$/.test(v) || !v.includes('.'))
+                return alert('Enter a valid hostname, for example example.com.');
+            if (!sites.some(x => normalize(profile(x).domain) === v)) {
+                sites.push(newSite(v));
+                await saveSites();
+                render();
+            }
+            else {
+                panel.querySelector('#site-status').textContent = `${v} is already in the list.`;
+            }
+        };
+        panel.querySelectorAll('[data-site-enable]').forEach(b => b.onclick = async () => {
+            const i = +b.dataset.siteEnable, x = profile(sites[i]);
+            sites[i] = { ...newSite(x.domain), ...x, enabled: x.enabled === false, version: (x.version || 1) + 1, updatedAt: new Date().toISOString() };
+            await saveSites();
+            render();
+        });
+        panel.querySelectorAll('[data-site-remove]').forEach(b => b.onclick = async () => {
+            const i = +b.dataset.siteRemove;
+            if (await askConfirmation(`Remove ${profile(sites[i]).domain} from Supported Websites? Charlie MJ Reader will sleep there.`)) {
+                sites.splice(i, 1);
+                await saveSites();
+                render();
+            }
+        });
+        panel.querySelectorAll('[data-site-flag]').forEach(el => el.onchange = async () => {
+            const i = +el.dataset.i;
+            sites[i] = {
+                ...newSite(profile(sites[i]).domain),
+                ...profile(sites[i]),
+                [el.dataset.siteFlag]: el.checked,
+                version: (profile(sites[i]).version || 1) + 1,
+                updatedAt: new Date().toISOString()
+            };
+            await saveSites();
+        });
+        panel.querySelectorAll('[data-site-list]').forEach(el => el.onchange = async () => {
+            const i = +el.dataset.i;
+            sites[i] = {
+                ...newSite(profile(sites[i]).domain),
+                ...profile(sites[i]),
+                [el.dataset.siteList]: toList(el.value),
+                version: (profile(sites[i]).version || 1) + 1,
+                updatedAt: new Date().toISOString()
+            };
+            await saveSites();
+        });
+        panel.querySelector('#site-filter').oninput = e => { const t = e.target.value.trim().toLowerCase(); panel.querySelectorAll('.website-card').forEach(c => c.hidden = !!t && !c.dataset.domain.includes(t)); };
+        panel.querySelector('#test-site').onclick = () => {
+            const out = panel.querySelector('#test-result');
+            let raw = panel.querySelector('#test-url').value.trim();
+            if (raw && !/^https?:\/\//i.test(raw))
+                raw = 'https://' + raw;
+            const r = globalThis.CMJSiteGate?.evaluate({ websites: sites }, raw);
+            if (!raw || !r) {
+                out.textContent = 'Enter a valid page address.';
+                return;
+            }
+            out.textContent = r.profile ? `🟢 Active — matched ${r.profile.domain}.` : (r.hostMatched ? '😴 Sleeping — the website is listed, but a path rule excludes this page.' : '😴 Sleeping — this website is not in Supported Websites.');
+        };
+        panel.querySelector('#site-export').onclick = () => downloadJson('charlie-mj-websites.json', sites);
+        panel.querySelector('#site-refresh').onclick = () => {
+            const bad = sites.filter(x => !/^[a-z0-9.-]+$/.test(normalize(profile(x).domain)));
+            panel.querySelector('#site-status').textContent = bad.length ? `${bad.length} entr${bad.length > 1 ? 'ies have' : 'y has'} an invalid hostname.` : `Validated ${sites.length} website profiles at ${new Date().toLocaleString()}.`;
+        };
+        panel.querySelector('#site-import').onchange = async (e) => {
+            try {
+                const parsed = JSON.parse(await e.target.files[0].text());
+                const incoming = (Array.isArray(parsed) ? parsed : parsed.websites || [parsed]).map(x => ({ ...newSite(normalize(profile(x).domain)), ...profile(x), domain: normalize(profile(x).domain) }));
+                if (incoming.some(x => !/^[a-z0-9.-]+$/.test(x.domain)))
+                    throw Error('Invalid website hostname.');
+                data.settings.websites = [...sites.filter(a => !incoming.some(b => normalize(profile(a).domain) === b.domain)), ...incoming];
+                await persist();
+                render();
+            }
+            catch (err) {
+                alert('Import failed: ' + err.message);
+            }
+        };
+    }
+    else if (active === "library") {
+        panel.innerHTML = `<h2>My Reading Library</h2>\
+<p class="help">Manage website data and saved articles by independent categories. Each category is stored as its own JSON record inside the library data namespace and can be imported/exported.</p>\
+<div class="setting">\
+<div>\
+<strong>Open full Library page</strong>\
+<small>Use the dedicated library workspace for search, hints, category management and website refresh.</small>\
+</div>\
+<button class="btn" id="open-library-page">Open My Reading Library ↗</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Library categories</strong>\
+<small>${Object.keys(data.readingLibrary?.categories || {}).length} categories · ${(data.articles || []).length} saved articles</small>\
+</div>\
+<button class="btn" id="export-library">Export Library JSON</button>\
+<input id="import-library" type="file" accept=".json,application/json">\
+</div>`;
+        panel.querySelector('#open-library-page').onclick = () => chrome.tabs.create({ url: chrome.runtime.getURL('src/library/library.html') });
+        panel.querySelector('#export-library').onclick = () => downloadJson('my-reading-library.json', data.readingLibrary || { version: 1, categories: {}, websiteData: {} });
+        panel.querySelector('#import-library').onchange = async (e) => {
+            try {
+                data.readingLibrary = JSON.parse(await e.target.files[0].text());
+                await persist();
+                render();
+            }
+            catch (err) {
+                alert('Library import failed: ' + err.message);
+            }
+        };
+    }
+    else if (active === "medium") {
+        const adapters = data.settings.mediumAdapters || [];
+        const ap = data.adapterPackages || [];
+        panel.innerHTML = `<h2>Medium Compatibility</h2>\
+<p class="help">All Medium/Freedium compatibility controls and Compatibility Adapters are grouped here. Imported JavaScript remains inactive package data and is never executed automatically. These features do not bypass paywalls, account controls or server-side restrictions.</p>
+   <div class="toolbar-grid">
+    <article class="toolbar-card">\
+<h3>Medium Detection</h3>${[['Enable Medium detection', 'mediumEnabled'],
+            ['Detect Medium article URLs', 'mediumDetectUrls'],
+            ['Use canonical URL', 'mediumUseCanonical'],
+            ['Auto-save detected articles', 'mediumAutoSave'],
+            ['Show access reminders', 'mediumAlerts'],
+            ['Monitor page notices', 'mediumMonitor']].map(([l, k]) => row([l, k, 'check'])).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Freedium Reader</h3>${[['Enable Freedium option', 'freediumEnabled'],
+            ['Auto-open Medium articles with Freedium', 'freediumAutoOpen'],
+            ['Open with Freedium from Media Reader', 'freediumMediaButton'],
+            ['Fallback to direct Medium parser', 'freediumFallback'],
+            ['Open in new tab', 'freediumNewTab']].map(([l, k]) => row([l, k, 'check'])).join('')}<div class="setting">\
+<div>\
+<strong>Freedium service URL</strong>\
+<small>Configurable external reader endpoint.</small>\
+</div>\
+<input data-key="freediumServiceUrl" value="${escapeHtml(data.settings.freediumServiceUrl || 'https://freedium-mirror.cfd/')}">\
+</div>\
+</article>
+    <article class="toolbar-card">\
+<h3>Article Extraction</h3>${[['Extract title/author/date', 'mediumExtractMetadata'],
+            ['Extract publication/category', 'mediumExtractPublication'],
+            ['Extract images', 'mediumExtractImages'],
+            ['Extract canonical URL', 'mediumExtractCanonical'],
+            ['Save complete article content', 'mediumExtractContent']].map(([l, k]) => row([l, k, 'check'])).join('')}</article>
+    <article class="toolbar-card">\
+<h3>Compatibility Adapter Settings</h3>${[['Enable Medium adapter registry', 'mediumAdapterEnabled'],
+            ['Allow user adapters', 'mediumUserAdapters'],
+            ['Show adapter diagnostics', 'mediumAdapterDiagnostics'],
+            ['Require install confirmation', 'mediumAdapterConfirm'],
+            ['Allow adapter replacement', 'mediumAdapterReplace']].map(([l, k]) => row([l, k, 'check'])).join('')}<div class="setting">\
+<div>\
+<strong>Maximum adapter package size (MB)</strong>\
+</div>\
+<input data-key="adapterMaxPackageMB" type="number" min="1" max="100" value="${data.settings.adapterMaxPackageMB || 25}">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Maximum adapter files</strong>\
+</div>\
+<input data-key="adapterMaxFiles" type="number" min="1" max="500" value="${data.settings.adapterMaxFiles || 500}">\
+</div>\
+</article>
+    <article class="toolbar-card">\
+<h3>Adapter Package Manager</h3>\
+<p>Install a complete ZIP package into the logical <code>extensions/adapters/&lt;adapter-id&gt;/</code> namespace. The package is retained intact; executable code stays inactive until a future signed runtime is explicitly enabled.</p>\
+<div class="setting">\
+<div>\
+<strong>ZIP package</strong>\
+<small>Includes adapter.json and all package assets.</small>\
+</div>\
+<input id="medium-adapter-zip" type="file" accept=".zip,application/zip">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>JSON adapter</strong>\
+<small>Existing JSON workflow remains supported.</small>\
+</div>\
+<input id="medium-adapter-json" type="file" accept=".json,application/json">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Package guide</strong>\
+<small>Structure, validation, install and security rules.</small>\
+</div>\
+<button class="btn" id="medium-adapter-help">How to Use</button>\
+</div>\
+</article>
+   </div>
+   <h3>Legacy / Custom Medium Profiles</h3>${adapters.map((a, i) => `<div class="setting">\
+<div>\
+<strong>${escapeHtml(a.name || a.filename)}</strong>\
+<small>${escapeHtml(a.kind)} · ${escapeHtml(String(a.version || 'unversioned'))}</small>\
+</div>\
+<button class="btn" data-adapter-remove="${i}">Remove</button>\
+</div>`).join('') || '<p class="help">No custom Medium profiles installed.</p>'}
+   <div class="setting">\
+<div>\
+<strong>Import legacy JSON/JS profile</strong>\
+</div>\
+<input id="adapter-file" type="file" accept=".json,.js,application/json,text/javascript">\
+<button class="btn" id="adapter-export">Export Profiles</button>\
+<button class="btn" id="adapter-test">Validate</button>\
+</div>\
+<div id="adapter-status" class="help">\
+</div>
+   <h3>Installed Compatibility Packages</h3>${ap.map((a, i) => `<div class="setting">\
+<div>\
+<strong>${escapeHtml(a.manifest?.name || a.id)}</strong>\
+<small>${escapeHtml(a.id)} · v${escapeHtml(a.manifest?.version || '')} · ${a.files?.length || 0} files</small>\
+</div>\
+<div>\
+<button class="btn" data-ap-toggle="${i}">${a.enabled === false ? 'Enable' : 'Disable'}</button>\
+<button class="btn" data-ap-details="${i}">Details</button>\
+<button class="btn" data-ap-export="${i}">Export</button>\
+<button class="btn" data-ap-delete="${i}">Delete</button>\
+</div>\
+</div>`).join('') || '<p class="help">No compatibility packages installed yet.</p>'}`;
+        panel.querySelector('#adapter-file').onchange = async (e) => {
+            const f = e.target.files[0];
+            if (!f)
+                return;
+            try {
+                const text = await f.text(), isJson = f.name.toLowerCase().endsWith('.json');
+                if (isJson) {
+                    const cfg = JSON.parse(text);
+                    if (!cfg || typeof cfg !== 'object')
+                        throw Error('JSON profile must be an object.');
+                }
+                const item = {
+                    id: crypto.randomUUID(),
+                    name: f.name,
+                    filename: f.name,
+                    kind: isJson ? 'json-profile' : 'javascript-source-inactive',
+                    version: isJson ? (JSON.parse(text).version || 1) : 'manual-review',
+                    content: text,
+                    importedAt: new Date().toISOString()
+                };
+                data.settings.mediumAdapters = [...adapters, item];
+                await persist();
+                render();
+            }
+            catch (err) {
+                alert(`Adapter import failed: ${err.message}`);
+            }
+        };
+        panel.querySelector('#adapter-export').onclick = () => downloadJson('charlie-mj-medium-adapters.json', adapters);
+        panel.querySelector('#adapter-test').onclick = () => {
+            const bad = adapters.filter(a => a.kind === 'json-profile' && !safeJson(a.content));
+            panel.querySelector('#adapter-status').textContent = bad.length ? `${bad.length} invalid JSON adapter(s).` : `${adapters.length} custom profile(s) passed validation.`;
+        };
+        panel.querySelector('#medium-adapter-help').onclick = () => chrome.tabs.create({ url: chrome.runtime.getURL('src/options/adapter-help.html') });
+        panel.querySelector('#medium-adapter-json').onchange = async (e) => {
+            try {
+                const f = e.target.files[0];
+                if (!f)
+                    return;
+                const obj = JSON.parse(await f.text());
+                const manifest = obj.manifest || obj;
+                if (!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id || ''))
+                    throw Error('Invalid adapter id.');
+                if (!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version || '')))
+                    throw Error('Adapter version must use semver like 1.0.0.');
+                const pkg = {
+                    id: manifest.id,
+                    manifest,
+                    enabled: true,
+                    installedAt: new Date().toISOString(),
+                    files: [{ path: 'adapter.json', type: 'text', content: JSON.stringify(obj, null, 2) }],
+                    storagePath: `extensions/adapters/${manifest.id}/`
+                };
+                data.adapterPackages = [...ap.filter(a => a.id !== pkg.id), pkg];
+                await persist();
+                render();
+            }
+            catch (err) {
+                alert('Adapter import failed: ' + err.message);
+            }
+        };
+        panel.querySelector('#medium-adapter-zip').onchange = async (e) => {
+            try {
+                const f = e.target.files[0];
+                if (!f)
+                    return;
+                const pkg = await readAdapterZip(f);
+                const summary = `Adapter: ${pkg.manifest.name || pkg.id}\nID: ${pkg.id}\nVersion: ${pkg.manifest.version}\nFiles: ${pkg.files.length}\nCapabilities: ${(pkg.manifest.capabilities || []).join(', ') || 'Not declared'}\nStorage: ${pkg.storagePath}\n\nJavaScript is retained as inactive package data.`;
+                if (data.settings.mediumAdapterConfirm !== false && !await askConfirmation(summary, 'Review Adapter Package'))
+                    return;
+                const existing = ap.find(a => a.id === pkg.id);
+                if (existing && data.settings.mediumAdapterReplace !== false && !await askConfirmation(`Replace installed adapter ${pkg.id}?`))
+                    return;
+                data.adapterPackages = [...ap.filter(a => a.id !== pkg.id), pkg];
+                await persist();
+                render();
+                alert(`Installed ${pkg.manifest.name || pkg.id} v${pkg.manifest.version}.`);
+            }
+            catch (err) {
+                alert('ZIP import failed: ' + err.message);
+            }
+        };
+        panel.querySelectorAll('[data-ap-toggle]').forEach(b => b.onclick = async () => { const a = ap[+b.dataset.apToggle]; a.enabled = a.enabled === false; await persist(); render(); });
+        panel.querySelectorAll('[data-ap-details]').forEach(b => b.onclick = () => {
+            const a = ap[+b.dataset.apDetails], m = a.manifest || {};
+            alert(`Adapter: ${m.name || a.id}\nID: ${a.id}\nVersion: ${m.version || ''}\nPlatform: ${m.platform || ''}\nFiles: ${(a.files || []).map(x => x.path).join(', ')}`);
+        });
+        panel.querySelectorAll('[data-ap-export]').forEach(b => b.onclick = () => downloadJson(`adapter-${ap[+b.dataset.apExport].id}.json`, ap[+b.dataset.apExport]));
+        panel.querySelectorAll('[data-ap-delete]').forEach(b => b.onclick = async () => {
+            const a = ap[+b.dataset.apDelete];
+            if (await askConfirmation(`Delete adapter ${a.id}?`)) {
+                data.adapterPackages = ap.filter(x => x.id !== a.id);
+                await persist();
+                render();
+            }
+        });
+        panel.querySelectorAll('[data-adapter-remove]').forEach(b => b.onclick = async () => { data.settings.mediumAdapters.splice(Number(b.dataset.adapterRemove), 1); await persist(); render(); });
+    }
+    else if (active === "intelligence") {
+        panel.innerHTML = `<h2>Knowledge Intelligence</h2>\
+<p class="help">Local matching works without sending your library to an external service. Similarity is a suggestion, not proof of identical meaning.</p>${[['Enable quote and thought matching', 'similarityQuotes'],
+            ['Enable article similarity suggestions', 'similarityArticles'],
+            ['Enable vocabulary phrase matching', 'similarityVocabulary'],
+            ['Run scans after saving records', 'autoSimilarity'],
+            ['Show similarity notifications', 'similarityAlerts']].map(([l, k]) => row([l, k, 'check'])).join('')}<div class="setting">\
+<div>\
+<strong>Run library similarity scan</strong>\
+<small>Find exact and keyword-overlap matches across saved articles, quotes, notes and vocabulary.</small>\
+</div>\
+<button class="btn" id="run-similarity">Scan now</button>\
+</div>\
+<div id="similarity-results">\
+</div>`;
+        panel.querySelector('#run-similarity').onclick = () => {
+            const records = [...(data.articles || []).map(x => ({ ...x, _type: 'Article', _text: x.title + ' ' + x.text })),
+            ...(data.highlights || []).map(x => ({ ...x, _type: 'Highlight', _text: x.text })),
+            ...(data.notes || []).map(x => ({ ...x, _type: 'Note', _text: x.text || x.note }))];
+            const pairs = [];
+            for (let i = 0; i < records.length; i++)
+                for (let j = i + 1; j < records.length; j++) {
+                    const a = new Set((records[i]._text || '').toLowerCase().match(/[a-z0-9]{4,}/g) || []), b = new Set((records[j]._text || '').toLowerCase().match(/[a-z0-9]{4,}/g) || []);
+                    const common = [...a].filter(w => b.has(w));
+                    const score = common.length / Math.max(1, new Set([...a, ...b]).size);
+                    if (score >= .22)
+                        pairs.push({ a: records[i], b: records[j], score, common });
+                }
+            panel.querySelector('#similarity-results').innerHTML = pairs.length ? `<h3>${pairs.length} possible relationship(s)</h3>` + pairs.slice(0, 30).map(p => `<div class="setting">\
+<div>\
+<strong>${escapeHtml(p.a.title || p.a._text.slice(0, 70))} ↔ ${escapeHtml(p.b.title || p.b._text.slice(0, 70))}</strong>\
+<small>${p.a._type} / ${p.b._type} · ${Math.round(p.score * 100)}% keyword overlap · Shared: ${escapeHtml(p.common.slice(0, 10).join(', '))}</small>\
+</div>\
+</div>`).join('') : '<p class="help">No strong keyword overlaps found. Semantic AI matching requires an explicitly configured embedding/AI provider.</p>';
+        };
+    }
+    else if (active === "topics") {
+        const topics = data.topics || [];
+        panel.innerHTML = `<h2>Topics & Knowledge</h2>\
+<p class="help">Group multiple saved articles under one thought. Articles can belong to several topics without duplicating their content.</p>\
+<div class="setting">\
+<div>\
+<strong>Create topic</strong>\
+<small>Give a topic a name and central research question.</small>\
+</div>\
+<button class="btn" id="topic-add">New topic</button>\
+</div>${topics.map((t, i) => `<div class="setting">\
+<div>\
+<strong>${escapeHtml(t.title)}</strong>\
+<small>${escapeHtml(t.thought || '')} · ${(t.articleIds || []).length} linked article(s)</small>\
+</div>\
+<div>\
+<button class="btn" data-topic-edit="${i}">Edit</button>\
+<button class="btn" data-topic-link="${i}">Link article</button>\
+<button class="btn" data-topic-remove="${i}">Remove</button>\
+</div>\
+</div>`).join('')}`;
+        panel.querySelector('#topic-add').onclick = async () => {
+            const title = prompt('Topic name');
+            if (!title?.trim())
+                return;
+            const thought = prompt('Main thought or research question', '');
+            data.topics = topics.concat({ id: crypto.randomUUID(), title: title.trim(), thought: thought || '', articleIds: [], createdAt: new Date().toISOString() });
+            await persist();
+            render();
+        };
+        panel.querySelectorAll('[data-topic-edit]').forEach(b => b.onclick = async () => {
+            const t = topics[+b.dataset.topicEdit], v = prompt('Edit topic thought', t.thought);
+            if (v !== null) {
+                t.thought = v;
+                await persist();
+                render();
+            }
+        });
+        panel.querySelectorAll('[data-topic-link]').forEach(b => b.onclick = async () => {
+            const t = topics[+b.dataset.topicLink], choices = data.articles.map((a, i) => `${i + 1}. ${a.title}`).join('\n');
+            const n = Number(prompt(`Enter article number to link:\n${choices}`)) - 1;
+            if (data.articles[n]) {
+                t.articleIds = [...new Set([...(t.articleIds || []), data.articles[n].id])];
+                await persist();
+                render();
+            }
+        });
+        panel.querySelectorAll('[data-topic-remove]').forEach(b => b.onclick = async () => {
+            if (await askConfirmation('Remove this topic? Articles remain in your library.')) {
+                topics.splice(+b.dataset.topicRemove, 1);
+                data.topics = topics;
+                await persist();
+                render();
+            }
+        });
+    }
+    else if (active === "adapters") {
+        const adapters = data.adapterPackages || [];
+        panel.innerHTML = `<h2>Compatibility Adapters</h2>\
+<p class="help">Install JSON or ZIP adapter packages. ZIP packages are validated before storage. Imported JavaScript is stored as data and is never executed automatically.</p>
+   <div class="setting">\
+<div>\
+<strong>Import Adapter Package (.zip)</strong>\
+<small>Package is validated for safe paths, manifest, ID and version before installation.</small>\
+</div>\
+<input id="adapter-zip" type="file" accept=".zip,application/zip">\
+</div>
+   <div class="setting">\
+<div>\
+<strong>Import JSON adapter</strong>\
+<small>Keep the existing JSON adapter workflow.</small>\
+</div>\
+<input id="adapter-json" type="file" accept=".json,application/json">\
+</div>
+   <div class="setting">\
+<div>\
+<strong>How to Use / Import</strong>\
+<small>Learn package structure, validation, security and install flow.</small>\
+</div>\
+<button class="btn" id="adapter-help">Open guide</button>\
+</div>
+   ${adapters.length ? adapters.map((a, i) => `<div class="setting">\
+<div>\
+<strong>${escapeHtml(a.manifest?.name || a.id)}</strong>\
+<small>${escapeHtml(a.id)} · v${escapeHtml(a.manifest?.version || '1.0.0')} · ${a.enabled === false ? 'Disabled' : 'Enabled'} · ${a.files?.length || 0} files</small>\
+</div>\
+<div>\
+<button class="btn" data-adapter-toggle="${i}">${a.enabled === false ? 'Enable' : 'Disable'}</button> <button class="btn" data-adapter-details="${i}">Details</button> <button class="btn" data-adapter-export="${i}">Export</button> <button class="btn" data-adapter-delete="${i}">Delete</button>\
+</div>\
+</div>`).join('') : '<div class="empty">No adapter packages installed.</div>'}`;
+        panel.querySelector('#adapter-help').onclick = () => chrome.tabs.create({ url: chrome.runtime.getURL('src/options/adapter-help.html') });
+        panel.querySelector('#adapter-json').onchange = async (e) => {
+            try {
+                const f = e.target.files[0];
+                if (!f)
+                    return;
+                const obj = JSON.parse(await f.text());
+                const manifest = obj.manifest || obj;
+                if (!/^[a-z0-9][a-z0-9._-]{1,63}$/i.test(manifest.id || ''))
+                    throw Error('Invalid adapter id.');
+                if (!/^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$/.test(String(manifest.version || '')))
+                    throw Error('Adapter version must use semver like 1.0.0.');
+                const pkg = {
+                    id: manifest.id,
+                    manifest,
+                    enabled: true,
+                    installedAt: new Date().toISOString(),
+                    files: [{ path: 'adapter.json', type: 'text', content: JSON.stringify(obj, null, 2) }]
+                };
+                data.adapterPackages = [...adapters.filter(a => a.id !== pkg.id), pkg];
+                await persist();
+                render();
+            }
+            catch (err) {
+                alert('Adapter import failed: ' + err.message);
+            }
+        };
+        panel.querySelector('#adapter-zip').onchange = async (e) => {
+            try {
+                const f = e.target.files[0];
+                if (!f)
+                    return;
+                const pkg = await readAdapterZip(f);
+                const summary = `Adapter: ${pkg.manifest.name || pkg.id}\nID: ${pkg.id}\nVersion: ${pkg.manifest.version}\nFiles: ${pkg.files.length}\nCapabilities: ${(pkg.manifest.capabilities || []).join(', ') || 'Not declared'}\n\nImported JavaScript remains inactive data and will not be executed.`;
+                if (!await askConfirmation(summary, 'Review Adapter Package'))
+                    return;
+                const existing = adapters.find(a => a.id === pkg.id);
+                if (existing && !await askConfirmation(`Replace installed adapter ${pkg.id}?`))
+                    return;
+                data.adapterPackages = [...adapters.filter(a => a.id !== pkg.id), pkg];
+                await persist();
+                render();
+                alert(`Installed ${pkg.manifest.name || pkg.id} v${pkg.manifest.version}.`);
+            }
+            catch (err) {
+                alert('ZIP import failed: ' + err.message);
+            }
+        };
+        panel.querySelectorAll('[data-adapter-toggle]').forEach(b => b.onclick = async () => { const a = adapters[+b.dataset.adapterToggle]; a.enabled = a.enabled === false; await persist(); render(); });
+        panel.querySelectorAll('[data-adapter-details]').forEach(b => b.onclick = () => {
+            const a = adapters[+b.dataset.adapterDetails];
+            const m = a.manifest || {};
+            alert(`Adapter: ${m.name || a.id}\nID: ${a.id}\nVersion: ${m.version || ''}\nPlatform: ${m.platform || ''}\nCapabilities: ${(m.capabilities || []).join(', ') || 'Not declared'}\nFiles: ${(a.files || []).map(x => x.path).join(', ')}`);
+        });
+        panel.querySelectorAll('[data-adapter-delete]').forEach(b => b.onclick = async () => {
+            const i = +b.dataset.adapterDelete;
+            if (await askConfirmation(`Delete adapter ${adapters[i].id}?`)) {
+                adapters.splice(i, 1);
+                data.adapterPackages = adapters;
+                await persist();
+                render();
+            }
+        });
+        panel.querySelectorAll('[data-adapter-export]').forEach(b => b.onclick = () => downloadJson(`adapter-${adapters[+b.dataset.adapterExport].id}.json`, adapters[+b.dataset.adapterExport]));
+    }
+    else if (active === "focus") {
+        const list = configs.focus;
+        panel.innerHTML = `<h2>Focus</h2>\
+<p class="help">Focus tools are applied only on supported websites. Ad blocking is best-effort DOM/CSS filtering; it does not replace a network-level blocker.</p>${list.map(row).join('')}<div class="setting">\
+<div>\
+<strong>Quick Day / Night</strong>\
+<small>Instantly switch the reading filter without changing the saved brightness controls.</small>\
+</div>\
+<div>\
+<button class="btn" data-focus-mode="day">Day</button>\
+<button class="btn" data-focus-mode="night">Night</button>\
+<button class="btn" data-focus-mode="auto">Auto</button>\
+</div>\
+</div>`;
+        panel.querySelectorAll('[data-focus-mode]').forEach(b => b.onclick = async () => { data.settings.dayNightMode = b.dataset.focusMode; await persist(); render(); });
+    }
+    else if (active === "productivity") {
+        panel.innerHTML = `<h2>Productivity</h2>\
+<p class="help">Configure the 80/20 and Pomodoro productivity toolbar plus reading targets.</p>${[['Daily reading goal (minutes)', 'dailyGoal', 'range', 5, 240],
+            ['Weekly reading goal (minutes)', 'weeklyGoal', 'range', 30, 1680],
+            ['Enable reading reminders', 'readingReminders', 'check'],
+            ['Enable vocabulary revision reminders', 'vocabularyReminders', 'check'],
+            ['Enable productivity toolbar', 'productivityToolbarEnabled', 'check'],
+            ['Enable 80/20 timer', 'eightyTwentyEnabled', 'check'],
+            ['Enable Pomodoro', 'pomodoroEnabled', 'check'],
+            ['Pomodoro work (minutes)', 'pomodoroWork', 'range', 5, 90],
+            ['Pomodoro short break (minutes)', 'pomodoroBreak', 'range', 1, 30],
+            ['Pomodoro long break (minutes)', 'pomodoroLongBreak', 'range', 5, 45]].map(row).join('')}<div class="setting">\
+<div>\
+<strong>Reading summary</strong>\
+<small>${data.articles.length} saved articles · ${data.articles.filter(a => a.status === 'completed').length} completed</small>\
+</div>\
+<b>${data.readingHistory.length} sessions</b>\
+</div>`;
+    }
+    else if (active === "performance") {
+        panel.innerHTML = `<h2>Performance & Diagnostics</h2>\
+<p class="help">Local diagnostics only. Metrics are approximate and do not represent Chrome-wide resource usage.</p>\
+<div class="setting">\
+<div>\
+<strong>Serialized library size</strong>\
+<small>Approximate JSON payload size</small>\
+</div>\
+<b>${(new Blob([JSON.stringify(data)]).size / 1024).toFixed(1)} KB</b>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Records</strong>\
+<small>Articles, highlights, notes, vocabulary and topics</small>\
+</div>\
+<b>${['articles', 'highlights', 'notes', 'vocabulary', 'topics'].reduce((n, k) => n + (data[k] || []).length, 0)}</b>\
+</div>${[['Pause automatic similarity scans', 'pauseSimilarity'], ['Enable lightweight mode', 'lightweightMode'], ['Limit background processing', 'limitBackground']].map(row).join('')}<div class="setting">\
+<div>\
+<strong>Validate local records</strong>\
+<small>Check core collection types.</small>\
+</div>\
+<button class="btn" id="db-check">Run check</button>\
+</div>\
+<div id="db-check-result" class="help">\
+</div>`;
+        panel.querySelector('#db-check').onclick = () => {
+            const keys = ['articles', 'highlights', 'notes', 'vocabulary', 'topics', 'collections'];
+            const bad = keys.filter(k => !Array.isArray(data[k] || []));
+            panel.querySelector('#db-check-result').textContent = bad.length ? `Invalid collections: ${bad.join(', ')}` : 'Database structure check passed.';
+        };
+    }
+    else if (active === "library") {
+        panel.innerHTML = `<h2>My Reading Library</h2>\
+<p class="help">Settings for fetching, categorizing and storing library data.</p>${[["Automatically categorize websites and articles", "libraryAutoCategory", "check"],
+            ["Allow manual category editing", "libraryAllowManualCategory", "check"],
+            ["Fetch complete article data on save", "libraryFetchCompleteArticle", "check"],
+            ["Run SEO audit on save", "libraryFetchSeoOnSave", "check"],
+            ["Run Google SEO/PageSpeed audit on save", "articleGoogleAuditOnSave", "check"],
+            ["Automatically create tags", "libraryAutoTags", "check"],
+            ["Automatically create labels", "libraryAutoLabels", "check"]].map(row).join("")}<div class="setting">\
+<div>\
+<strong>Categories</strong>\
+<small>One category per line.</small>\
+</div>\
+<textarea id="library-cats" rows="8">${escapeHtml((data.settings.libraryCustomCategories || []).join("\n"))}</textarea>\
+</div>`;
+        panel.querySelector('#library-cats').onchange = async (e) => { data.settings.libraryCustomCategories = [...new Set(e.target.value.split(/\n|,/).map(x => x.trim()).filter(Boolean))]; await persist(); render(); };
+    }
+    else if (active === "intelligence") {
+        panel.innerHTML = `<h2>Extension Intelligence</h2>\
+<p class="help">Local category intelligence; your library is not sent to an external AI service.</p>${[["Enable intelligence", "intelligenceEnabled", "check"],
+            ["Use known publisher rules", "intelligenceUsePublisherRules", "check"],
+            ["Use keyword scoring", "intelligenceUseKeywordScoring", "check"],
+            ["Auto-categorize saved articles", "intelligenceAutoCategoryArticles", "check"],
+            ["Learn from manual edits", "intelligenceLearnFromEdits", "check"],
+            ["Minimum confidence", "intelligenceMinConfidence", "range", 0, 1]].map(row).join("")}`;
+    }
+    else if (active === "database") {
+        panel.innerHTML = `<h2>Database Manager</h2>\
+<p class="help">The database is exported as a directory-shaped ZIP. My Reading Library contains separate folders for Websites, Favorites, Tags, Labels, Newspapers, Profile Pages and Saved Articles, with one JSON file per category.</p>\
+<div class="setting">\
+<div>\
+<strong>Download complete database directory</strong>\
+</div>\
+<button class="btn" id="export-db-zip">Download database ZIP</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Download My Reading Library</strong>\
+</div>\
+<button class="btn" id="export-library-zip">Download Library ZIP</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Export JSON snapshot</strong>\
+</div>\
+<button class="btn" id="export-db">Export database JSON</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Restore database backup</strong>\
+</div>\
+<input id="db-restore" type="file" accept="application/json">\
+</div>\
+<div id="db-status" class="help">\
+</div>`;
+        panel.querySelector('#export-db-zip').onclick = () => downloadDbZip();
+        panel.querySelector('#export-library-zip').onclick = () => downloadDbZip('charlie-mj-my-reading-library.zip', true);
+        panel.querySelector('#export-db').onclick = () => downloadJson('charlie-mj-database-snapshot.json', { schemaVersion: 3, createdAt: new Date().toISOString(), data });
+        panel.querySelector('#db-restore').onchange = async (e) => {
+            try {
+                const v = JSON.parse(await e.target.files[0].text());
+                data = { ...data, ...(v.data || v) };
+                await persist();
+                alert('Database restored.');
+                render();
+            }
+            catch (err) {
+                alert(`Restore failed: ${err.message}`);
+            }
+        };
+    }
+    else if (active === "sync") {
+        panel.innerHTML = `<h2>GitHub Data Sync</h2>\
+<p class="help">Compare only <strong>database/My Reading Library/</strong>. Vocabulary and unrelated records are excluded.</p>\
+<div class="setting">\
+<div>\
+<strong>Local database folder</strong>\
+<small>Select a folder to use as your manual database backup destination. Chrome asks for folder access when you choose it.</small>\
+</div>\
+<button class="btn" id="choose-db-folder">Choose folder</button>\
+</div>\
+<div id="db-folder-status" class="help">${escapeHtml(data.settings.localDatabaseFolderName || "No folder selected")}</div>\
+<div class="setting">\
+<div>\
+<strong>Write backup to selected folder</strong>\
+<small>Creates or replaces charlie-mj-backup.json in the selected folder.</small>\
+</div>\
+<button class="btn" id="write-db-folder">Save database backup</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>GitHub username</strong>\
+</div>\
+<input id="gh-user" value="${escapeHtml(data.settings.githubUser || 'awsrmmustansarjavaid')}">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Repository</strong>\
+</div>\
+<input id="gh-repo" value="${escapeHtml(data.settings.githubRepo || '')}">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Branch</strong>\
+</div>\
+<input id="gh-branch" value="${escapeHtml(data.settings.githubBranch || 'main')}">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Token</strong>\
+<small>Stored locally.</small>\
+</div>\
+<input id="gh-token" type="password" placeholder="GitHub token">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Actions</strong>\
+</div>\
+<div class="site-actions">\
+<button class="btn" id="gh-save">Save</button>\
+<button class="btn" id="gh-compare">Compare GitHub</button>\
+<button class="btn" id="gh-prepare">Prepare GitHub</button>\
+<button class="btn" id="gh-diff">Prepare Difference</button>\
+</div>\
+</div>\
+<div id="gh-result" class="help">\
+</div>`;
+        panel.querySelector('#choose-db-folder').onclick = async () => {
+            try {
+                if (!window.showDirectoryPicker)
+                    throw new Error('Folder access is not supported in this browser.');
+                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                data.settings.localDatabaseFolderName = handle.name;
+                await persist();
+                panel.querySelector('#db-folder-status').textContent = `Selected: ${handle.name}. Folder access may need to be granted again after browser restart.`;
+                window.__cmjDatabaseFolderHandle = handle;
+            }
+            catch (err) {
+                if (err.name !== 'AbortError')
+                    panel.querySelector('#db-folder-status').textContent = err.message;
+            }
+        };
+        panel.querySelector('#write-db-folder').onclick = async () => {
+            try {
+                const h = window.__cmjDatabaseFolderHandle;
+                if (!h)
+                    throw new Error('Choose the folder again in this settings session first.');
+                const permission = await h.requestPermission({ mode: 'readwrite' });
+                if (permission !== 'granted')
+                    throw new Error('Folder write permission was not granted.');
+                const f = await h.getFileHandle('charlie-mj-backup.json', { create: true });
+                const w = await f.createWritable();
+                await w.write(JSON.stringify({ schemaVersion: 1, data }, null, 2));
+                await w.close();
+                panel.querySelector('#db-folder-status').textContent = `Backup saved to ${h.name}/charlie-mj-backup.json`;
+            }
+            catch (err) {
+                panel.querySelector('#db-folder-status').textContent = err.message;
+            }
+        };
+        const cfg = () => ({
+            u: panel.querySelector('#gh-user').value.trim() || 'awsrmmustansarjavaid',
+            r: panel.querySelector('#gh-repo').value.trim(),
+            b: panel.querySelector('#gh-branch').value.trim() || 'main',
+            t: panel.querySelector('#gh-token').value || data.settings.githubToken || ''
+        });
+        panel.querySelector('#gh-save').onclick = async () => {
+            const c = cfg();
+            data.settings.githubUser = c.u;
+            data.settings.githubRepo = c.r;
+            data.settings.githubBranch = c.b;
+            if (c.t)
+                data.settings.githubToken = c.t;
+            await persist();
+            panel.querySelector('#gh-result').textContent = 'Sync settings saved.';
+        };
+        async function gf(path) {
+            const c = cfg();
+            if (!c.r)
+                throw Error('Enter a GitHub repository first.');
+            const h = { Accept: 'application/vnd.github+json' };
+            if (c.t)
+                h.Authorization = `Bearer ${c.t}`;
+            const r = await fetch(`https://api.github.com/${path}`, { headers: h });
+            if (!r.ok)
+                throw Error(`GitHub ${r.status}: ${await r.text()}`);
+            return r.json();
+        }
+        async function compare() {
+            const c = cfg(), tree = await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/git/trees/${encodeURIComponent(c.b)}?recursive=1`), remote = (tree.tree || []).filter(x => x.type === 'blob' && x.path.startsWith('database/My Reading Library/')), local = dbZipEntries(data, true), rm = new Map();
+            for (const x of remote) {
+                const b = await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/contents/${x.path}?ref=${encodeURIComponent(c.b)}`);
+                rm.set(x.path, atob((b.content || '').replace(/\n/g, '')));
+            }
+            const lm = new Map(local.map(x => [x.path, x.data])), paths = [...new Set([...lm.keys(), ...rm.keys()])].sort();
+            return paths.map(path => ({ path, status: !lm.has(path) ? 'remote-only' : !rm.has(path) ? 'local-only' : lm.get(path) === rm.get(path) ? 'unchanged' : 'modified' }));
+        }
+        panel.querySelector('#gh-compare').onclick = async () => {
+            const box = panel.querySelector('#gh-result');
+            box.textContent = 'Comparing My Reading Library…';
+            try {
+                const rows = await compare();
+                box.innerHTML = `<strong>My Reading Library comparison</strong>\
+<table>\
+<tr>\
+<th>File</th>\
+<th>Status</th>\
+</tr>${rows.map(x => `<tr>\
+<td>${escapeHtml(x.path.replace('database/My Reading Library/', ''))}</td>\
+<td>${escapeHtml(x.status)}</td>\
+</tr>`).join('')}</table>`;
+            }
+            catch (e) {
+                box.textContent = e.message;
+            }
+        };
+        panel.querySelector('#gh-prepare').onclick = () => downloadDbZip('charlie-mj-database.zip');
+        panel.querySelector('#gh-diff').onclick = async () => {
+            const box = panel.querySelector('#gh-result');
+            box.textContent = 'Finding changed files…';
+            try {
+                const rows = await compare(), changed = new Set(rows.filter(x => x.status === 'local-only' || x.status === 'modified').map(x => x.path)), entries = dbZipEntries(data, true).filter(x => changed.has(x.path));
+                if (!entries.length) {
+                    box.textContent = 'No modified or new My Reading Library files found.';
+                    return;
+                }
+                dlBlob('charlie-mj-database-difference.zip', zipStore(entries));
+                box.textContent = `Prepared ${entries.length} changed file(s).`;
+            }
+            catch (e) {
+                box.textContent = e.message;
+            }
+        };
+    }
+    else if (active === "notifications") {
+        const n = data.settings.notifications || { enabled: true, position: "bottom-right", durationMs: 2600, events: {} };
+        const ev = n.events || {};
+        const checks = [['bookmark', 'Bookmark saved'],
+        ['article', 'Article saved/updated'],
+        ['vocabulary', 'Vocabulary saved'],
+        ['quote', 'Quote saved'],
+        ['paragraph', 'Paragraph saved'],
+        ['selection', 'Custom selection saved'],
+        ['opened', 'Article opened'],
+        ['completed', 'Article completed'],
+        ['restored', 'Reading position restored'],
+        ['export', 'Export/download completed'],
+        ['error', 'Errors'],
+        ['action', 'Button click feedback']];
+        panel.innerHTML = `<h2>Notifications</h2>\
+<p class="help">All reader feedback uses unobtrusive toast notifications instead of intrusive browser alerts. Default position is bottom-right.</p>\
+<div class="setting">\
+<div>\
+<strong>Enable notifications</strong>\
+<small>Turn all Charlie MJ Reader toasts on or off.</small>\
+</div>\
+<input id="notif-enabled" type="checkbox" ${n.enabled !== false ? 'checked' : ''}>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Position</strong>\
+</div>\
+<select id="notif-position">\
+<option value="bottom-right">Bottom-right</option>\
+<option value="bottom-left">Bottom-left</option>\
+<option value="top-right">Top-right</option>\
+<option value="top-left">Top-left</option>\
+</select>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Display duration</strong>\
+</div>\
+<input id="notif-duration" type="range" min="1000" max="7000" step="250" value="${Number(n.durationMs || 2600)}">\
+<output>${Number(n.durationMs || 2600)} ms</output>\
+</div>\
+<div class="card">\
+<h3>Notification events</h3>${checks.map(([k, l]) => `<label class="setting">\
+<span>\
+<strong>${l}</strong>\
+</span>\
+<input type="checkbox" data-notif-event="${k}" ${ev[k] !== false ? 'checked' : ''}>\
+</label>`).join('')}</div>\
+<div class="setting">\
+<div>\
+<strong>Test notification</strong>\
+</div>\
+<button class="btn" id="notif-test">Show test toast</button>\
+</div>`;
+        panel.querySelector('#notif-position').value = n.position || 'bottom-right';
+        const persistNotif = async () => {
+            data.settings.notifications = {
+                ...n,
+                enabled: panel.querySelector('#notif-enabled').checked,
+                position: panel.querySelector('#notif-position').value,
+                durationMs: Number(panel.querySelector('#notif-duration').value),
+                events: { ...ev, ...Object.fromEntries([...panel.querySelectorAll('[data-notif-event]')].map(x => [x.dataset.notifEvent, x.checked])) }
+            };
+            await persist();
+        };
+        panel.querySelectorAll('#notif-enabled,#notif-position,#notif-duration,[data-notif-event]').forEach(x => x.addEventListener('change', persistNotif));
+        panel.querySelector('#notif-test').onclick = () => {
+            const host = document.getElementById('cmj-options-toast-host') || (() => { const h = document.createElement('div'); h.id = 'cmj-options-toast-host'; document.body.append(h); return h; })();
+            const e = document.createElement('div');
+            e.className = 'cmj-options-toast';
+            e.textContent = '✓ Notification settings are working';
+            host.append(e);
+            setTimeout(() => e.remove(), Number(panel.querySelector('#notif-duration').value || 2600));
+        };
+    }
+    else if (active === "storage") {
+        panel.innerHTML = `<h2>Storage & Backup</h2>\
+<p class="help">Your library is stored in Chrome local extension storage.</p>\
+<div class="setting">\
+<div>\
+<strong>Export complete backup</strong>\
+<small>Download articles, highlights, notes, vocabulary and preferences as JSON.</small>\
+</div>\
+<button class="btn" id="backup">Export backup</button>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Import backup</strong>\
+<small>Import a previously exported Charlie MJ Reader JSON file.</small>\
+</div>\
+<input id="backup-file" type="file" accept="application/json">\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Storage usage</strong>\
+<small>Approximate serialized record size.</small>\
+</div>\
+<b>${(new Blob([JSON.stringify(data)]).size / 1024).toFixed(1)} KB</b>\
+</div>`;
+        panel.querySelector("#backup").onclick = () => {
+            const blob = new Blob([JSON.stringify({ schemaVersion: 1, data }, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "charlie-mj-backup.json";
+            a.click();
+            URL.revokeObjectURL(a.href);
+        };
+        panel.querySelector("#backup-file").onchange = async (e) => { const parsed = JSON.parse(await e.target.files[0].text()); data = parsed.data || parsed; await persist(); render(); };
+    }
+    else {
+        const list = configs[active] || configs.general;
+        panel.innerHTML = `<h2>${labels[active]}</h2>\
+<p class="help">Preferences are saved locally and can be changed at any time.</p>${list.map(row).join("")}${active === "appearance" ? `
+<article class="toolbar-card cmj-typography-studio">
+<h3>Productivity Reader — article typography</h3>
+<p class="help">Independent typography profile for Productivity Reader. Language Learning keeps its own profile.</p>
+<div class="cmj-typography-table"><div class="cmj-typography-head"><strong>Element</strong><strong>Font size</strong><strong>Font family</strong></div>
+${[["title","Article title",40],["subtitle","Subtitle",22],["description","Description",16],["heading","Headings H1–H3",26],["subheading","Subheadings",20],["quote","Quotes",18],["body","Article body",17],["caption","Captions",13]].map(([key,label,size]) => { const value = data.settings.productivityArticleTypography?.[key] || {}; return `<div class="cmj-typography-row"><strong>${label}</strong><input type="number" min="10" max="64" value="${Number(value.size || size)}" data-productivity-typography-size="${key}" aria-label="${label} font size"><select data-productivity-typography-font="${key}" aria-label="${label} font family">${[["inherit","Theme default"],["system-ui","System UI"],["Arial","Arial"],["Georgia","Georgia"],["Inter","Inter"],["Noto Sans","Noto Sans"],["Noto Naskh Arabic","Noto Naskh Arabic"],["Noto Nastaliq Urdu","Noto Nastaliq Urdu"],["Noto Sans Arabic","Noto Sans Arabic"],["Noto Sans Devanagari","Noto Sans Devanagari"]].map(([v,l])=>`<option value="${v}" ${(value.font || "inherit")===v?"selected":""}>${l}</option>`).join("")}</select></div>`; }).join("")}</div></article>` : ""}${active === "vocabulary" ? `<div class="setting">\
+<div>\
+<strong>Where the toolbar appears</strong>\
+<small>On every website in Supported Websites that has “Vocabulary &amp; translation” and “Selection toolbar” switched on. Change this per website under Settings → Supported Websites.</small>\
+</div>\
+<b>Supported Websites</b>\
+</div>\
+<div class="setting">\
+<div>\
+<strong>Translation provider</strong>\
+<small>Uses the public MyMemory translation endpoint. It may apply rate limits; no API key is required.</small>\
+</div>\
+<span>MyMemory public API</span>\
+</div>` : ""}`;
+    }
+    panel.querySelectorAll("[data-productivity-typography-size], [data-productivity-typography-font]").forEach((control) => control.addEventListener("change", async () => {
+        const key = control.dataset.productivityTypographySize || control.dataset.productivityTypographyFont;
+        const typography = { ...(data.settings.productivityArticleTypography || {}) };
+        typography[key] = { ...(typography[key] || {}), ...(control.dataset.productivityTypographySize ? { size: Math.max(10, Math.min(64, Number(control.value) || 17)) } : { font: control.value }) };
+        data.settings.productivityArticleTypography = typography;
+        await persist();
+    }));
+    panel.querySelectorAll("[data-key]").forEach(el => el.addEventListener("change", async () => {
+        const key = el.dataset.key;
+        let value = el.type === "checkbox" ? el.checked : el.type === "range" ? Number(el.value) : el.value;
+        data.settings[key] = value;
+        await persist();
+        if (el.type === "range")
+            el.nextElementSibling.textContent = value;
+    }));
+    populateTranslationLanguages();
 }
-async function persist(){await saveAll(data);saved.textContent="✓ Settings saved";}
-tabs.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){active=b.dataset.tab;render();}});
-render();
 
+async function persist() { await saveAll(data); saved.textContent = "✓ Settings saved"; }
+tabs.addEventListener("click", e => {
+    const b = e.target.closest("[data-tab]");
+    if (b) {
+        active = b.dataset.tab;
+        render();
+    }
+});
+render();
 // Button acknowledgement in Settings follows the same notification preferences.
-document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button||button.id==='notif-test')return;const n=data.settings?.notifications||{};if(n.enabled===false||n.events?.action===false)return;const host=document.getElementById('cmj-options-toast-host')||(()=>{const h=document.createElement('div');h.id='cmj-options-toast-host';document.body.append(h);return h;})();host.dataset.position=n.position||'bottom-right';const toast=document.createElement('div');toast.className='cmj-options-toast';toast.textContent=`${(button.textContent||'Action').trim().slice(0,48)} selected`;host.append(toast);setTimeout(()=>toast.remove(),Number(n.durationMs||2600));},{capture:true});
+document.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || button.id === 'notif-test')
+        return;
+    const n = data.settings?.notifications || {};
+    if (n.enabled === false || n.events?.action === false)
+        return;
+    const host = document.getElementById('cmj-options-toast-host') || (() => { const h = document.createElement('div'); h.id = 'cmj-options-toast-host'; document.body.append(h); return h; })();
+    host.dataset.position = n.position || 'bottom-right';
+    const toast = document.createElement('div');
+    toast.className = 'cmj-options-toast';
+    toast.textContent = `${(button.textContent || 'Action').trim().slice(0, 48)} selected`;
+    host.append(toast);
+    setTimeout(() => toast.remove(), Number(n.durationMs || 2600));
+}, { capture: true });

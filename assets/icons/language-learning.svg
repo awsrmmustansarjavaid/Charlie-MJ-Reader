@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Charlie MJ Language Learning vector mark: an open book with a learning spark. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Charlie MJ Language Learning</title>
+  <defs>
+    <linearGradient id="book" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a99aff" />
+      <stop offset="1" stop-color="#5d8df0" />
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="#171f36" />
+  <path d="M13 19c7-3 13-2 19 2v27c-6-4-12-5-19-2V19Z" fill="url(#book)" />
+  <path d="M51 19c-7-3-13-2-19 2v27c6-4 12-5 19-2V19Z" fill="#79d9bf" />
+  <path d="M32 21v27" fill="none" stroke="#f5f2ff" stroke-linecap="round" stroke-width="2" />
+  <path d="m45 10 2.2 4.8L52 17l-4.8 2.2L45 24l-2.2-4.8L38 17l4.8-2.2L45 10Z" fill="#ffd778" />
+</svg>
