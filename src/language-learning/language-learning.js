@@ -16,6 +16,7 @@ import {
     renderOriginalArticleHeader,
     stripPublisherChrome
 } from "../lib/article-header.js";
+import { installHoverGrammar } from "../lib/language-engine/hover-grammar.js";
 const view = document.getElementById("learning-view");
 const heading = document.getElementById("page-heading");
 const subtitle = document.getElementById("page-subtitle");
@@ -764,6 +765,7 @@ function openArticle(articleId) {
       <span class="pill">Estimated article level: ${level}</span>
       <button class="button" id="toggle-clean-reading">Clean reading</button>
       <button class="button" id="refresh-active-article">↻ Refresh article</button>
+      <button class="button" id="toggle-hover-grammar" aria-pressed="${data.settings.hoverGrammarEnabled !== false}">Hover grammar: ${data.settings.hoverGrammarEnabled !== false ? "On" : "Off"}</button>
       <button class="button button-primary" id="mark-article-complete">Mark article complete</button>
     </div>
     <div class="reader-layout">
@@ -1465,3 +1467,23 @@ if (requestedArticleId) {
         notify("The requested article could not be found in the shared Reader library.");
     }
 }
+
+/* ---------- Hover grammar detection (multilingual engine) ---------- */
+
+/** Show the language, category, meaning and grammar details of the word under the cursor. */
+installHoverGrammar({
+    isEnabled: () => data.settings.hoverGrammarEnabled !== false,
+    getLanguageHint: () => activeArticle?.language || activeArticle?.lang || data.languageLearning.settings.targetLanguage || "en",
+    getMeaningLanguage: () => data.settings.translationTarget || "en",
+    scope: ".reader-content"
+});
+
+/** Toggle hover grammar from the article toolbar and remember the choice. */
+document.addEventListener("click", async (event) => {
+    const button = event.target.closest("#toggle-hover-grammar");
+    if (!button) return;
+    data.settings.hoverGrammarEnabled = data.settings.hoverGrammarEnabled === false;
+    await saveAll(data);
+    button.textContent = `Hover grammar: ${data.settings.hoverGrammarEnabled ? "On" : "Off"}`;
+    button.setAttribute("aria-pressed", String(data.settings.hoverGrammarEnabled));
+});

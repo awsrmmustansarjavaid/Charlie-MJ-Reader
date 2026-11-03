@@ -1,0 +1,20 @@
+{
+  "language": "de",
+  "name": "German",
+  "closedClass": {
+    "article": ["der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "eines"],
+    "pronoun": ["ich", "du", "er", "sie", "es", "wir", "ihr", "mich", "dich", "ihn", "uns", "euch", "mir", "dir", "ihm", "ihnen", "sich", "man", "wer", "was", "welche"],
+    "preposition": ["an", "auf", "aus", "bei", "bis", "durch", "für", "gegen", "in", "mit", "nach", "ohne", "über", "um", "unter", "von", "vor", "während", "zu", "zwischen"],
+    "conjunction": ["und", "oder", "aber", "denn", "sondern", "weil", "dass", "wenn", "als", "ob", "obwohl", "damit", "während"],
+    "determiner": ["dieser", "diese", "dieses", "jener", "mein", "dein", "sein", "unser", "euer", "kein", "keine", "jeder", "alle", "viele", "einige"],
+    "adverb": ["nicht", "sehr", "auch", "schon", "noch", "immer", "nie", "hier", "dort", "jetzt", "heute", "gestern", "morgen", "dann", "oft"],
+    "auxiliary-verb": ["bin", "bist", "ist", "sind", "seid", "war", "waren", "habe", "hast", "hat", "haben", "habt", "wird", "werden", "kann", "können", "muss", "müssen", "soll", "sollen", "will", "wollen", "darf", "dürfen"]
+  },
+  "suffixRules": [
+    { "suffix": "ung", "category": "noun", "label": "-ung forms feminine nouns", "minStem": 3 },
+    { "suffix": "keit", "category": "noun", "label": "-keit forms feminine abstract nouns", "minStem": 3 },
+    { "suffix": "heit", "category": "noun", "label": "-heit forms feminine abstract nouns", "minStem": 3 },
+    { "suffix": "lich", "category": "adjective", "label": "-lich forms adjectives", "minStem": 3 },
+    { "suffix": "isch", "category": "adjective", "label": "-isch forms adjectives", "minStem": 3 }
+  ]
+}

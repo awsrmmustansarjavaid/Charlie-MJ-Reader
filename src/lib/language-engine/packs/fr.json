@@ -1,0 +1,18 @@
+{
+  "language": "fr",
+  "name": "French",
+  "closedClass": {
+    "article": ["le", "la", "les", "un", "une", "des", "du", "l'"],
+    "pronoun": ["je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "me", "te", "se", "moi", "toi", "lui", "eux", "qui", "que", "dont", "lequel"],
+    "preposition": ["à", "après", "avant", "avec", "chez", "contre", "dans", "de", "depuis", "devant", "en", "entre", "par", "pour", "sans", "sous", "sur", "vers"],
+    "conjunction": ["et", "ou", "mais", "donc", "or", "ni", "car", "que", "si", "quand", "comme", "parce"],
+    "determiner": ["ce", "cet", "cette", "ces", "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "votre", "leur", "chaque", "plusieurs", "quelques", "tout", "tous"],
+    "adverb": ["ne", "pas", "très", "plus", "moins", "déjà", "ici", "là", "maintenant", "toujours", "jamais", "bien", "mal", "aussi", "hier", "demain"],
+    "auxiliary-verb": ["suis", "es", "est", "sommes", "êtes", "sont", "ai", "as", "a", "avons", "avez", "ont", "être", "avoir"]
+  },
+  "suffixRules": [
+    { "suffix": "ment", "category": "adverb", "label": "-ment commonly forms adverbs", "minStem": 4 },
+    { "suffix": "tion", "category": "noun", "label": "-tion forms feminine nouns", "minStem": 3 },
+    { "suffix": "eur", "category": "noun", "label": "-eur forms agent nouns", "minStem": 3 }
+  ]
+}

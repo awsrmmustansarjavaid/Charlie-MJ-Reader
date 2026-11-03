@@ -477,3 +477,19 @@ nav button.active, nav button:hover {
 .cmj-typography-row strong { font-size: 13px; }
 .cmj-typography-row input, .cmj-typography-row select { min-width: 0; width: 100%; }
 @media (max-width: 640px) { .cmj-typography-head { display: none; } .cmj-typography-row { grid-template-columns: 1fr 1fr; } .cmj-typography-row strong { grid-column: 1 / -1; } }
+
+/* ---------- GitHub Data Sync panel ---------- */
+.gh-progress { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+.gh-progress progress { flex: 0 0 220px; height: 10px; }
+.gh-progress span { font-size: 12px; opacity: .85; overflow-wrap: anywhere; }
+.gh-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 12px 0; }
+.gh-card { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 10px; background: rgba(0, 0, 0, .18); }
+.gh-card span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.gh-card strong { font-size: 20px; }
+.gh-file { margin: 8px 0; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 10px; }
+.gh-file summary { cursor: pointer; overflow-wrap: anywhere; }
+.gh-scroll { max-height: 320px; overflow: auto; margin-top: 8px; }
+.gh-scroll table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.gh-scroll td, .gh-scroll th { padding: 4px 8px; border: 1px solid rgba(255, 255, 255, .12); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.gh-mode { display: grid; gap: 6px; margin: 12px 0; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 10px; }
+.gh-mode label { display: flex; align-items: center; gap: 8px; }

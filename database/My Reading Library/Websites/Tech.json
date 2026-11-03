@@ -2,41 +2,56 @@
   {
     "category": "Tech",
     "domain": "dev.to",
-    "tags": [],
+    "tags": [
+      "tech"
+    ],
     "title": "DEV Community",
     "type": "site",
+    "updatedAt": "2026-11-03T10:18:34.002Z",
     "url": "https://dev.to/"
   },
   {
     "category": "Tech",
     "domain": "hackernoon.com",
-    "tags": [],
+    "tags": [
+      "tech"
+    ],
     "title": "HackerNoon",
     "type": "site",
+    "updatedAt": "2026-11-03T10:18:40.286Z",
     "url": "https://hackernoon.com/"
   },
   {
     "category": "Tech",
     "domain": "thehackernews.com",
-    "tags": [],
+    "tags": [
+      "tech"
+    ],
     "title": "The Hacker News",
     "type": "site",
+    "updatedAt": "2026-11-03T10:18:46.421Z",
     "url": "https://thehackernews.com/"
   },
   {
     "category": "Tech",
     "domain": "www.freecodecamp.org",
-    "tags": [],
+    "tags": [
+      "tech"
+    ],
     "title": "www.freecodecamp.org",
     "type": "site",
+    "updatedAt": "2026-11-03T10:18:57.550Z",
     "url": "https://www.freecodecamp.org/"
   },
   {
     "category": "Tech",
     "domain": "www.smashingmagazine.com",
-    "tags": [],
+    "tags": [
+      "tech"
+    ],
     "title": "Smashing Magazine",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:08.900Z",
     "url": "https://www.smashingmagazine.com/"
   }
 ]

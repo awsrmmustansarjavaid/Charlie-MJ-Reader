@@ -18,18 +18,18 @@
   "toolbarPosition": "top",
   "toolbarOpacity": 92,
   "toolbarModules": {
-    "reader": true,
-    "vocabulary": true,
+    "focus": true,
     "languageLearning": true,
     "media": true,
-    "focus": true,
-    "productivity": true
+    "productivity": true,
+    "reader": true,
+    "vocabulary": true
   },
   "toolbarThemes": {
     "main": "midnight",
     "media": "midnight",
-    "vocabulary": "violet",
-    "productivity": "focus"
+    "productivity": "focus",
+    "vocabulary": "violet"
   },
   "toolbarType": "floating",
   "toolbarTypes": [
@@ -80,57 +80,77 @@
     {
       "category": "Health",
       "domain": "dermnetnz.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "DermNet®",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:37.691Z",
       "url": "https://dermnetnz.org/"
     },
     {
       "category": "Tech",
       "domain": "dev.to",
-      "tags": [],
+      "tags": [
+        "tech"
+      ],
       "title": "DEV Community",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:34.002Z",
       "url": "https://dev.to/"
     },
     {
       "category": "Social",
       "domain": "eksisozluk.com",
-      "tags": [],
+      "tags": [
+        "social"
+      ],
       "title": "eksisozluk.com",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:38.183Z",
       "url": "https://eksisozluk.com/"
     },
     {
       "category": "Health",
       "domain": "greatergood.berkeley.edu",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Greater Good Podcasts",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:40.281Z",
       "url": "https://greatergood.berkeley.edu/"
     },
     {
       "category": "Tech",
       "domain": "hackernoon.com",
-      "tags": [],
+      "tags": [
+        "tech"
+      ],
       "title": "HackerNoon",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:40.286Z",
       "url": "https://hackernoon.com/"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "medium.com",
       "tags": [],
       "title": "Medium",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:43.292Z",
       "url": "https://medium.com/"
     },
     {
       "category": "Health",
       "domain": "my.clevelandclinic.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Cleveland Clinic",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:44.270Z",
       "url": "https://my.clevelandclinic.org/"
     },
     {
@@ -144,81 +164,111 @@
     {
       "category": "Health",
       "domain": "psychcentral.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Psych Central",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:48.902Z",
       "url": "https://psychcentral.com/"
     },
     {
       "category": "Tech",
       "domain": "thehackernews.com",
-      "tags": [],
+      "tags": [
+        "tech"
+      ],
       "title": "The Hacker News",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:46.421Z",
       "url": "https://thehackernews.com/"
     },
     {
       "category": "Social",
       "domain": "twitter.com",
-      "tags": [],
+      "tags": [
+        "social"
+      ],
       "title": "X (formerly Twitter)",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:55.639Z",
       "url": "https://twitter.com/"
     },
     {
       "category": "Health",
       "domain": "www.aad.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "American Academy of Dermatology",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:52.495Z",
       "url": "https://www.aad.org/"
     },
     {
       "category": "Lifestyle",
       "domain": "www.allure.com",
-      "tags": [],
+      "tags": [
+        "lifestyle"
+      ],
       "title": "Allure",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:51.127Z",
       "url": "https://www.allure.com/"
     },
     {
       "category": "Health",
       "domain": "www.apa.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "www.apa.org",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:56.819Z",
       "url": "https://www.apa.org"
     },
     {
       "category": "Lifestyle",
       "domain": "www.byrdie.com",
-      "tags": [],
+      "tags": [
+        "lifestyle"
+      ],
       "title": "The latest from www.byrdie.com",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:55.156Z",
       "url": "https://www.byrdie.com/"
     },
     {
       "category": "Tech",
       "domain": "www.freecodecamp.org",
-      "tags": [],
+      "tags": [
+        "tech"
+      ],
       "title": "www.freecodecamp.org",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:57.550Z",
       "url": "https://www.freecodecamp.org/"
     },
     {
       "category": "Health",
       "domain": "www.health.harvard.edu",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Harvard Health",
       "type": "site",
+      "updatedAt": "2026-11-03T10:18:59.530Z",
       "url": "https://www.health.harvard.edu/"
     },
     {
       "category": "Health",
       "domain": "www.healthline.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Healthline",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:01.703Z",
       "url": "https://www.healthline.com/"
     },
     {
@@ -232,177 +282,237 @@
     {
       "category": "Health",
       "domain": "www.mindful.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Mindful",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:03.091Z",
       "url": "https://www.mindful.org/"
     },
     {
       "category": "Health",
       "domain": "www.nhs.uk",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "nhs.uk",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:04.966Z",
       "url": "https://www.nhs.uk/"
     },
     {
       "category": "Health",
       "domain": "www.precisionnutrition.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Precision Nutrition",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:07.332Z",
       "url": "https://www.precisionnutrition.com/"
     },
     {
       "category": "Science",
       "domain": "www.quantamagazine.org",
-      "tags": [],
+      "tags": [
+        "science"
+      ],
       "title": "Quanta Magazine – Illuminating science",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:06.566Z",
       "url": "https://www.quantamagazine.org/"
     },
     {
       "category": "Tech",
       "domain": "www.smashingmagazine.com",
-      "tags": [],
+      "tags": [
+        "tech"
+      ],
       "title": "Smashing Magazine",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:08.900Z",
       "url": "https://www.smashingmagazine.com/"
     },
     {
       "category": "Lifestyle",
       "domain": "www.theschooloflife.com",
-      "tags": [],
+      "tags": [
+        "lifestyle"
+      ],
       "title": "The School of Life",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:19.561Z",
       "url": "https://www.theschooloflife.com/"
     },
     {
       "category": "Health",
       "domain": "www.verywellfit.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Verywell Fit | trusted nutrition and fitness information",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:11.296Z",
       "url": "https://www.verywellfit.com/"
     },
     {
       "category": "Social",
       "domain": "x.com",
-      "tags": [],
+      "tags": [
+        "social"
+      ],
       "title": "X (formerly Twitter)",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:14.139Z",
       "url": "https://x.com/"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "www.instagram.com",
       "tags": [],
       "title": "Raja Muhammad Mustansar Javaid (@charlie.mj.official) • Instagram photos and videos",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:16.549Z",
       "url": "https://www.instagram.com/charlie.mj.official/"
     },
     {
       "category": "Health",
       "domain": "www.bayhealth.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Health & Wellness Blog",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:30.538Z",
       "url": "https://www.bayhealth.org/community-wellness/blog?"
     },
     {
       "category": "Health",
       "domain": "www.everydayhealth.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "EverydayHealth.com",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:21.453Z",
       "url": "https://www.everydayhealth.com/"
     },
     {
       "category": "Health",
       "domain": "www.verywellhealth.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Verywell Health | Expert Health Information and Advice",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:21.780Z",
       "url": "https://www.verywellhealth.com/"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "health.calm.com",
       "tags": [],
       "title": "Calm Health",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:24.031Z",
       "url": "https://health.calm.com/resources/blog/"
     },
     {
       "category": "Health",
       "domain": "www.health.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Health | Trusted Health and Wellness Information",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:24.277Z",
       "url": "https://www.health.com/"
     },
     {
       "category": "Health",
       "domain": "www.webmd.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "WebMD",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:29.083Z",
       "url": "https://www.webmd.com/"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "www.sutterhealth.org",
       "tags": [],
       "title": "www.sutterhealth.org",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:26.014Z",
       "url": "https://www.sutterhealth.org/health/health-wellness-blog"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "goop.com",
       "tags": [],
       "title": "goop",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:30.832Z",
       "url": "https://goop.com/editorial/?sort=newest"
     },
     {
       "category": "Health",
       "domain": "www.mindbodygreen.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "mindbodygreen RSS Feed",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:33.278Z",
       "url": "https://www.mindbodygreen.com//"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "wellnessmama.com",
       "tags": [],
       "title": "Wellness Mama®",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:32.038Z",
       "url": "https://wellnessmama.com/"
     },
     {
       "category": "Health",
       "domain": "draxe.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Root-Cause Natural Health You Can Trust",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:35.023Z",
       "url": "https://draxe.com/"
     },
     {
       "category": "Health",
       "domain": "www.dukehealth.org",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Duke Health - Connect with your health care at Duke Health",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:36.441Z",
       "url": "https://www.dukehealth.org/blog"
     },
     {
+      "autoCategory": true,
       "category": "General",
       "domain": "www.anytimefitness.com",
       "tags": [],
       "title": "Anytime Fitness",
       "type": "site",
+      "updatedAt": "2026-11-03T10:19:37.820Z",
       "url": "https://www.anytimefitness.com/blog"
     },
     {
@@ -435,6 +545,238 @@
       "toolbarType": "floating",
       "type": "site",
       "updatedAt": "2026-11-02T14:26:29.517Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "www.kolaygelsin.center",
+      "enabled": true,
+      "focus": true,
+      "languageLearning": true,
+      "learningLanguage": "en",
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:32:11.261Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "demturkishbookstore.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:32:53.293Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "fluentinturkish.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:33:07.355Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "courses.turkishcouncil.org",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:33:16.417Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "turkishlanguagelearning.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:33:49.724Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "simplyturkish.net",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:33:58.066Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "storylearning.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:37:33.520Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "www.turkishclass101.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:38:01.690Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "turkishfluent.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:38:19.156Z",
+      "version": 1,
+      "vocabulary": true
+    },
+    {
+      "autoCategory": true,
+      "autoSave": false,
+      "autoTranslate": false,
+      "category": "Turkish Language",
+      "domain": "www.hurriyetdailynews.com",
+      "enabled": true,
+      "focus": true,
+      "media": true,
+      "nativeReading": true,
+      "position": "top",
+      "productivity": true,
+      "tags": [
+        "turkish language"
+      ],
+      "toolbar": true,
+      "toolbarTheme": "midnight",
+      "toolbarType": "floating",
+      "type": "site",
+      "updatedAt": "2026-11-02T16:38:38.457Z",
       "version": 1,
       "vocabulary": true
     }
@@ -517,6 +859,5 @@
       "export": true,
       "error": true
     }
-  },
-  "cmjFreedium112Migrated": true
+  }
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased - GitHub sync and multilingual grammar
+
+- Default repository is now https://github.com/awsrmmustansarjavaid/Charlie-MJ-Reader (branch main).
+- Settings > GitHub Data Sync: full comparison (total, matching, changed, missing, extra records),
+  field-by-field differences, summary statistics, and JSON / CSV / HTML report export.
+- Git Pull: progress, preview of changes, per-conflict choice, automatic pre-pull backup, undo.
+  Local-only records are never deleted; secrets and device settings are never overwritten.
+- Security: the GitHub token is no longer written into exported or compared database files.
+- Hover grammar in both readers: language, category, meaning and grammatical details for the word
+  under the cursor, powered by the new language engine (see docs/LANGUAGE-ENGINE.md).
+
 ## Unreleased - Two-section article layout
 
 - Fixed the broken logo in the toolbar injected into websites: `assets/logo.svg` is now declared in

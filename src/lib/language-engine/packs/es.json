@@ -1,0 +1,20 @@
+{
+  "language": "es",
+  "name": "Spanish",
+  "closedClass": {
+    "article": ["el", "la", "los", "las", "un", "una", "unos", "unas", "lo"],
+    "pronoun": ["yo", "tú", "él", "ella", "usted", "nosotros", "nosotras", "vosotros", "ellos", "ellas", "ustedes", "me", "te", "se", "nos", "os", "mí", "ti", "sí", "quien", "quienes", "que", "cual"],
+    "preposition": ["a", "ante", "bajo", "con", "contra", "de", "desde", "durante", "en", "entre", "hacia", "hasta", "para", "por", "según", "sin", "sobre", "tras"],
+    "conjunction": ["y", "e", "o", "u", "pero", "sino", "aunque", "porque", "pues", "si", "cuando", "mientras", "ni"],
+    "determiner": ["este", "esta", "estos", "estas", "ese", "esa", "esos", "esas", "aquel", "aquella", "mi", "tu", "su", "nuestro", "vuestro", "todo", "toda", "cada", "algún", "ningún", "otro", "otra"],
+    "adverb": ["no", "muy", "más", "menos", "ya", "aquí", "allí", "ahora", "siempre", "nunca", "bien", "mal", "también", "tampoco", "hoy", "ayer", "mañana"],
+    "auxiliary-verb": ["he", "has", "ha", "hemos", "han", "estoy", "está", "están", "es", "son", "soy", "eres", "somos", "era", "fue", "ser", "estar", "haber"]
+  },
+  "suffixRules": [
+    { "suffix": "mente", "category": "adverb", "label": "-mente forms adverbs", "minStem": 3 },
+    { "suffix": "ción", "category": "noun", "label": "-ción forms feminine nouns", "minStem": 3 },
+    { "suffix": "dad", "category": "noun", "label": "-dad forms abstract nouns", "minStem": 3 },
+    { "suffix": "ando", "category": "verb", "label": "-ando: gerund of -ar verbs", "minStem": 2 },
+    { "suffix": "iendo", "category": "verb", "label": "-iendo: gerund of -er/-ir verbs", "minStem": 2 }
+  ]
+}

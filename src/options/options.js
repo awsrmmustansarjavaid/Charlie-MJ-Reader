@@ -2,6 +2,8 @@
  * Settings controller for extension preferences, supported websites and backup operations.
  */
 import { getAll, saveAll } from "../lib/storage.js";
+import { sanitizeSettingsForSync } from "../lib/github-sync.js";
+import { mountGithubSyncPanel } from "./sync-panel.js";
 let data = await getAll();
 const panel = document.getElementById("panel");
 const saved = document.getElementById("saved");
@@ -324,7 +326,7 @@ function dbEntries(d) {
     add('My Reading Library/index.json', { version: 1, categories: cats });
     for (const k of ['articles', 'highlights', 'notes', 'vocabulary', 'bookmarks', 'collections', 'topics', 'readingHistory', 'categories'])
         add(`Core/${k}.json`, d[k] || []);
-    add('Core/settings.json', d.settings || {});
+    add('Core/settings.json', sanitizeSettingsForSync(d.settings || {}));
     return out;
 }
 function dbZipEntries(d, libraryOnly = false) { return dbEntries(d).filter(e => !libraryOnly || e.path.startsWith('database/My Reading Library/')); }
@@ -1414,44 +1416,7 @@ function render() {
 </div>\
 <button class="btn" id="write-db-folder">Save database backup</button>\
 </div>\
-<div class="setting">\
-<div>\
-<strong>GitHub username</strong>\
-</div>\
-<input id="gh-user" value="${escapeHtml(data.settings.githubUser || 'awsrmmustansarjavaid')}">\
-</div>\
-<div class="setting">\
-<div>\
-<strong>Repository</strong>\
-</div>\
-<input id="gh-repo" value="${escapeHtml(data.settings.githubRepo || '')}">\
-</div>\
-<div class="setting">\
-<div>\
-<strong>Branch</strong>\
-</div>\
-<input id="gh-branch" value="${escapeHtml(data.settings.githubBranch || 'main')}">\
-</div>\
-<div class="setting">\
-<div>\
-<strong>Token</strong>\
-<small>Stored locally.</small>\
-</div>\
-<input id="gh-token" type="password" placeholder="GitHub token">\
-</div>\
-<div class="setting">\
-<div>\
-<strong>Actions</strong>\
-</div>\
-<div class="site-actions">\
-<button class="btn" id="gh-save">Save</button>\
-<button class="btn" id="gh-compare">Compare GitHub</button>\
-<button class="btn" id="gh-prepare">Prepare GitHub</button>\
-<button class="btn" id="gh-diff">Prepare Difference</button>\
-</div>\
-</div>\
-<div id="gh-result" class="help">\
-</div>`;
+<div id="github-sync-root"></div>`;
         panel.querySelector('#choose-db-folder').onclick = async () => {
             try {
                 if (!window.showDirectoryPicker)
@@ -1485,79 +1450,20 @@ function render() {
                 panel.querySelector('#db-folder-status').textContent = err.message;
             }
         };
-        const cfg = () => ({
-            u: panel.querySelector('#gh-user').value.trim() || 'awsrmmustansarjavaid',
-            r: panel.querySelector('#gh-repo').value.trim(),
-            b: panel.querySelector('#gh-branch').value.trim() || 'main',
-            t: panel.querySelector('#gh-token').value || data.settings.githubToken || ''
+        // GitHub comparison, reports and guarded pull live in sync-panel.js.
+        mountGithubSyncPanel({
+            container: panel.querySelector('#github-sync-root'),
+            getData: () => data,
+            setData: async (next) => { data = next; await persist(); },
+            persist,
+            getLocalEntries: () => dbZipEntries(data, false),
+            download: dlBlob,
+            confirm: askConfirmation,
+            escapeHtml,
+            prepareDifferenceZip: (paths) => dlBlob('charlie-mj-database-difference.zip', zipStore(dbZipEntries(data, false).filter(entry => paths.has(entry.path)))),
+            prepareFullZip: () => downloadDbZip('charlie-mj-database.zip'),
+            rerender: render
         });
-        panel.querySelector('#gh-save').onclick = async () => {
-            const c = cfg();
-            data.settings.githubUser = c.u;
-            data.settings.githubRepo = c.r;
-            data.settings.githubBranch = c.b;
-            if (c.t)
-                data.settings.githubToken = c.t;
-            await persist();
-            panel.querySelector('#gh-result').textContent = 'Sync settings saved.';
-        };
-        async function gf(path) {
-            const c = cfg();
-            if (!c.r)
-                throw Error('Enter a GitHub repository first.');
-            const h = { Accept: 'application/vnd.github+json' };
-            if (c.t)
-                h.Authorization = `Bearer ${c.t}`;
-            const r = await fetch(`https://api.github.com/${path}`, { headers: h });
-            if (!r.ok)
-                throw Error(`GitHub ${r.status}: ${await r.text()}`);
-            return r.json();
-        }
-        async function compare() {
-            const c = cfg(), tree = await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/git/trees/${encodeURIComponent(c.b)}?recursive=1`), remote = (tree.tree || []).filter(x => x.type === 'blob' && x.path.startsWith('database/My Reading Library/')), local = dbZipEntries(data, true), rm = new Map();
-            for (const x of remote) {
-                const b = await gf(`repos/${encodeURIComponent(c.u)}/${encodeURIComponent(c.r)}/contents/${x.path}?ref=${encodeURIComponent(c.b)}`);
-                rm.set(x.path, atob((b.content || '').replace(/\n/g, '')));
-            }
-            const lm = new Map(local.map(x => [x.path, x.data])), paths = [...new Set([...lm.keys(), ...rm.keys()])].sort();
-            return paths.map(path => ({ path, status: !lm.has(path) ? 'remote-only' : !rm.has(path) ? 'local-only' : lm.get(path) === rm.get(path) ? 'unchanged' : 'modified' }));
-        }
-        panel.querySelector('#gh-compare').onclick = async () => {
-            const box = panel.querySelector('#gh-result');
-            box.textContent = 'Comparing My Reading Library…';
-            try {
-                const rows = await compare();
-                box.innerHTML = `<strong>My Reading Library comparison</strong>\
-<table>\
-<tr>\
-<th>File</th>\
-<th>Status</th>\
-</tr>${rows.map(x => `<tr>\
-<td>${escapeHtml(x.path.replace('database/My Reading Library/', ''))}</td>\
-<td>${escapeHtml(x.status)}</td>\
-</tr>`).join('')}</table>`;
-            }
-            catch (e) {
-                box.textContent = e.message;
-            }
-        };
-        panel.querySelector('#gh-prepare').onclick = () => downloadDbZip('charlie-mj-database.zip');
-        panel.querySelector('#gh-diff').onclick = async () => {
-            const box = panel.querySelector('#gh-result');
-            box.textContent = 'Finding changed files…';
-            try {
-                const rows = await compare(), changed = new Set(rows.filter(x => x.status === 'local-only' || x.status === 'modified').map(x => x.path)), entries = dbZipEntries(data, true).filter(x => changed.has(x.path));
-                if (!entries.length) {
-                    box.textContent = 'No modified or new My Reading Library files found.';
-                    return;
-                }
-                dlBlob('charlie-mj-database-difference.zip', zipStore(entries));
-                box.textContent = `Prepared ${entries.length} changed file(s).`;
-            }
-            catch (e) {
-                box.textContent = e.message;
-            }
-        };
     }
     else if (active === "notifications") {
         const n = data.settings.notifications || { enabled: true, position: "bottom-right", durationMs: 2600, events: {} };

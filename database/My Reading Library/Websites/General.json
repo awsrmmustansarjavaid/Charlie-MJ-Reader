@@ -1,58 +1,72 @@
 [
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "medium.com",
     "tags": [],
     "title": "Medium",
     "type": "site",
+    "updatedAt": "2026-11-03T10:18:43.292Z",
     "url": "https://medium.com/"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "www.instagram.com",
     "tags": [],
     "title": "Raja Muhammad Mustansar Javaid (@charlie.mj.official) • Instagram photos and videos",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:16.549Z",
     "url": "https://www.instagram.com/charlie.mj.official/"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "health.calm.com",
     "tags": [],
     "title": "Calm Health",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:24.031Z",
     "url": "https://health.calm.com/resources/blog/"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "www.sutterhealth.org",
     "tags": [],
     "title": "www.sutterhealth.org",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:26.014Z",
     "url": "https://www.sutterhealth.org/health/health-wellness-blog"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "goop.com",
     "tags": [],
     "title": "goop",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:30.832Z",
     "url": "https://goop.com/editorial/?sort=newest"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "wellnessmama.com",
     "tags": [],
     "title": "Wellness Mama®",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:32.038Z",
     "url": "https://wellnessmama.com/"
   },
   {
+    "autoCategory": true,
     "category": "General",
     "domain": "www.anytimefitness.com",
     "tags": [],
     "title": "Anytime Fitness",
     "type": "site",
+    "updatedAt": "2026-11-03T10:19:37.820Z",
     "url": "https://www.anytimefitness.com/blog"
   }
 ]

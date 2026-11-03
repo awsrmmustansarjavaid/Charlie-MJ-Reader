@@ -26,6 +26,7 @@ export const defaults = {
         readingWidth: 760,
         lineHeight: 1.75,
         toolbarEnabled: true,
+        hoverGrammarEnabled: true,
         toolbarPosition: "top",
         toolbarOpacity: 92,
         toolbarModules: { reader: true, vocabulary: true, languageLearning: true, media: true, focus: true, productivity: true },

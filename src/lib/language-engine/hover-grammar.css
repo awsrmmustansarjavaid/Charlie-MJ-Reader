@@ -1,0 +1,39 @@
+/**
+ * Styles for the hover grammar tooltip. Colours come from the host page's
+ * variables, with dark-theme fallbacks, so the card matches both reader modes.
+ */
+.cmj-hg-tip {
+  position: fixed;
+  z-index: 2147483000;
+  width: min(360px, calc(100vw - 16px));
+  max-height: min(70vh, 460px);
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #293653);
+  border-radius: 12px;
+  background: var(--panel, #131c32);
+  color: var(--text, #e8ecf8);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+  font: 13px/1.45 system-ui, "Segoe UI", sans-serif;
+  pointer-events: auto;
+}
+.cmj-hg-tip[hidden] { display: none; }
+.cmj-hg-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.cmj-hg-word { font-size: 18px; overflow-wrap: anywhere; }
+.cmj-hg-muted { color: var(--muted, #9aa7c4); font-size: 12px; }
+.cmj-hg-badge {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(137, 119, 255, .25);
+  color: #ddd8ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cmj-hg-unknown { background: rgba(255, 255, 255, .1); color: var(--muted, #9aa7c4); }
+.cmj-hg-body { display: grid; gap: 6px; }
+.cmj-hg-row { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 8px; }
+.cmj-hg-row span { color: var(--muted, #9aa7c4); font-size: 12px; }
+.cmj-hg-row strong { font-weight: 600; overflow-wrap: anywhere; }
+.cmj-hg-foot { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line, #293653); color: var(--muted, #9aa7c4); font-size: 11px; }
+.cmj-hg-note { margin-top: 6px; color: #f0c674; font-size: 12px; }
