@@ -14,21 +14,22 @@
   "readingWidth": 760,
   "lineHeight": 1.75,
   "toolbarEnabled": true,
+  "hoverGrammarEnabled": true,
   "toolbarPosition": "top",
   "toolbarOpacity": 92,
   "toolbarModules": {
-    "focus": true,
+    "reader": true,
+    "vocabulary": true,
     "languageLearning": true,
     "media": true,
-    "productivity": true,
-    "reader": true,
-    "vocabulary": true
+    "focus": true,
+    "productivity": true
   },
   "toolbarThemes": {
     "main": "midnight",
     "media": "midnight",
-    "productivity": "focus",
-    "vocabulary": "violet"
+    "vocabulary": "violet",
+    "productivity": "focus"
   },
   "toolbarType": "floating",
   "toolbarTypes": [
@@ -79,45 +80,33 @@
     {
       "category": "Health",
       "domain": "dermnetnz.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "DermNet®",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:27.016Z",
       "url": "https://dermnetnz.org/"
     },
     {
       "category": "Tech",
       "domain": "dev.to",
-      "tags": [
-        "tech"
-      ],
+      "tags": [],
       "title": "DEV Community",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:24.808Z",
       "url": "https://dev.to/"
     },
     {
       "category": "Social",
       "domain": "eksisozluk.com",
-      "tags": [
-        "social"
-      ],
+      "tags": [],
       "title": "eksisozluk.com",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:26.165Z",
       "url": "https://eksisozluk.com/"
     },
     {
       "category": "Health",
       "domain": "greatergood.berkeley.edu",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Greater Good Podcasts",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:30.638Z",
       "url": "https://greatergood.berkeley.edu/"
     },
     {
@@ -129,403 +118,299 @@
       "url": "https://hackernoon.com/"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "medium.com",
       "tags": [],
       "title": "Medium",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:31.180Z",
       "url": "https://medium.com/"
     },
     {
       "category": "Health",
       "domain": "my.clevelandclinic.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Cleveland Clinic",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:35.378Z",
       "url": "https://my.clevelandclinic.org/"
     },
     {
       "category": "Health",
       "domain": "practicaldermatology.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "PracticalDermatology",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:40.494Z",
       "url": "https://practicaldermatology.com/"
     },
     {
       "category": "Health",
       "domain": "psychcentral.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Psych Central",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:42.648Z",
       "url": "https://psychcentral.com/"
     },
     {
       "category": "Tech",
       "domain": "thehackernews.com",
-      "tags": [
-        "tech"
-      ],
+      "tags": [],
       "title": "The Hacker News",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:40.622Z",
       "url": "https://thehackernews.com/"
     },
     {
       "category": "Social",
       "domain": "twitter.com",
-      "tags": [
-        "social"
-      ],
+      "tags": [],
       "title": "X (formerly Twitter)",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:47.551Z",
       "url": "https://twitter.com/"
     },
     {
       "category": "Health",
       "domain": "www.aad.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "American Academy of Dermatology",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:44.342Z",
       "url": "https://www.aad.org/"
     },
     {
       "category": "Lifestyle",
       "domain": "www.allure.com",
-      "tags": [
-        "lifestyle"
-      ],
+      "tags": [],
       "title": "Allure",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:44.534Z",
       "url": "https://www.allure.com/"
     },
     {
       "category": "Health",
       "domain": "www.apa.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "www.apa.org",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:49.515Z",
       "url": "https://www.apa.org"
     },
     {
       "category": "Lifestyle",
       "domain": "www.byrdie.com",
-      "tags": [
-        "lifestyle"
-      ],
+      "tags": [],
       "title": "The latest from www.byrdie.com",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:48.116Z",
       "url": "https://www.byrdie.com/"
     },
     {
       "category": "Tech",
       "domain": "www.freecodecamp.org",
-      "tags": [
-        "tech"
-      ],
+      "tags": [],
       "title": "www.freecodecamp.org",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:50.080Z",
       "url": "https://www.freecodecamp.org/"
     },
     {
       "category": "Health",
       "domain": "www.health.harvard.edu",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Harvard Health",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:52.383Z",
       "url": "https://www.health.harvard.edu/"
     },
     {
       "category": "Health",
       "domain": "www.healthline.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Healthline",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:54.297Z",
       "url": "https://www.healthline.com/"
     },
     {
       "category": "Health",
       "domain": "www.mayoclinic.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Mayo Clinic",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:57.231Z",
       "url": "https://www.mayoclinic.org/"
     },
     {
       "category": "Health",
       "domain": "www.mindful.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Mindful",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:55.352Z",
       "url": "https://www.mindful.org/"
     },
     {
       "category": "Health",
       "domain": "www.nhs.uk",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "nhs.uk",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:56.701Z",
       "url": "https://www.nhs.uk/"
     },
     {
       "category": "Health",
       "domain": "www.precisionnutrition.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Precision Nutrition",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:59.915Z",
       "url": "https://www.precisionnutrition.com/"
     },
     {
       "category": "Science",
       "domain": "www.quantamagazine.org",
-      "tags": [
-        "science"
-      ],
+      "tags": [],
       "title": "Quanta Magazine – Illuminating science",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:02.612Z",
       "url": "https://www.quantamagazine.org/"
     },
     {
       "category": "Tech",
       "domain": "www.smashingmagazine.com",
-      "tags": [
-        "tech"
-      ],
+      "tags": [],
       "title": "Smashing Magazine",
       "type": "site",
-      "updatedAt": "2026-11-02T14:26:59.971Z",
       "url": "https://www.smashingmagazine.com/"
     },
     {
       "category": "Lifestyle",
       "domain": "www.theschooloflife.com",
-      "tags": [
-        "lifestyle"
-      ],
+      "tags": [],
       "title": "The School of Life",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:13.612Z",
       "url": "https://www.theschooloflife.com/"
     },
     {
       "category": "Health",
       "domain": "www.verywellfit.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Verywell Fit | trusted nutrition and fitness information",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:02.997Z",
       "url": "https://www.verywellfit.com/"
     },
     {
       "category": "Social",
       "domain": "x.com",
-      "tags": [
-        "social"
-      ],
+      "tags": [],
       "title": "X (formerly Twitter)",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:06.954Z",
       "url": "https://x.com/"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "www.instagram.com",
       "tags": [],
       "title": "Raja Muhammad Mustansar Javaid (@charlie.mj.official) • Instagram photos and videos",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:07.416Z",
       "url": "https://www.instagram.com/charlie.mj.official/"
     },
     {
       "category": "Health",
       "domain": "www.bayhealth.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Health & Wellness Blog",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:22.964Z",
       "url": "https://www.bayhealth.org/community-wellness/blog?"
     },
     {
       "category": "Health",
       "domain": "www.everydayhealth.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "EverydayHealth.com",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:11.666Z",
       "url": "https://www.everydayhealth.com/"
     },
     {
       "category": "Health",
       "domain": "www.verywellhealth.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Verywell Health | Expert Health Information and Advice",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:13.525Z",
       "url": "https://www.verywellhealth.com/"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "health.calm.com",
       "tags": [],
       "title": "Calm Health",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:18.863Z",
       "url": "https://health.calm.com/resources/blog/"
     },
     {
       "category": "Health",
       "domain": "www.health.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Health | Trusted Health and Wellness Information",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:16.224Z",
       "url": "https://www.health.com/"
     },
     {
       "category": "Health",
       "domain": "www.webmd.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "WebMD",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:19.774Z",
       "url": "https://www.webmd.com/"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "www.sutterhealth.org",
       "tags": [],
       "title": "www.sutterhealth.org",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:20.392Z",
       "url": "https://www.sutterhealth.org/health/health-wellness-blog"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "goop.com",
       "tags": [],
       "title": "goop",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:27.243Z",
       "url": "https://goop.com/editorial/?sort=newest"
     },
     {
       "category": "Health",
       "domain": "www.mindbodygreen.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "mindbodygreen RSS Feed",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:22.243Z",
       "url": "https://www.mindbodygreen.com//"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "wellnessmama.com",
       "tags": [],
       "title": "Wellness Mama®",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:23.054Z",
       "url": "https://wellnessmama.com/"
     },
     {
       "category": "Health",
       "domain": "draxe.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Root-Cause Natural Health You Can Trust",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:30.747Z",
       "url": "https://draxe.com/"
     },
     {
       "category": "Health",
       "domain": "www.dukehealth.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Duke Health - Connect with your health care at Duke Health",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:30.352Z",
       "url": "https://www.dukehealth.org/blog"
     },
     {
-      "autoCategory": true,
       "category": "General",
       "domain": "www.anytimefitness.com",
       "tags": [],
       "title": "Anytime Fitness",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:33.984Z",
       "url": "https://www.anytimefitness.com/blog"
     },
     {
       "category": "Health",
       "domain": "www.totalhealthandfitness.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Total Health and Fitness",
       "type": "site",
-      "updatedAt": "2026-11-02T14:27:33.336Z",
       "url": "https://www.totalhealthandfitness.com/blog/"
     },
     {
