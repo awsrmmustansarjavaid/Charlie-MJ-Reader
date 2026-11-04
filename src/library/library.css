@@ -1115,3 +1115,9 @@ dialog::backdrop {
   object-fit: contain;
   margin-bottom: 8px;
 }
+
+/* Refresh button: spinner while the library re-reads storage. */
+#reload-library .spin { display: inline-block; }
+#reload-library.is-loading .spin { animation: cmj-spin .8s linear infinite; }
+@keyframes cmj-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #reload-library.is-loading .spin { animation: none; } }

@@ -81,11 +81,12 @@ function appendRow(container, label, value) {
  * @param {() => boolean} options.isEnabled Whether the feature is currently on.
  * @param {() => string} options.getLanguageHint Expected language of the page (article language or learner target).
  * @param {() => string} [options.getMeaningLanguage] Language for meanings (default English).
+ * @param {() => string[]} [options.getExtraLanguages] Other languages the reader studies (tried after the word's own evidence).
  * @param {string} [options.scope] CSS selector limiting where hovering works.
  * @param {number} [options.dwellMs] Hover delay before analysis.
  * @returns {{destroy: () => void}} Handle to remove listeners.
  */
-export function installHoverGrammar({ isEnabled, getLanguageHint, getMeaningLanguage = () => "en", scope = ".reader-content, .reading-content", dwellMs = DEFAULT_DWELL_MS }) {
+export function installHoverGrammar({ isEnabled, getLanguageHint, getMeaningLanguage = () => "en", getExtraLanguages = () => [], scope = ".reader-content, .reading-content", dwellMs = DEFAULT_DWELL_MS }) {
     /** @type {Promise<import("./engine.js").LanguageEngine>|null} */
     let enginePromise = null;
     let timer = 0;
@@ -139,7 +140,8 @@ export function installHoverGrammar({ isEnabled, getLanguageHint, getMeaningLang
             const body = document.createElement("div");
             body.className = "cmj-hg-body";
             const confidence = result.confidence ? ` · ${Math.round(result.confidence * 100)}% confidence` : "";
-            appendRow(body, "Language", `${result.language.name} (${result.language.code}) · via ${result.language.method}`);
+            const basis = { letters: "detected from letters", script: "detected from script", sentence: "detected from the sentence", hint: "from the article language", default: "not detected" }[result.language.method] || result.language.method;
+            appendRow(body, "Language", `${result.language.name}${result.language.code === "und" ? "" : ` (${result.language.code})`} · ${basis}${result.language.confirmed ? ", confirmed by its grammar rules" : ""}`);
             appendRow(body, "Category", `${result.categoryLabel}${confidence}`);
             if (result.meaning) appendRow(body, "Meaning", result.meaning);
             if (result.lemma) appendRow(body, "Dictionary form", result.lemma);
@@ -173,6 +175,7 @@ export function installHoverGrammar({ isEnabled, getLanguageHint, getMeaningLang
                 sentence: target.sentence,
                 isSentenceStart: target.isSentenceStart,
                 languageHint: getLanguageHint(),
+                extraLanguages: getExtraLanguages(),
                 meaningLanguage: getMeaningLanguage()
             });
             if (current === requestId) render(target, { result });

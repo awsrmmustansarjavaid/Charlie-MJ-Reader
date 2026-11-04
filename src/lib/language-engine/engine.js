@@ -18,7 +18,7 @@
  *   heuristic         : script and capitalisation checks only (every language).
  */
 import { categoryLabel } from "./categories.js";
-import { detectLanguage } from "./detect.js";
+import { collectEvidence } from "./detect.js";
 import { loadLanguageRegistry } from "./languages.js";
 import { turkishAnalyzer } from "./analyzers/turkish.js";
 import { genericAnalyzer } from "./analyzers/generic-analyzer.js";
@@ -114,7 +114,7 @@ export class LanguageEngine {
     analyze(rawWord, context = {}) {
         const word = normalizeWord(rawWord);
         if (!word) return Promise.resolve(this.emptyResult(rawWord));
-        const key = `${context.languageHint || ""}|${context.meaningLanguage || "en"}|${word.toLocaleLowerCase()}|${(context.sentence || "").length > 0}`;
+        const key = `${context.languageHint || ""}|${(context.extraLanguages || []).join(",")}|${context.meaningLanguage || "en"}|${word.toLocaleLowerCase()}|${(context.sentence || "").length > 0}`;
         if (this.cache.has(key)) return this.cache.get(key);
 
         const promise = this.run(word, context).catch((error) => {
@@ -136,15 +136,83 @@ export class LanguageEngine {
     }
 
     /**
+     * How well a language's own (offline) analyzers can parse a word.
+     * @param {string} word Normalised word.
+     * @param {string} code Candidate language code.
+     * @param {object} context Caller context.
+     * @returns {Promise<number>} Highest analyzer confidence, or 0 when nothing parses.
+     */
+    async parseWith(word, code, context) {
+        let best = 0;
+        for (const analyzer of this.analyzers) {
+            if (analyzer.tier !== "language-specific" || !(analyzer.languages === "*" || analyzer.languages.includes(code))) continue;
+            try {
+                const output = await analyzer.analyze(word, { ...context, languageCode: code, languageName: this.registry.name(code), fetch: this.fetch });
+                if (output?.category && output.category !== "unknown") best = Math.max(best, output.confidence ?? 0);
+            } catch { /* A failing analyzer simply does not vouch for the word. */ }
+        }
+        return best;
+    }
+
+    /**
+     * Decide the language of the hovered word.
+     *
+     * The article's language is NOT the word's language (an English article can
+     * teach Turkish), so candidates come from the word's own evidence first:
+     * script, then letters, then the sentence, and only then the hints. A
+     * candidate is confirmed when its analyzer can actually parse the word.
+     * @param {string} word Normalised word.
+     * @param {object} context Caller context.
+     * @returns {Promise<{code: string, name: string, confidence: number, method: string, confirmed: boolean, tried: string[], ambiguous: string[]}>} Chosen language.
+     */
+    async chooseLanguage(word, context) {
+        const toCode = (value) => this.registry.code(value);
+        const evidence = collectEvidence(word, context, toCode);
+        const describe = (code, confidence, method, confirmed, tried) => ({
+            code, name: this.registry.name(code), confidence, method, confirmed, tried, ambiguous: []
+        });
+        const tried = [];
+        const probe = async (candidate) => {
+            if (!tried.includes(candidate.code)) tried.push(candidate.code);
+            return this.parseWith(word, candidate.code, context);
+        };
+
+        // Strong evidence (script or language-specific letters): first candidate whose analyzer parses the word wins.
+        for (const candidate of evidence.strong) {
+            if ((await probe(candidate)) >= 0.5) return describe(candidate.code, Math.max(candidate.confidence, 0.9), candidate.method, true, tried);
+        }
+        if (evidence.strong.length) {
+            const first = evidence.strong[0];
+            return describe(first.code, first.confidence, first.method, false, tried);
+        }
+
+        // Weak evidence (shared letters, sentence, hints): confirm by parsing, best parse wins, ties keep evidence order.
+        const weak = [...evidence.weak].sort((a, b) => b.confidence - a.confidence).slice(0, 6);
+        let confirmed = null;
+        for (const candidate of weak) {
+            const score = await probe(candidate);
+            if (score >= 0.5 && (!confirmed || score > confirmed.score)) confirmed = { candidate, score };
+        }
+        if (confirmed) return describe(confirmed.candidate.code, Math.max(confirmed.candidate.confidence, 0.8), confirmed.candidate.method, true, tried);
+
+        // Nothing parses: stay honest for ambiguous scripts, otherwise take the best evidence.
+        if (evidence.ambiguous.length && !weak.some((candidate) => candidate.method === "hint")) {
+            const names = evidence.ambiguous.map((code) => this.registry.name(code));
+            return { code: "und", name: `Arabic-script · likely ${names.slice(0, -1).join(", ")} or ${names.at(-1)}`, confidence: 0.3, method: "script", confirmed: false, tried, ambiguous: evidence.ambiguous };
+        }
+        if (weak.length) return describe(weak[0].code, weak[0].confidence, weak[0].method, false, tried);
+        return describe("und", 0, "default", false, tried);
+    }
+
+    /**
      * Run language identification and all applicable analyzers, then merge.
      * @param {string} word Normalised word.
      * @param {object} context Caller context.
      * @returns {Promise<GrammarResult>} Merged result.
      */
     async run(word, context) {
-        const detection = detectLanguage(word, context, (value) => this.registry.code(value));
-        const code = this.registry.code(detection.code);
-        const language = { code, name: this.registry.name(code), confidence: detection.confidence, method: detection.method };
+        const language = await this.chooseLanguage(word, context);
+        const code = language.code;
         const analyzerContext = {
             ...context,
             languageCode: code,
@@ -222,10 +290,11 @@ export class LanguageEngine {
         const hasDictionary = results.some(({ analyzer }) => analyzer.tier === "dictionary");
         const coverage = hasSpecific && hasDictionary ? "full" : hasSpecific || hasDictionary ? "partial" : "minimal";
         let note = "";
-        if (language.code === "und") note = "The language could not be identified. Set the article language to improve results.";
+        if (language.ambiguous?.length) note = "These languages share the same letters, so this short word cannot be assigned to one of them. Set the article language to improve results.";
+        else if (language.code === "und") note = "The language could not be identified. Set the article language to improve results.";
         else if (!hasSpecific && !hasDictionary) note = `No grammar model or dictionary entry is available for ${language.name}. Only script-level information is shown.`;
         else if (!hasSpecific) note = `${language.name} has no built-in grammar rules; the class comes from dictionary data.`;
-        else if (category === "unknown") note = `The ${language.name} analyzer did not recognise this word.`;
+        else if (category === "unknown") note = `Could not classify "${word}". Languages tried: ${[...new Set([language.code, ...(language.tried || [])])].map((code) => this.registry.name(code)).join(", ")}.`;
 
         return {
             word, language, category, categoryLabel: categoryLabel(category), confidence: winner?.output.confidence ?? 0,

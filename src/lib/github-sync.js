@@ -10,6 +10,8 @@
  * tested in Node and reused from any extension page.
  */
 
+import { buildKeyIndex, findMatch, matchKeys, matchRecords, normalizeUrlKey, recordLabel, siteKey, timestampOf } from "./record-matching.js";
+
 /** Default repository used when the user has not configured one. */
 export const DEFAULT_GITHUB_REPOSITORY_URL = "https://github.com/awsrmmustansarjavaid/Charlie-MJ-Reader";
 
@@ -253,18 +255,13 @@ function shortHash(text) {
 }
 
 /**
- * Derive a stable identity for a record so the same record can be matched on
- * both sides regardless of array order.
+ * Display key of a record: its strongest identity key (id, normalised URL,
+ * normalised domain, word or title + date).
  * @param {unknown} record Array element.
  * @returns {string} Record key.
  */
 export function recordKey(record) {
-    if (record && typeof record === "object") {
-        for (const field of ["id", "url", "domain", "key", "slug", "word", "title", "name"]) {
-            if (record[field] !== undefined && record[field] !== null && record[field] !== "") return `${field}:${record[field]}`;
-        }
-    }
-    return `hash:${shortHash(stableStringify(record))}`;
+    return matchKeys(record)[0];
 }
 
 /* ------------------------------------------------------------------ */
@@ -324,23 +321,19 @@ function compareFileContents(remoteText, localText) {
         };
     }
 
-    // JSON array of records: match by key.
+    // JSON array of records: pair records by identity (id, normalised URL/domain, title + date).
     if (Array.isArray(remote.value) && Array.isArray(local.value)) {
-        const remoteMap = new Map();
-        const localMap = new Map();
-        remote.value.forEach((item) => { const key = recordKey(item); if (!remoteMap.has(key)) remoteMap.set(key, item); });
-        local.value.forEach((item) => { const key = recordKey(item); if (!localMap.has(key)) localMap.set(key, item); });
+        const { pairs, missing, extra, remoteCount, localCount } = matchRecords(remote.value, local.value);
         const stats = {
-            kind: "records", remoteCount: remote.value.length, localCount: local.value.length,
-            matching: 0, changed: 0, missing: 0, extra: 0, changedRecords: [], missingRecords: [], extraRecords: []
+            kind: "records", remoteCount, localCount,
+            matching: 0, changed: 0, missing: missing.length, extra: extra.length,
+            changedRecords: [],
+            missingRecords: missing.map((record) => ({ key: recordKey(record), preview: preview(record) })),
+            extraRecords: extra.map((record) => ({ key: recordKey(record), preview: preview(record) }))
         };
-        for (const [key, item] of remoteMap) {
-            if (!localMap.has(key)) { stats.missing += 1; stats.missingRecords.push({ key, preview: preview(item) }); continue; }
-            const fields = diffValues(item, localMap.get(key));
-            if (fields.length) { stats.changed += 1; stats.changedRecords.push({ key, fields }); } else stats.matching += 1;
-        }
-        for (const [key, item] of localMap) {
-            if (!remoteMap.has(key)) { stats.extra += 1; stats.extraRecords.push({ key, preview: preview(item) }); }
+        for (const pair of pairs) {
+            const fields = diffValues(pair.remote, pair.local);
+            if (fields.length) { stats.changed += 1; stats.changedRecords.push({ key: recordKey(pair.remote), fields }); } else stats.matching += 1;
         }
         return stats;
     }
@@ -388,6 +381,8 @@ export async function compareDatabase({ client, localEntries, scope = "all", onP
 
     const files = [];
     const remoteTexts = new Map();
+    const remoteAll = new Map();   // every remote file's text (identical files reuse the local text)
+    const localAll = new Map(localFiles.map((file) => [file.path, file.data]));
     for (let index = 0; index < paths.length; index += 1) {
         const path = paths[index];
         onProgress({ phase: "compare", current: index + 1, total: paths.length, message: `Comparing ${path.replace(DATABASE_ROOT, "")}` });
@@ -402,22 +397,27 @@ export async function compareDatabase({ client, localEntries, scope = "all", onP
         if (!local) {
             const text = await client.readFile(remote);
             remoteTexts.set(path, text);
+            remoteAll.set(path, text);
             const count = countRecords(text);
             files.push({ path, status: "missing-local", remoteCount: count, localCount: 0, matching: 0, changed: 0, missing: count, extra: 0, changedRecords: [], missingRecords: [], extraRecords: [] });
             continue;
         }
         if (await gitBlobSha(local.data) === remote.sha) {
+            remoteAll.set(path, local.data);
             const count = countRecords(local.data);
             files.push({ path, status: "identical", remoteCount: count, localCount: count, matching: count, changed: 0, missing: 0, extra: 0, changedRecords: [], missingRecords: [], extraRecords: [] });
             continue;
         }
         const remoteText = await client.readFile(remote);
         remoteTexts.set(path, remoteText);
+        remoteAll.set(path, remoteText);
         const stats = compareFileContents(remoteText, local.data);
         const differs = stats.changed || stats.missing || stats.extra;
         files.push({ path, status: differs ? "modified" : "formatting-only", ...stats });
     }
-    return buildResult(files, remoteTexts, client.config, scope);
+    const result = buildResult(files, remoteTexts, client.config, scope);
+    result.collections = buildCollectionTable(remoteAll, localAll);
+    return result;
 }
 
 /**
@@ -455,6 +455,56 @@ function buildResult(files, remoteTexts, config, scope) {
         files,
         remoteTexts
     };
+}
+
+/** Collections shown in the GitHub-vs-local table, with display names. */
+const TABLE_ROWS = Object.freeze([
+    ["websites", "Websites"], ["articles", "Articles"], ["profiles", "Profiles"], ["favorites", "Favorites"],
+    ["bookmarks", "Bookmarks"], ["vocabulary", "Vocabulary"], ["notes", "Notes"], ["highlights", "Highlights"],
+    ["collections", "Collections"], ["topics", "Topics"], ["readingHistory", "Reading history"], ["categories", "Categories"]
+]);
+
+/**
+ * Collect the records of every collection from a set of database files.
+ * Records that appear in several files (for example an article listed in both
+ * Core/articles.json and Saved Articles/General.json) are counted once.
+ * @param {Map<string, string>} files Path to file text.
+ * @returns {Map<string, unknown[]>} Collection target to records.
+ */
+function collectRecords(files) {
+    const byTarget = new Map();
+    const push = (target, records) => {
+        if (!byTarget.has(target)) byTarget.set(target, []);
+        byTarget.get(target).push(...records);
+    };
+    for (const [path, text] of files) {
+        const mapping = mapPathToCollection(path);
+        if (!mapping || mapping.derived) continue;
+        const parsed = tryParseJson(text);
+        if (!parsed.ok) continue;
+        if (mapping.target === "settings") { if (Array.isArray(parsed.value?.websites)) push("websites", parsed.value.websites.map((site) => (typeof site === "string" ? { domain: site } : site))); }
+        else if (Array.isArray(parsed.value)) push(mapping.target, parsed.value);
+    }
+    return byTarget;
+}
+
+/**
+ * Build the per-collection GitHub-vs-local table (websites, articles, ...).
+ * @param {Map<string, string>} remoteFiles Remote file contents.
+ * @param {Map<string, string>} localFiles Local file contents.
+ * @returns {{target: string, label: string, github: number, local: number, matching: number, changed: number, missing: number, extra: number}[]} Rows plus a final totals row.
+ */
+export function buildCollectionTable(remoteFiles, localFiles) {
+    const remote = collectRecords(remoteFiles);
+    const local = collectRecords(localFiles);
+    const rows = TABLE_ROWS.map(([target, label]) => {
+        const { pairs, missing, extra, remoteCount, localCount } = matchRecords(remote.get(target) || [], local.get(target) || []);
+        const changed = pairs.filter((pair) => diffValues(pair.remote, pair.local).length).length;
+        return { target, label, github: remoteCount, local: localCount, matching: pairs.length - changed, changed, missing: missing.length, extra: extra.length };
+    });
+    const total = { target: "total", label: "Total", github: 0, local: 0, matching: 0, changed: 0, missing: 0, extra: 0 };
+    for (const row of rows) for (const field of ["github", "local", "matching", "changed", "missing", "extra"]) total[field] += row[field];
+    return [...rows, total];
 }
 
 /* ------------------------------------------------------------------ */
@@ -512,6 +562,17 @@ function htmlEscape(value) {
 }
 
 /**
+ * Render the per-collection counts as an HTML table for the standalone report.
+ * @param {object[]} [rows] Output of {@link buildCollectionTable}.
+ * @returns {string} Table markup.
+ */
+function collectionTableHtml(rows = []) {
+    const body = rows.filter((row) => row.target === "total" || row.github || row.local)
+        .map((row) => `<tr><td>${htmlEscape(row.label)}</td><td>${row.github}</td><td>${row.local}</td><td>${row.matching}</td><td>${row.changed}</td><td>${row.missing}</td><td>${row.extra}</td></tr>`).join("");
+    return `<table><tr><th>Type</th><th>GitHub</th><th>Local</th><th>Matching</th><th>Changed</th><th>Missing locally</th><th>Extra locally</th></tr>${body}</table>`;
+}
+
+/**
  * Build a standalone, printable HTML report.
  * @param {object} result Output of {@link compareDatabase}.
  * @returns {string} Complete HTML document.
@@ -532,7 +593,7 @@ ${file.changedRecords.length ? `<h4>Changed (${file.changed})</h4>${file.changed
 td,th{border:1px solid #d5d9e8;padding:4px 8px;text-align:left;vertical-align:top;word-break:break-word}em{font-weight:400;color:#5b6486}</style></head><body>
 <h1>Database comparison</h1><p>${htmlEscape(result.repository)} (${htmlEscape(result.branch)}) · scope: ${htmlEscape(result.scope)} · ${htmlEscape(result.generatedAt)}</p>
 <div class="g">${stat("GitHub records", s.recordsGitHub)}${stat("Local records", s.recordsLocal)}${stat("Matching", s.recordsMatching)}${stat("Changed", s.recordsChanged)}${stat("Missing locally", s.recordsMissing)}${stat("Extra locally", s.recordsExtra)}${stat("Match %", `${s.matchPercent}%`)}</div>
-<h2>Differences</h2>${fileBlocks || "<p>No differences found.</p>"}</body></html>`;
+<h2>Records by type</h2>${collectionTableHtml(result.collections)}<h2>Differences</h2>${fileBlocks || "<p>No differences found.</p>"}</body></html>`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -572,62 +633,121 @@ function localRecords(data, target) {
     return Array.isArray(data[target]) ? data[target] : [];
 }
 
+/** Fields that identify or date a record rather than describe its content. */
+const NON_CONTENT_FIELDS = new Set(["id", "updatedAt", "modifiedAt", "updated", "lastModified"]);
+
+/** Fields holding addresses; they only count as different when the normalised address differs. */
+const ADDRESS_FIELDS = new Set(["url", "link", "domain"]);
+
+/**
+ * Differences that change what a record actually says. Ids, timestamps and
+ * cosmetic address differences (www, trailing slash, tracking parameters) are
+ * ignored, so the same article saved twice is recognised as a duplicate.
+ * @param {unknown} remote GitHub record.
+ * @param {unknown} local Local record.
+ * @returns {{path: string, type: string, github: string, local: string}[]} Content differences.
+ */
+export function contentDifferences(remote, local) {
+    return diffValues(remote, local).filter((difference) => {
+        if (NON_CONTENT_FIELDS.has(difference.path)) return false;
+        if (ADDRESS_FIELDS.has(difference.path)) return normalizeUrlKey(remote?.[difference.path]) !== normalizeUrlKey(local?.[difference.path]);
+        return true;
+    });
+}
+
+/**
+ * Classify one pair of records that exist on both sides but differ.
+ *
+ * Rule: the newest `updatedAt` wins. When either side has no timestamp, or the
+ * timestamps are equal, the outcome is uncertain, so it is reported as a
+ * conflict and the local version is kept until the user decides.
+ * @param {unknown} remote GitHub record.
+ * @param {unknown} local Local record.
+ * @returns {"update"|"keep-local"|"conflict"} Decision.
+ */
+export function classifyDifference(remote, local) {
+    const remoteTime = timestampOf(remote);
+    const localTime = timestampOf(local);
+    if (remoteTime && localTime) {
+        if (remoteTime > localTime) return "update";
+        if (remoteTime < localTime) return "keep-local";
+    }
+    return "conflict";
+}
+
 /**
  * Build a pull plan from a comparison result. Nothing is modified here.
  *
- * Protection rules:
- *  - local-only records are never deleted;
- *  - records that exist on both sides but differ are *conflicts* and keep the
- *    local version unless the user explicitly chooses GitHub (or selects
- *    overwrite mode, which still requires confirmation in the UI);
- *  - settings that are secret or device-specific are never changed.
+ * Merge rules (a pull never replaces or deletes the local database):
+ *  - local-only records are always kept;
+ *  - records only on GitHub are added;
+ *  - the same record (matched by id, normalised URL/domain, or title + date)
+ *    that is identical is skipped; if it differs, the newest `updatedAt` wins
+ *    and anything uncertain becomes a conflict that keeps the local copy;
+ *  - the websites list is merged as a union by normalised domain, so a pull
+ *    can never shrink it, even when settings.json also contains `websites`;
+ *  - secret and device-specific settings are never changed.
  * @param {object} result Output of {@link compareDatabase}.
- * @param {object} data Current local extension data.
- * @returns {{adds: object[], conflicts: object[], skipped: string[], files: string[], settingsChanges: object[]}} Plan.
+ * @param {object} data Current local extension data (must be freshly read).
+ * @returns {{adds: object[], updates: object[], skipped: object[], conflicts: object[], settingsChanges: object[], files: string[], derived: string[]}} Plan.
  */
 export function planPull(result, data) {
-    const adds = new Map();
-    const conflicts = new Map();
+    const remoteByTarget = new Map();
     const settingsChanges = [];
-    const skipped = [];
+    const derived = [];
     const files = [];
+    const addRemote = (target, records) => {
+        if (!remoteByTarget.has(target)) remoteByTarget.set(target, []);
+        remoteByTarget.get(target).push(...records);
+    };
 
     for (const [path, text] of result.remoteTexts) {
         const mapping = mapPathToCollection(path);
-        if (!mapping || mapping.derived) { skipped.push(path); continue; }
+        if (!mapping || mapping.derived) { derived.push(path); continue; }
         const parsed = tryParseJson(text);
-        if (!parsed.ok) { skipped.push(path); continue; }
+        if (!parsed.ok) { derived.push(path); continue; }
         files.push(path);
 
         if (mapping.target === "settings") {
             const remoteSettings = sanitizeSettingsForSync(parsed.value || {});
+            // The website list is merged as records below, never as one settings value.
+            if (Array.isArray(remoteSettings.websites)) addRemote("websites", remoteSettings.websites.map((site) => (typeof site === "string" ? { domain: site } : site)));
+            delete remoteSettings.websites;
             const localSettings = sanitizeSettingsForSync(data.settings || {});
             for (const key of Object.keys(remoteSettings)) {
-                if (!(key in localSettings)) settingsChanges.push({ id: `settings:${key}`, key, kind: "add", github: remoteSettings[key], local: undefined });
+                if (!(key in localSettings)) settingsChanges.push({ id: `settings:${key}`, key, kind: "add", label: key, github: remoteSettings[key], local: undefined });
                 else if (stableStringify(remoteSettings[key]) !== stableStringify(localSettings[key])) {
-                    settingsChanges.push({ id: `settings:${key}`, key, kind: "conflict", github: remoteSettings[key], local: localSettings[key] });
+                    settingsChanges.push({ id: `settings:${key}`, key, kind: "conflict", label: key, github: remoteSettings[key], local: localSettings[key] });
                 }
             }
             continue;
         }
+        if (Array.isArray(parsed.value)) addRemote(mapping.target, parsed.value);
+    }
 
-        const records = Array.isArray(parsed.value) ? parsed.value : [];
-        const localMap = new Map(localRecords(data, mapping.target).map((record) => [recordKey(record), record]));
-        const seen = new Set();
-        for (const record of records) {
+    const adds = [];
+    const updates = [];
+    const skipped = [];
+    const conflicts = [];
+    for (const [target, remoteRecords] of remoteByTarget) {
+        const { pairs, missing } = matchRecords(remoteRecords, localRecords(data, target));
+        for (const record of missing) {
             const key = recordKey(record);
-            const id = `${mapping.target}:${key}`;
-            if (seen.has(id)) continue;
-            seen.add(id);
-            if (adds.has(id) || conflicts.has(id)) continue;
-            if (!localMap.has(key)) adds.set(id, { id, collection: mapping.target, key, record });
-            else {
-                const fields = diffValues(record, localMap.get(key));
-                if (fields.length) conflicts.set(id, { id, collection: mapping.target, key, github: record, local: localMap.get(key), fields });
-            }
+            adds.push({ id: `${target}:${key}`, collection: target, key, label: recordLabel(record), record });
+        }
+        for (const { remote, local } of pairs) {
+            const key = recordKey(remote);
+            const base = { id: `${target}:${key}`, collection: target, key, label: recordLabel(remote), github: remote, local };
+            const fields = contentDifferences(remote, local);
+            const duplicate = recordKey(remote) !== recordKey(local);
+            if (!fields.length) { skipped.push({ ...base, reason: duplicate ? "duplicate" : "identical" }); continue; }
+            const verdict = classifyDifference(remote, local);
+            if (verdict === "update") updates.push({ ...base, fields, reason: "GitHub copy is newer" });
+            else if (verdict === "keep-local") skipped.push({ ...base, reason: "local copy is newer" });
+            else conflicts.push({ ...base, fields, reason: "no clear newer copy" });
         }
     }
-    return { adds: [...adds.values()], conflicts: [...conflicts.values()], skipped, files, settingsChanges };
+    return { adds, updates, skipped, conflicts, settingsChanges, files, derived };
 }
 
 /* ------------------------------------------------------------------ */
@@ -639,36 +759,46 @@ export function planPull(result, data) {
  * @param {object} data Current local data (not mutated).
  * @param {object} plan Output of {@link planPull}.
  * @param {Record<string, "github"|"local">} [decisions] Per-conflict choices; anything not listed keeps local.
- * @returns {{data: object, summary: {added: number, updated: number, keptLocal: number, settingsUpdated: number}}} New data and counts.
+ * @returns {{data: object, summary: object}} New data and a summary with counts and name lists
+ *     (`added`, `updated`, `skipped`, `conflicts`, `settings`).
  */
 export function applyPull(data, plan, decisions = {}) {
     const next = JSON.parse(JSON.stringify(data));
     next.settings = next.settings || {};
     next.readingLibrary = next.readingLibrary || {};
-    const summary = { added: 0, updated: 0, keptLocal: 0, settingsUpdated: 0 };
-
-    /** Insert or replace one record in its collection. */
-    const upsert = (collection, record, key, replace) => {
-        let list;
-        if (collection === "websites") list = next.settings.websites = next.settings.websites || [];
-        else if (collection === "profiles") list = next.readingLibrary.profiles = next.readingLibrary.profiles || [];
-        else if (collection === "favorites") list = next.readingLibrary.favorites = next.readingLibrary.favorites || [];
-        else list = next[collection] = Array.isArray(next[collection]) ? next[collection] : [];
-
-        if (collection === "favorites") { if (!list.includes(record.domain)) list.push(record.domain); return; }
-        const index = list.findIndex((item) => recordKey(typeof item === "string" ? { domain: item } : item) === key);
-        if (index === -1) list.push(record);
-        else if (replace) list[index] = record;
+    const summary = {
+        added: { count: 0, names: [] }, updated: { count: 0, names: [] },
+        skipped: { count: plan.skipped.length, names: plan.skipped.map((item) => `${item.label} (${item.reason})`) },
+        conflicts: { count: 0, names: [] }, settings: { count: 0, names: [] }
     };
 
-    for (const item of plan.adds) { upsert(item.collection, item.record, item.key, false); summary.added += 1; }
-    for (const conflict of plan.conflicts) {
-        if (decisions[conflict.id] === "github") { upsert(conflict.collection, conflict.github, conflict.key, true); summary.updated += 1; }
-        else summary.keptLocal += 1;
+    /** Locate (or create) the list that holds a collection. */
+    const listFor = (collection) => {
+        if (collection === "websites") return (next.settings.websites = next.settings.websites || []);
+        if (collection === "profiles") return (next.readingLibrary.profiles = next.readingLibrary.profiles || []);
+        if (collection === "favorites") return (next.readingLibrary.favorites = next.readingLibrary.favorites || []);
+        return (next[collection] = Array.isArray(next[collection]) ? next[collection] : []);
+    };
+
+    /** Add a record, or merge GitHub fields over the matching local record. */
+    const upsert = (collection, record, replace) => {
+        const list = listFor(collection);
+        if (collection === "favorites") { if (!list.some((domain) => siteKey(domain) === siteKey(record))) list.push(record.domain); return; }
+        const normalised = list.map((item) => (typeof item === "string" ? { domain: item } : item));
+        const position = findMatch(buildKeyIndex(normalised), record);
+        if (position === -1) list.push(record);
+        else if (replace) list[position] = { ...normalised[position], ...record };   // keeps local-only fields
+    };
+
+    for (const item of plan.adds) { upsert(item.collection, item.record, false); summary.added.count += 1; summary.added.names.push(item.label); }
+    for (const item of plan.updates) { upsert(item.collection, item.github, true); summary.updated.count += 1; summary.updated.names.push(item.label); }
+    for (const item of plan.conflicts) {
+        if (decisions[item.id] === "github") { upsert(item.collection, item.github, true); summary.updated.count += 1; summary.updated.names.push(`${item.label} (chosen: GitHub)`); }
+        else { summary.conflicts.count += 1; summary.conflicts.names.push(item.label); }
     }
     for (const change of plan.settingsChanges) {
-        if (change.kind === "add" || decisions[change.id] === "github") { next.settings[change.key] = change.github; summary.settingsUpdated += 1; }
-        else summary.keptLocal += 1;
+        if (change.kind === "add" || decisions[change.id] === "github") { next.settings[change.key] = change.github; summary.settings.count += 1; summary.settings.names.push(change.key); }
+        else { summary.conflicts.count += 1; summary.conflicts.names.push(`setting: ${change.key}`); }
     }
     return { data: next, summary };
 }

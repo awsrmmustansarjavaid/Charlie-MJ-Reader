@@ -493,3 +493,6 @@ nav button.active, nav button:hover {
 .gh-scroll td, .gh-scroll th { padding: 4px 8px; border: 1px solid rgba(255, 255, 255, .12); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
 .gh-mode { display: grid; gap: 6px; margin: 12px 0; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 10px; }
 .gh-mode label { display: flex; align-items: center; gap: 8px; }
+.gh-scroll caption { text-align: left; padding: 4px 0; font-weight: 600; }
+.gh-total td { font-weight: 700; border-top: 2px solid rgba(255, 255, 255, .3); }
+.gh-names { margin: 6px 0 0; padding-left: 18px; max-height: 220px; overflow: auto; font-size: 12px; }

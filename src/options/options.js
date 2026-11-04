@@ -4,7 +4,16 @@
 import { getAll, saveAll } from "../lib/storage.js";
 import { sanitizeSettingsForSync } from "../lib/github-sync.js";
 import { mountGithubSyncPanel } from "./sync-panel.js";
+import { canonical, clone, computeStoragePatch } from "../lib/storage-merge.js";
 let data = await getAll();
+/**
+ * What this page last loaded or saved. Saves are three-way merged against it
+ * (see storage-merge.js), so records saved from other pages while Settings is
+ * open are never overwritten by this page's older copy.
+ */
+let baseline = clone(data);
+/** Storage events before this time were caused by this page's own save. */
+let ignoreStorageEventsUntil = 0;
 const panel = document.getElementById("panel");
 const saved = document.getElementById("saved");
 const tabs = document.getElementById("tabs");
@@ -1462,7 +1471,8 @@ function render() {
             escapeHtml,
             prepareDifferenceZip: (paths) => dlBlob('charlie-mj-database-difference.zip', zipStore(dbZipEntries(data, false).filter(entry => paths.has(entry.path)))),
             prepareFullZip: () => downloadDbZip('charlie-mj-database.zip'),
-            rerender: render
+            rerender: render,
+            reloadFresh
         });
     }
     else if (active === "notifications") {
@@ -1616,7 +1626,63 @@ ${[["title","Article title",40],["subtitle","Subtitle",22],["description","Descr
     populateTranslationLanguages();
 }
 
-async function persist() { await saveAll(data); saved.textContent = "✓ Settings saved"; }
+/**
+ * Save only what this page changed, merged with what storage holds right now.
+ * Unchanged keys are never written, and the websites list is merged by
+ * normalised domain, so a save can add or edit records but never wipe ones
+ * that were saved elsewhere in the meantime.
+ */
+async function persist() {
+    const fresh = await getAll();
+    const patch = computeStoragePatch(fresh, data, baseline);
+    if (Object.keys(patch).length) {
+        ignoreStorageEventsUntil = Date.now() + 1000;
+        // Write only the changed keys. Outside Chrome (localStorage fallback) the whole record must be written.
+        await saveAll(globalThis.chrome?.storage?.local ? patch : { ...fresh, ...patch });
+    }
+    // Adopt other pages' changes; keep object identity when nothing differs so open handlers stay valid.
+    for (const key of new Set([...Object.keys(fresh), ...Object.keys(patch)])) {
+        const merged = key in patch ? patch[key] : fresh[key];
+        if (canonical(data[key]) !== canonical(merged)) data[key] = merged;
+    }
+    baseline = clone(data);
+    saved.textContent = "✓ Settings saved";
+}
+
+/** Re-read storage into the live data object (used before every compare, pull and apply). */
+async function reloadFresh() {
+    const fresh = await getAll();
+    for (const key of Object.keys(fresh)) data[key] = fresh[key];
+    baseline = clone(data);
+}
+
+/** True while the user is typing in a settings control (never re-render under them). */
+function isEditingSettings() {
+    const element = document.activeElement;
+    return Boolean(element && panel.contains(element) && element.matches("input, textarea, select, [contenteditable]"));
+}
+
+/**
+ * Live sync: when another page (popup, reader, library) changes storage, bring
+ * the unchanged parts of this page up to date at once. Keys this page edited
+ * but has not saved yet are kept and merged on the next save.
+ */
+let storageSyncTimer = 0;
+globalThis.chrome?.storage?.onChanged?.addListener((changes, area) => {
+    if (area !== "local" || Date.now() < ignoreStorageEventsUntil) return;
+    clearTimeout(storageSyncTimer);
+    storageSyncTimer = setTimeout(async () => {
+        const fresh = await getAll();
+        let updated = false;
+        for (const key of Object.keys(changes)) {
+            if (canonical(data[key]) !== canonical(baseline[key])) continue;   // edited here: merged at next save
+            data[key] = fresh[key];
+            baseline[key] = clone(fresh[key]);
+            updated = true;
+        }
+        if (updated && !isEditingSettings()) render();
+    }, 300);
+});
 tabs.addEventListener("click", e => {
     const b = e.target.closest("[data-tab]");
     if (b) {

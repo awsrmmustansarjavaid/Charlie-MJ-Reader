@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased - Safe saving, smart pull, library refresh, per-word language detection
+
+- Settings and Library saves are now three-way merged with current storage (src/lib/storage-merge.js):
+  a website saved from the popup while Settings is open is no longer overwritten. Only changed keys are
+  written, the websites list is merged by normalised domain, and storage changes update open pages live.
+- Compare, Pull and Apply re-read storage first. Compare shows GitHub vs Local counts per type
+  (websites, articles, profiles, bookmarks, vocabulary ...).
+- Smart pull: duplicates matched by id, normalised URL/domain, then title + date; newest updatedAt wins,
+  anything uncertain is a conflict that keeps the local copy; summary lists Added / Updated / Skipped / Conflicts.
+- My Reading Library: Refresh button (re-reads storage, keeps search, filters and scroll) and auto-refresh.
+  The old "Refresh website data" button is now labelled "Update website data".
+- Hover grammar detects the language of each word from its own letters, script and sentence first; the
+  article language is only a last resort. Candidates are confirmed by their grammar analyzer, so Turkish
+  words in English articles (for example kalsin) are analysed as Turkish.
+
 ## Unreleased - GitHub sync and multilingual grammar
 
 - Default repository is now https://github.com/awsrmmustansarjavaid/Charlie-MJ-Reader (branch main).

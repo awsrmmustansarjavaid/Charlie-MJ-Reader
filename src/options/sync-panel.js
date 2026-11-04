@@ -47,8 +47,9 @@ const STATUS_LABELS = Object.freeze({
  * @param {(paths: Set<string>) => void} options.prepareDifferenceZip Builds the "changed files" ZIP.
  * @param {() => void} options.prepareFullZip Builds the full database ZIP.
  * @param {() => void} options.rerender Re-renders the settings page after data changes.
+ * @param {() => Promise<void>} options.reloadFresh Re-reads storage into the live data object, so no step ever works from a stale copy.
  */
-export function mountGithubSyncPanel({ container, getData, setData, persist, getLocalEntries, download, confirm, escapeHtml, prepareDifferenceZip, prepareFullZip, rerender }) {
+export function mountGithubSyncPanel({ container, getData, setData, persist, getLocalEntries, download, confirm, escapeHtml, prepareDifferenceZip, prepareFullZip, rerender, reloadFresh }) {
     const settings = getData().settings;
     const config = resolveSyncConfig(settings);
     /** Last comparison result, reused by exports and "Prepare difference". */
@@ -117,6 +118,7 @@ export function mountGithubSyncPanel({ container, getData, setData, persist, get
 
     /** Run a comparison with the current form values. */
     const runComparison = async () => {
+        await reloadFresh();                       // never compare against a stale copy of storage
         const cfg = await saveForm();
         const client = new GitHubClient(cfg);
         lastResult = await compareDatabase({ client, localEntries: getLocalEntries(), scope: $("#gh-scope").value, onProgress: setProgress });
@@ -128,6 +130,11 @@ export function mountGithubSyncPanel({ container, getData, setData, persist, get
         const card = (label, value) => `<div class="gh-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
         return `<div class="gh-cards">${card("GitHub records", summary.recordsGitHub)}${card("Local records", summary.recordsLocal)}${card("Matching", summary.recordsMatching)}${card("Changed", summary.recordsChanged)}${card("Missing locally", summary.recordsMissing)}${card("Extra locally", summary.recordsExtra)}${card("Files compared", summary.files)}${card("Match", `${summary.matchPercent}%`)}</div>`;
     };
+
+    /** Render the GitHub-vs-local counts per collection. */
+    const renderCollectionTable = (rows = []) => `<div class="gh-scroll"><table><caption>Records by type</caption>
+<tr><th>Type</th><th>GitHub</th><th>Local</th><th>Matching</th><th>Changed</th><th>Missing locally</th><th>Extra locally</th></tr>
+${rows.filter((row) => row.target === "total" || row.github || row.local).map((row) => `<tr${row.target === "total" ? ' class="gh-total"' : ""}><td>${escapeHtml(row.label)}</td><td>${row.github}</td><td>${row.local}</td><td>${row.matching}</td><td>${row.changed}</td><td>${row.missing}</td><td>${row.extra}</td></tr>`).join("")}</table></div>`;
 
     /** Render one file's differences inside a <details> block. */
     const renderFile = (file) => {
@@ -147,6 +154,7 @@ ${rows.length ? `<div class="gh-scroll"><table><tr><th>Record</th><th>Field / st
         const differing = comparison.files.filter((file) => file.status !== "identical" && file.status !== "formatting-only");
         result.innerHTML = `<strong>${escapeHtml(comparison.repository)} (${escapeHtml(comparison.branch)}) — ${escapeHtml(comparison.scope === "library" ? "My Reading Library" : "entire database")}</strong>
 ${renderSummary(comparison.summary)}
+${renderCollectionTable(comparison.collections)}
 <div class="site-actions">
 <button class="btn" id="gh-export-json">Export JSON</button>
 <button class="btn" id="gh-export-csv">Export CSV</button>
@@ -158,25 +166,36 @@ ${differing.length ? differing.map(renderFile).join("") : "<p>No differences. Lo
         $("#gh-export-html").onclick = () => download(`charlie-mj-comparison-${stamp}.html`, new Blob([buildHtmlReport(comparison)], { type: "text/html" }));
     };
 
+    /** Render a collapsible list of names. */
+    const nameList = (title, names) => names.length
+        ? `<details class="gh-file"><summary>${escapeHtml(title)} (${names.length})</summary><ul class="gh-names">${names.slice(0, 200).map((name) => `<li>${escapeHtml(name)}</li>`).join("")}</ul>${names.length > 200 ? `<p class="help">Showing the first 200 of ${names.length}.</p>` : ""}</details>`
+        : "";
+
+    /** Render the Added / Updated / Skipped / Conflicts summary cards and name lists. */
+    const renderPullSummary = (summary) => {
+        const card = (label, value) => `<div class="gh-card"><span>${escapeHtml(label)}</span><strong>${value}</strong></div>`;
+        return `<div class="gh-cards">${card("Added", summary.added.count)}${card("Updated", summary.updated.count)}${card("Skipped", summary.skipped.count)}${card("Conflicts", summary.conflicts.count)}${card("Settings added", summary.settings.count)}</div>
+${nameList("Added", summary.added.names)}${nameList("Updated", summary.updated.names)}${nameList("Skipped (identical, duplicate or local newer)", summary.skipped.names)}${nameList("Conflicts (need your review)", summary.conflicts.names)}`;
+    };
+
     /** Render the pull preview with per-conflict decisions. */
     const renderPullPreview = (comparison, plan) => {
-        const conflictCount = plan.conflicts.length + plan.settingsChanges.filter((change) => change.kind === "conflict").length;
+        const settingConflicts = plan.settingsChanges.filter((change) => change.kind === "conflict");
         const settingsAdds = plan.settingsChanges.filter((change) => change.kind === "add").length;
-        if (!plan.adds.length && !conflictCount && !settingsAdds) {
-            result.innerHTML = `<strong>Already up to date.</strong><p>Nothing on GitHub needs to be added to your local database. ${renderSummary(comparison.summary)}</p>`;
+        const conflictCount = plan.conflicts.length + settingConflicts.length;
+        const preview = applyPull(getData(), plan, {}).summary;       // what a safe pull would do right now
+        if (!plan.adds.length && !plan.updates.length && !conflictCount && !settingsAdds) {
+            result.innerHTML = `<strong>Already up to date.</strong><p>Nothing on GitHub needs to be added or updated locally.</p>${renderCollectionTable(comparison.collections)}${renderPullSummary(preview)}`;
             return;
         }
-        const conflictRows = [...plan.conflicts.map((item) => ({ id: item.id, name: `${item.collection} · ${item.key}`, fields: item.fields.map((f) => f.path).join(", ") })),
-            ...plan.settingsChanges.filter((change) => change.kind === "conflict").map((item) => ({ id: item.id, name: `setting · ${item.key}`, fields: "value" }))];
+        const conflictRows = [...plan.conflicts.map((item) => ({ id: item.id, name: `${item.collection} · ${item.label}`, fields: item.fields.map((f) => f.path).join(", ") || "content" })),
+            ...settingConflicts.map((item) => ({ id: item.id, name: `setting · ${item.key}`, fields: "value" }))];
         result.innerHTML = `<strong>Pull preview</strong>
-<div class="gh-cards">
-<div class="gh-card"><span>Files read</span><strong>${plan.files.length}</strong></div>
-<div class="gh-card"><span>Records to add</span><strong>${plan.adds.length}</strong></div>
-<div class="gh-card"><span>Settings to add</span><strong>${settingsAdds}</strong></div>
-<div class="gh-card"><span>Conflicts</span><strong>${conflictCount}</strong></div></div>
-<p class="help">Protection: local-only records are never deleted, a backup is saved before anything changes, and conflicts keep your local version unless you choose GitHub. Secrets and device settings are never touched.</p>
+${renderCollectionTable(comparison.collections)}
+${renderPullSummary(preview)}
+<p class="help">How a pull works: records only on GitHub are added; records on both sides are updated only when the GitHub copy has a newer <code>updatedAt</code>; local-only records and the whole websites list are always kept; a backup is saved first. Conflicts keep your local version unless you choose GitHub.</p>
 <fieldset class="gh-mode"><legend>Conflict handling</legend>
-<label><input type="radio" name="gh-mode" value="safe" checked> Safe merge — add new records, keep my local version of conflicts</label>
+<label><input type="radio" name="gh-mode" value="safe" checked> Safe merge — keep my local version of every conflict</label>
 <label><input type="radio" name="gh-mode" value="github"> Prefer GitHub — use the GitHub version for every conflict</label></fieldset>
 ${conflictCount ? `<div class="gh-scroll"><table><tr><th>Record</th><th>Differing fields</th><th>Use</th></tr>${conflictRows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.fields)}</td><td><select data-conflict="${escapeHtml(row.id)}"><option value="local">Keep local</option><option value="github">Use GitHub</option></select></td></tr>`).join("")}</table></div>` : ""}
 <div class="site-actions"><button class="btn" id="gh-apply">Apply pull</button><button class="btn" id="gh-cancel">Cancel</button></div>`;
@@ -189,16 +208,18 @@ ${conflictCount ? `<div class="gh-scroll"><table><tr><th>Record</th><th>Differin
         $("#gh-apply").onclick = async () => {
             const decisions = Object.fromEntries(selects.map((select) => [select.dataset.conflict, select.value]));
             const overwriting = Object.values(decisions).filter((value) => value === "github").length;
-            const message = `Add ${plan.adds.length + settingsAdds} new item(s) and replace ${overwriting} local conflicting item(s) with the GitHub version? A backup of your current data is saved first.`;
+            const message = `Add ${plan.adds.length + settingsAdds} item(s), update ${plan.updates.length} newer item(s) and replace ${overwriting} conflicting item(s) with the GitHub version? A backup of your current data is saved first.`;
             if (!(await confirm(message))) return;
             busy(true);
             try {
+                // Re-read storage and re-plan: anything saved since the preview (a new website, for example) is kept.
+                await reloadFresh();
+                const freshPlan = planPull(comparison, getData());
                 await createPrePullBackup(getData());
-                const { data: merged, summary } = applyPull(getData(), plan, decisions);
+                const { data: merged, summary } = applyPull(getData(), freshPlan, decisions);
                 await setData(merged);
-                result.innerHTML = `<strong>Pull complete.</strong>
-<div class="gh-cards"><div class="gh-card"><span>Added</span><strong>${summary.added}</strong></div><div class="gh-card"><span>Replaced with GitHub</span><strong>${summary.updated}</strong></div><div class="gh-card"><span>Kept local</span><strong>${summary.keptLocal}</strong></div><div class="gh-card"><span>Settings added/updated</span><strong>${summary.settingsUpdated}</strong></div></div>
-<p>Changed files: ${plan.files.map((path) => escapeHtml(path.replace("database/", ""))).join(", ") || "none"}.</p>
+                result.innerHTML = `<strong>Pull complete.</strong>${renderPullSummary(summary)}
+<p>Files read: ${freshPlan.files.map((path) => escapeHtml(path.replace("database/", ""))).join(", ") || "none"}.</p>
 <div class="site-actions"><button class="btn" id="gh-restore">Undo this pull (restore backup)</button></div>`;
                 $("#gh-restore").onclick = restoreBackup;
             } catch (error) {

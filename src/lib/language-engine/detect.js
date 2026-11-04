@@ -9,9 +9,12 @@
  *   3. stop-word voting over the surrounding sentence (major Latin-script languages);
  *   4. the language hint supplied by the caller (article language or the learner's target).
  *
- * A hint always wins for Latin-script text where the evidence is weak, because
- * the reader knows what the article is written in. The result reports which
- * method produced it, so the UI never overstates certainty.
+ * The page language is only a last resort here: it decides the language of the
+ * *meaning*, not the language of the hovered word. An English article that
+ * teaches Turkish contains Turkish words, so the word's own evidence always
+ * outranks the hint. `collectEvidence` returns ranked candidates; the engine
+ * then confirms a candidate by checking that its analyzer can actually parse
+ * the word (for example "kal" + "-sın" as a Turkish imperative).
  */
 
 /** Script tests in priority order; the first match decides the script. */
@@ -138,4 +141,97 @@ export function detectLanguage(word, context = {}, normalizeCode = (value) => St
     const sentenceDiacritic = LATIN_DIACRITICS.find(([pattern]) => pattern.test(context.sentence || ""));
     if (sentenceDiacritic) return { code: sentenceDiacritic[1], confidence: 0.55, method: "diacritics" };
     return { code: "und", confidence: 0, method: "default" };
+}
+
+/** Letters shared by several Latin-script languages: they narrow the field but cannot decide it. */
+const SHARED_LETTERS = [
+    [/[çöü]/iu, ["tr", "de", "fr", "hu", "az"]],
+    [/[éèêàùâîôû]/iu, ["fr", "pt", "it", "ca"]],
+    [/[áíóúý]/iu, ["es", "pt", "cs", "hu", "is"]],
+    [/[äå]/iu, ["de", "sv", "fi", "et"]]
+];
+
+/** Languages that write with the Arabic script, used to report an honest "likely" list. */
+const ARABIC_SCRIPT_LANGUAGES = ["ar", "fa", "ur", "ps", "ku", "sd", "ug"];
+
+/**
+ * @typedef {Object} Candidate
+ * @property {string} code ISO code.
+ * @property {number} confidence Strength of the evidence, 0 to 1.
+ * @property {"script"|"letters"|"sentence"|"hint"} method Where the evidence came from.
+ */
+
+/**
+ * Collect ranked language candidates for one word.
+ *
+ * Order of evidence, strongest first:
+ *   1. script (Hangul, Greek, Thai ...) and script-specific letters;
+ *   2. language-specific letters and word shape ("ı", "ñ", "ß" ...);
+ *   3. letters shared by a few languages ("ö", "é" ...);
+ *   4. the surrounding sentence (stop-word voting);
+ *   5. the article language and the learner's languages (last resort).
+ * @param {string} word The hovered word.
+ * @param {{sentence?: string, languageHint?: string, extraLanguages?: string[]}} [context] Surrounding text and expected languages.
+ * @param {(value: string) => string} [normalizeCode] Resolves names/tags to ISO codes.
+ * @returns {{script: string, strong: Candidate[], weak: Candidate[], ambiguous: string[]}} Ranked evidence.
+ */
+export function collectEvidence(word, context = {}, normalizeCode = (value) => String(value || "").toLowerCase()) {
+    const { script, code: scriptCode } = detectScript(word);
+    const strong = [];
+    const weak = [];
+    const seen = new Set();
+    const add = (list, code, confidence, method) => {
+        if (code && code !== "und" && !seen.has(code)) { seen.add(code); list.push({ code, confidence, method }); }
+    };
+    const hints = [context.languageHint, ...(context.extraLanguages || [])].map((value) => normalizeCode(value)).filter((code) => code && code !== "und");
+
+    // 1. Script-level evidence.
+    let ambiguous = [];
+    if (script === "arabic") {
+        const specific = ARABIC_SCRIPT_HINTS.find(([pattern]) => pattern.test(word));
+        if (specific) add(strong, specific[1], 0.85, "letters");
+        else {
+            // Short Arabic-script words are ambiguous: prefer a hinted Arabic-script language, otherwise stay honest.
+            const hinted = hints.filter((code) => ARABIC_SCRIPT_LANGUAGES.includes(code));
+            hinted.forEach((code) => add(weak, code, 0.6, "hint"));
+            ambiguous = ["ar", "ur", "fa", "ps"];
+            if (!hinted.length) ambiguous.forEach((code) => add(weak, code, 0.3, "script"));
+        }
+    } else if (script === "cyrillic") {
+        const specific = CYRILLIC_HINTS.find(([pattern]) => pattern.test(word));
+        if (specific) add(strong, specific[1], 0.85, "letters");
+        else {
+            hints.filter((code) => ["ru", "uk", "bg", "sr", "mk", "be", "kk", "mn", "tg", "ky"].includes(code)).forEach((code) => add(weak, code, 0.6, "hint"));
+            add(weak, "ru", 0.4, "script");
+        }
+    } else if (script === "han" && /[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(context.sentence || "")) {
+        add(strong, "ja", 0.8, "script");
+    } else if (script === "devanagari") {
+        hints.filter((code) => ["hi", "mr", "ne", "sa"].includes(code)).forEach((code) => add(strong, code, 0.7, "hint"));
+        add(strong, "hi", 0.6, "script");
+    } else if (scriptCode) {
+        add(strong, scriptCode, 0.75, "script");
+    }
+
+    // 2. Language-specific letters and 3. letters shared by a few languages (Latin script only).
+    if (script === "latin") {
+        for (const [pattern, code] of LATIN_DIACRITICS) if (pattern.test(word)) add(strong, code, 0.85, "letters");
+        for (const [pattern, codes] of SHARED_LETTERS) if (pattern.test(word)) codes.forEach((code, rank) => add(weak, code, 0.5 - rank * 0.04, "letters"));
+    }
+
+    // 4. Sentence context (stop-word voting).
+    const tokens = (String(context.sentence || "").toLocaleLowerCase().match(/[\p{L}'’-]+/gu)) || [];
+    if (script === "latin" && tokens.length >= 4) {
+        let best = { code: "", score: 0 };
+        for (const [code, set] of Object.entries(STOPWORD_SETS)) {
+            const score = tokens.filter((token) => set.has(token)).length;
+            if (score > best.score) best = { code, score };
+        }
+        const share = best.score / tokens.length;
+        if (best.score >= 2 && share >= 0.12) add(weak, best.code, Math.min(0.7, 0.4 + share), "sentence");
+    }
+
+    // 5. Hints decide last: the article language is not the word's language.
+    hints.forEach((code, rank) => add(weak, code, rank === 0 ? 0.35 : 0.3, "hint"));
+    return { script, strong, weak, ambiguous };
 }

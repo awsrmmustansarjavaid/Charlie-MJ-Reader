@@ -4,6 +4,7 @@
  * No third-party libraries. Every network call has a timeout and a byte cap.
  * DOMParser is only used inside functions, so the module can be imported anywhere.
  */
+import { computeStoragePatch } from "./storage-merge.js";
 import { getAll, saveAll } from "./storage.js";
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -931,13 +932,31 @@ export function applyProfile(data, pr) {
         lib.profiles.unshift(merged);
     return { profile: merged, isNew: i < 0 };
 }
-export async function persistLibrary(data) {
+/**
+ * Save the library parts of `data` (websites, reading library, articles).
+ *
+ * Pass `baseline` (what the page loaded or last saved) from any long-lived page
+ * such as the Library: the save is then three-way merged with current storage,
+ * so a site saved from the popup while the page was open is kept instead of
+ * being overwritten by the page's older copy, while deletions made on purpose
+ * in the page are still honoured. Without a baseline, `data` must itself be
+ * freshly read from storage (the one-shot callers below).
+ * @param {object} data Extension data holding the changes.
+ * @param {object} [baseline] Snapshot of settings, readingLibrary and articles from the last load/save.
+ * @returns {Promise<object>} The merged values that were written.
+ */
+export async function persistLibrary(data, baseline) {
     const fresh = await getAll();
-    fresh.settings = { ...fresh.settings, websites: data.settings.websites };
-    fresh.readingLibrary = data.readingLibrary;
-    fresh.articles = data.articles;
-    await saveAll(fresh);
-    return fresh;
+    if (!baseline) {
+        fresh.settings = { ...fresh.settings, websites: data.settings.websites };
+        fresh.readingLibrary = data.readingLibrary;
+        fresh.articles = data.articles;
+        await saveAll(fresh);
+        return fresh;
+    }
+    const patch = computeStoragePatch(fresh, { settings: data.settings, readingLibrary: data.readingLibrary, articles: data.articles }, baseline);
+    if (Object.keys(patch).length) await saveAll(globalThis.chrome?.storage?.local ? patch : { ...fresh, ...patch });
+    return { settings: fresh.settings, readingLibrary: fresh.readingLibrary, articles: fresh.articles, ...patch };
 }
 /** One call used by the Library page and the popup: add (or refresh) whatever the URL is. */
 export async function addFromUrl(input, { kind = "auto", presetName = "", presetCountry = "" } = {}) {

@@ -1475,6 +1475,7 @@ installHoverGrammar({
     isEnabled: () => data.settings.hoverGrammarEnabled !== false,
     getLanguageHint: () => activeArticle?.language || activeArticle?.lang || data.languageLearning.settings.targetLanguage || "en",
     getMeaningLanguage: () => data.settings.translationTarget || "en",
+    getExtraLanguages: () => [data.languageLearning?.settings?.targetLanguage, data.settings.translationSource].filter(Boolean),
     scope: ".reader-content"
 });
 

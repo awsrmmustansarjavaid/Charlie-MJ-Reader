@@ -2,10 +2,18 @@
  * My Reading Library controller for websites, profiles, saved articles and metadata.
  */
 import { getAll } from "../lib/storage.js";
+import { canonical, clone } from "../lib/storage-merge.js";
 import { CATEGORIES, NEWS_PRESETS, libraryOf, siteProfile, findSite, stripWww, parseUrlInput, detectProfile, fetchSiteBundle, fetchProfileBundle, applyBundle, applyProfile, persistLibrary, seedFromBundle, lastWebTab, saveArticleFromUrl, seoForUrl, runGoogleAudit, googleLinks } from "../lib/sites.js";
 await seedFromBundle();
 let data = await getAll();
 libraryOf(data);
+/** Keys the Library page owns; snapshots of them drive the three-way merge on save. */
+const LIBRARY_KEYS = ["settings", "readingLibrary", "articles"];
+const snapshot = () => clone(Object.fromEntries(LIBRARY_KEYS.map((key) => [key, data[key]])));
+/** What this page last loaded or saved. */
+let baseline = snapshot();
+/** Storage events before this time were caused by this page's own save. */
+let ignoreStorageEventsUntil = 0;
 let currentView = "websites";
 let catFilter = "All", countryFilter = "All";
 const expanded = {};
@@ -34,7 +42,14 @@ const ago = (iso) => {
     return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`;
 };
 const setStatus = (msg, error = false) => { $("view-status").textContent = msg; $("view-status").style.color = error ? "#fca5a5" : "#a7f3d0"; };
-const save = () => (queue = queue.then(() => persistLibrary(data)).catch((e) => setStatus(e.message, true)));
+/** Save library changes, merged with whatever other pages saved in the meantime. */
+const save = () => (queue = queue.then(async () => {
+    ignoreStorageEventsUntil = Date.now() + 1000;
+    const merged = await persistLibrary(data, baseline);
+    for (const key of LIBRARY_KEYS) if (canonical(data[key]) !== canonical(merged[key])) data[key] = merged[key];
+    libraryOf(data);
+    baseline = snapshot();
+}).catch((e) => setStatus(e.message, true)));
 const hl = (text, q) => {
     if (!q)
         return esc(text);
@@ -884,6 +899,59 @@ function openAddDialog(message = "") {
     $("add-url").focus();
 }
 /* ---------- events ---------- */
+/** Number of items shown by the active tab, read from its own header ("12 of 40 website(s)") or its cards. */
+function visibleItemCount() {
+    const meta = document.querySelector("#library-view .section-head .meta");
+    const match = meta?.textContent.match(/^\s*(\d[\d,]*)/);
+    return match ? Number(match[1].replace(/,/g, "")) : document.querySelectorAll("#library-view .card, #library-view article.article").length;
+}
+let refreshing = false;
+/**
+ * Re-read storage and re-render only the active tab. Search text, category and
+ * country filters, expanded cards and the scroll position are all kept, and
+ * nothing is reloaded.
+ * @param {{silent?: boolean}} [options] `silent` skips the spinner and message (used by auto-refresh).
+ */
+async function refreshFromStorage({ silent = false } = {}) {
+    if (refreshing) return;
+    refreshing = true;
+    const button = $("reload-library");
+    if (!silent) { button.classList.add("is-loading"); button.disabled = true; setStatus("Refreshing…"); }
+    const scrollers = [document.scrollingElement, document.querySelector(".workspace"), $("library-view")].filter(Boolean);
+    const positions = scrollers.map((element) => element.scrollTop);
+    try {
+        await queue;                                   // let pending saves land first
+        const fresh = await getAll();
+        for (const key of Object.keys(fresh)) data[key] = fresh[key];
+        libraryOf(data);
+        baseline = snapshot();
+        render();
+        if (detail && detail.type !== "article" && $("detail").open && !busyDetail) renderDetail();
+        scrollers.forEach((element, index) => { element.scrollTop = positions[index]; });
+        if (!silent) setStatus(`Refreshed · ${visibleItemCount()} item(s)`);
+    } catch (error) {
+        setStatus(`Refresh failed: ${error.message}`, true);
+    } finally {
+        refreshing = false;
+        button.classList.remove("is-loading");
+        button.disabled = false;
+    }
+}
+$("reload-library").onclick = () => refreshFromStorage();
+
+/** Auto-refresh: sites and articles saved elsewhere appear without clicking anything. */
+let autoRefreshTimer = 0;
+globalThis.chrome?.storage?.onChanged?.addListener((changes, area) => {
+    if (area !== "local" || Date.now() < ignoreStorageEventsUntil) return;
+    if (!LIBRARY_KEYS.some((key) => key in changes) && !("bookmarks" in changes)) return;
+    clearTimeout(autoRefreshTimer);
+    autoRefreshTimer = setTimeout(() => {
+        // Never re-render under an open dialog or while the user is typing in a form field.
+        const typing = document.activeElement?.matches?.("textarea, select, input:not(#search)");
+        if (document.querySelector("dialog[open]") || typing) return;
+        refreshFromStorage({ silent: true });
+    }, 400);
+});
 $("side-nav").onclick = (e) => {
     const b = e.target.closest("[data-view]");
     if (b) {
