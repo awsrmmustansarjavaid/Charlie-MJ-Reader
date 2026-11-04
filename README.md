@@ -2,6 +2,8 @@
 
 **Read Smarter. Learn Deeper. Build Your Knowledge.**
 
+! [Charlie MJ Reader](/assets/Charlie%20MJ%20Reader%20Promo%20Poster.png)
+
 A local-first Chrome Manifest V3 extension for distraction-free reading, article capture, highlights, notes, vocabulary, synchronized text-to-speech, a website/newspaper library with SEO data, productivity tools and portable backups. Plain JavaScript, no build step.
 
 **It works only on the websites you choose.** Everywhere else it sleeps: nothing is injected, observed, tracked or changed.
@@ -13,8 +15,7 @@ A local-first Chrome Manifest V3 extension for distraction-free reading, article
 </p>
 
 <p align="center">
-  <img src="assets/thumbnail.png" alt="Charlie MJ Reader overview" width="720"><br>
-  <img src="assets/Charlie MJ Reader Promo Poster.png" alt="Charlie MJ Reader — Instagram Story thumbnail (1080×1920, 9:16)" width="270">
+  <img src="assets/thumbnail.png" alt="Charlie MJ Reader overview" width="720">  
 </p>
 
 > Everything under *Features* exists in the extension. Items under [Not included / limitations](#not-included--limitations) are not claimed as complete.
