@@ -1,29 +1,55 @@
 # Installation Guide
 
 ## Requirements
+
 - Google Chrome or a Chromium-based browser with Manifest V3 support.
-- The extracted project folder. No Node.js or compilation is required.
+- The extracted Charlie MJ Reader project folder.
+- No Node.js, package manager, compilation or build command is required for the unpacked extension.
 
-## Load unpacked
-1. Extract `Charlie-MJ-Reader.zip` to a permanent folder.
-2. Visit `chrome://extensions`.
+## Install as an unpacked extension
+
+1. Download and extract the project ZIP.
+2. Open `chrome://extensions` in Chrome.
 3. Enable **Developer mode**.
-4. Select **Load unpacked** and choose the folder that contains `manifest.json`.
-5. Pin the extension from Chrome's Extensions menu.
+4. Select **Load unpacked**.
+5. Choose the extracted project directory that contains `manifest.json`.
+6. Pin Charlie MJ Reader from Chrome's Extensions menu.
+7. Open the extension's Settings and review **Supported Websites**.
 
-## First run
-1. Open **Settings → Supported Websites**. Charlie MJ Reader works only on the websites listed there; the list is pre-filled with a starter set including Medium.
-2. Add the sites you read (domain only, for example `example.com`).
-3. Open an article on one of those sites. The floating toolbar appears.
+Do not select the `docs` folder or an inner `src` folder. Chrome must load the project root containing `manifest.json`.
 
-Any other website shows a grey **zzz** badge on the toolbar icon and is left completely untouched.
+## First-run setup
 
-## Update
-Replace the project files with the new release, then click **Reload** on the extension card. Supported tabs that are already open wake up automatically.
+1. Open **Settings → Supported Websites**.
+2. Review the bundled starter entries and add the domains you want to use.
+3. Use the domain only (for example, `example.com`) unless a path rule is needed.
+4. Open an article on an enabled site.
+5. Use the floating toolbar, extension popup or right-click menu to capture and read content.
+
+The extension's page tools run only on enabled Supported Websites. A site appearing in My Reading Library does not automatically activate page-level features.
+
+## Updating
+
+1. Keep a backup of important data using **Settings → Storage & Backup**.
+2. Replace the old project files with the new release files, or extract the new release into a new folder.
+3. Open `chrome://extensions`.
+4. Click **Reload** on the Charlie MJ Reader extension card.
+5. If a previously open page displays a reload/context message, refresh that page once.
 
 ## Troubleshooting
-- **No toolbar:** check the popup. If it says *Sleeping*, add the website under Settings → Supported Websites, or check that the page is not excluded by a path rule. Use **Test a page** on that settings page to see why.
-- **"Reloaded or updated" message on a page:** refresh that tab once to reconnect.
-- Browser-internal pages (`chrome://`, the Chrome Web Store, some PDF viewers) cannot be used.
-- Sites with unusual layouts, shadow DOM or strict policies may give partial extraction.
-- If the icon is missing, verify that `assets/icons/icon16.png`, `icon32.png`, `icon48.png` and `icon128.png` exist.
+
+| Problem | What to check |
+|---|---|
+| No toolbar appears | Confirm the current domain is enabled in Supported Websites |
+| Popup says Sleeping | Check the domain, subdomain option and path restrictions |
+| A specific page is inactive | Use **Test a page** in Supported Websites |
+| A site is in My Reading Library but has no toolbar | Add it separately to Supported Websites |
+| Article extraction is incomplete | Try refresh/fetch; some sites expose limited or unusual article markup |
+| Toolbar does not return after update | Reload the extension and refresh the affected tab |
+| Extension cannot run on a browser page | `chrome://` pages, Chrome Web Store pages and some built-in PDF viewers restrict extensions |
+
+## Browser compatibility notes
+
+Speech voices and word-boundary events depend on the browser and operating system. Website extraction, SEO metadata and external data availability vary by source. The extension does not bypass login requirements, paywalls or site quotas.
+
+For everyday workflows, continue with the [User Guide](USER-GUIDE.md). For the feature scope, see [FEATURES.md](FEATURES.md).

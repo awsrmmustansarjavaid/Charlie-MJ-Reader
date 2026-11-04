@@ -1,252 +1,352 @@
 # Charlie MJ Reader
 
-**Read Smarter. Learn Deeper. Build Your Knowledge.**
-
-![Charlie MJ Reader](assets/Charlie%20MJ%20Reader%20Promo%20Poster.png)
-
-A local-first Chrome Manifest V3 extension for distraction-free reading, article capture, highlights, notes, vocabulary, synchronized text-to-speech, a website/newspaper library with SEO data, productivity tools and portable backups. Plain JavaScript, no build step.
-
-**It works only on the websites you choose.** Everywhere else it sleeps: nothing is injected, observed, tracked or changed.
-
 <p align="center">
-  <a href="/downloads/Charlie-MJ-Reader v1.0.0.zip">
-    <img src="https://img.shields.io/badge/%E2%AC%87%20Download%20Chrome%20Extension%20v1.0.0-2ea44f?style=for-the-badge" alt="Download Chrome Extension Charlie-MJ-Reader-v1.0.0">
-  </a>
+  <strong>Read Smarter. Learn Deeper. Build Your Knowledge.</strong><br>
+  A local-first reading, research, language-learning and productivity workspace for Chrome.
 </p>
 
 <p align="center">
-  <img src="assets/thumbnail.png" alt="Charlie MJ Reader overview" width="720">  
+  <img src="assets/logo.svg" alt="Charlie MJ Reader logo" width="110">
 </p>
 
-> Everything under *Features* exists in the extension. Items under [Not included / limitations](#not-included--limitations) are not claimed as complete.
+<p align="center">
+  <img src="https://img.shields.io/badge/Manifest-V3-blue" alt="Manifest V3">
+  <img src="https://img.shields.io/badge/Version-1.0.0-informational" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/Build-No%20build%20step-brightgreen" alt="No build step">
+  <img src="https://img.shields.io/badge/Storage-Local--first-success" alt="Local-first">
+  <img src="https://img.shields.io/badge/License-MIT-lightgrey" alt="MIT license">
+</p>
+
+Charlie MJ Reader is a Chrome Manifest V3 extension that turns the websites you choose into a connected reading and learning environment. Capture articles, read in a dedicated workspace, listen with synchronized highlighting, save useful passages and vocabulary, organize websites and publications, review learning material, and export portable backups.
+
+**Privacy by design:** the extension is active only on websites you explicitly add to **Settings → Supported Websites**. Other websites remain asleep and are not enhanced or tracked by the page-reading features.
+
+> This repository documents the shipped v1.0.0 implementation. Feature descriptions and limitations below distinguish working functionality from settings or future-facing preparation.
+
+---
 
 ## Contents
 
-- [Quick start](#quick-start)
-- [Supported Websites and Sleep Mode](#supported-websites-and-sleep-mode)
-- [Features](#features)
-- [Right-click menu on links](#right-click-menu-on-links)
-- [Medium / Freedium](#medium--freedium)
-- [Settings reference](#settings-reference)
-- [Data, backup & sync](#data-backup--sync)
-- [Permissions and privacy](#permissions-and-privacy)
-- [Project layout](#project-layout)
-- [Not included / limitations](#not-included--limitations)
-- [Developer standards](#developer-standards)
-- [Assets & thumbnails](#assets--thumbnails)
-- [Documentation](#documentation)
+- [At a glance](#at-a-glance)
+- [Core capabilities](#core-capabilities)
+- [Supported Websites and sleep mode](#supported-websites-and-sleep-mode)
+- [Reading Workspace](#reading-workspace)
+- [Smart Audio Reader](#smart-audio-reader)
+- [Capture, notes and saved content](#capture-notes-and-saved-content)
+- [Vocabulary and language learning](#vocabulary-and-language-learning)
+- [My Reading Library](#my-reading-library)
+- [Focus and productivity tools](#focus-and-productivity-tools)
+- [Medium compatibility](#medium-compatibility)
+- [Settings, storage and exports](#settings-storage-and-exports)
+- [Privacy, permissions and security](#privacy-permissions-and-security)
+- [Installation](#installation)
+- [Project structure](#project-structure)
+- [Documentation index](#documentation-index)
+- [Known limitations](#known-limitations)
+- [Development and quality](#development-and-quality)
 - [License](#license)
 
-## Quick start
+## At a glance
 
-1. Download and extract the ZIP.
+| Area | What it provides |
+|---|---|
+| Website-aware activation | Per-site allowlist, sleep mode, subdomain and path restrictions |
+| Reading | Article capture, structured reader, themes, typography and table of contents |
+| Audio | Browser speech synthesis, sentence navigation, word/sentence highlighting and resume |
+| Knowledge capture | Highlights, quotes, paragraphs, selections, notes and bookmarks |
+| Vocabulary | Definitions, translations, examples, categories, tags and revision quiz |
+| Language learning | Learning article view, grammar highlighting, CEFR preferences and learning records |
+| Research library | Website, newspaper and author/profile organization with metadata and SEO tools |
+| Productivity | Focus controls, native page reading, Pomodoro and 80/20 timers |
+| Data portability | Article exports, vocabulary exports, JSON backup/restore and database ZIP |
+| Compatibility | Medium/Freedium handling and validated adapter-package import |
+
+## Core capabilities
+
+### 1. Supported Websites and sleep mode
+
+The **Supported Websites** list is the master activation gate. A website must be listed and enabled before page-level reading tools run.
+
+- Add, disable, enable or remove website profiles.
+- Optionally include subdomains.
+- Restrict activation to **Only these paths** or exclude **Never on these paths**.
+- Test a URL to see whether it will be Active or Sleeping.
+- Configure page features per website: toolbar, selection toolbar, vocabulary, media/listening, focus, productivity, native reading, reading tracking, auto-scroll and article detection.
+- Changes are applied to already-open tabs; disabling or removing a site cleans up extension-owned page UI and behavior.
+- The popup reports the current tab's state. The extension icon uses a grey `zzz` badge while a page is sleeping.
+
+When a page is sleeping, the extension does not display its reading interface, track reading, inject page styles, or run its page-level reading features. The extension's own pages (Reader Workspace, Library and Settings) remain available.
+
+### 2. Floating page toolbars
+
+On supported pages, the extension can provide several configurable toolbars:
+
+- **Main toolbar:** open Reader Workspace, Vocabulary, Productivity Reader, Focus and Productivity tools; toggle night appearance; hide the toolbar.
+- **Selection toolbar:** translate or look up selected text, save vocabulary, quote, paragraph or custom selection, copy text, add a note and access pronunciation.
+- **Media controls:** start listening and access playback-related controls.
+- **Productivity controls:** focus appearance, day/night mode, Pomodoro, 80/20 and native-reading actions.
+
+Toolbar layout options include floating, navbar, sidebar, right-sidebar, bottom-navbar and bubble styles. Position, opacity, appearance and per-site overrides are configurable. Buttons provide busy/active feedback and short action confirmations.
+
+### 3. Reader Workspace
+
+The full-page Reader Workspace brings saved reading material and personal knowledge into one place.
+
+**Workspace areas include:**
+- Dashboard and reading overview
+- My Library / saved articles
+- Productivity Reader
+- See Saved
+- Bookmarks and reading history
+- Highlights, notes, quotes and paragraphs
+- Vocabulary and collections
+- Reading analytics
+- Export center
+- Language Learning entry points
+
+**Article reading experience:**
+- Captures article title, source URL, author and available page metadata such as description, image and publication date.
+- Presents cleaned, structured article content, including supported headings, paragraphs, lists, quotations, tables, code and links.
+- Builds a table of contents from article headings.
+- Offers typography, content width, line-height and reader theme controls.
+- Restores saved reading progress and supports mouse/reading-focus assistance where available.
+- Provides contextual capture tools for vocabulary, quotes, paragraphs and custom selections.
+
+The Article Library and My Reading Library's Saved Articles view use the same saved article records rather than intentionally creating a second copy.
+
+### 4. Smart Audio Reader
+
+Listen to saved articles using voices supplied by the browser and operating system.
+
+- Play, pause, resume and stop.
+- Move to the previous or next sentence.
+- View playback progress, estimated word count and current reading position.
+- Adjust speech rate, pitch and voice.
+- Choose word, sentence or combined highlighting.
+- Auto-scroll with the active passage.
+- Use focus mode while listening.
+- Set a sleep timer.
+- Bookmark the current position and add a note at that position.
+- Repeat the current word.
+- Optionally continue to the next saved article.
+- Use keyboard shortcuts while the reader is active: **Space** for play/pause, **Left/Right** for sentence navigation and **B** for bookmark.
+
+Progress is saved with the article and can be restored. Word-level highlighting depends on speech-boundary events from the selected system voice; an estimated timing fallback is approximate.
+
+### 5. Capture, notes and saved content
+
+Save useful information while browsing or reading.
+
+| Saved item | Typical use |
+|---|---|
+| Highlights | Mark important passages |
+| Quotes | Keep a sentence or quotation with its source |
+| Paragraphs / lines | Save a complete paragraph or selected line |
+| Custom selections | Keep arbitrary selected text |
+| Notes | Attach personal comments to an article or reading position |
+| Bookmarks | Return to a location in an article |
+| Collections | Group related saved material |
+
+Capture can be initiated from the popup, supported-page toolbar, selection toolbar or context menu. Saved records retain source information where available, including article title, URL and domain. The **See Saved** view organizes captured items by article and offers detail views and search.
+
+### 6. Vocabulary and language learning
+
+**Vocabulary workspace**
+- Store the original word or phrase, translation, definition, example, example translation, pronunciation, part of speech, synonyms, tags and notes.
+- Organize entries with nested categories and subcategories.
+- Search, copy, edit, delete and mark entries as mastered.
+- Use the built-in revision quiz.
+- Export vocabulary as Markdown, CSV or JSON.
+- Request translation through the configured MyMemory endpoint. Only the selected text is sent when the user explicitly requests translation.
+
+**Language Learning workspace**
+- Open learning articles from the shared article library.
+- Organize learning websites and mark their learning language.
+- Save shared vocabulary, sentences, expressions and grammar notes from selected text.
+- Use grammar-category highlighting and configurable highlight appearance.
+- Set a target language, learner level and target CEFR level (A1–C2), plus a daily learning goal.
+- View estimated article difficulty and learning progress.
+- Export learning records and import JSON backups by merging learning records.
+
+Language Learning reuses the existing article and vocabulary collections. Grammar highlighting is a lightweight aid, not a complete parser. CEFR difficulty is an estimate, not a certified assessment.
+
+### 7. My Reading Library
+
+My Reading Library organizes sources and publication profiles independently of the Supported Websites activation list.
+
+Its views include:
+- Websites
+- Newspapers / News
+- Profile Pages
+- Favorites
+- Categories and Tags
+- Saved Articles
+- Recent and All Saved
+- General Settings
+- Compatibility Adapters
+
+Available workflows include adding a current website or source address, refreshing metadata, importing and exporting library data, browsing newspapers by country, and organizing author or publication profiles. Website records can include logos, categories, tags and detail views.
+
+**Research and site intelligence** includes available overview and latest-article information, a 14-check on-page SEO score, Tranco ranking and trend, Google PageSpeed/Lighthouse data, per-article audits, robots.txt and sitemap detection, and Google `site:` search shortcuts. These tools depend on public source availability and network access.
+
+### 8. Article Library
+
+The Article Library provides a management view over saved article records:
+
+- Search saved articles by title, site and available content.
+- Refresh or fetch article content.
+- Open article details, edit records and remove saved articles.
+- Import, export and download article data.
+- Connect to the matching saved article in My Reading Library / See Saved.
+
+Saving the same article again is designed to avoid duplicate records; a more complete capture can refresh an earlier incomplete copy.
+
+### 9. Focus and productivity tools
+
+**Focus and appearance**
+- Adjust brightness, contrast, opacity, dimming, blur, warmth and font scale.
+- Hide large images and apply Day, Night or Auto appearance.
+- Use best-effort ad hiding (not a full ad blocker).
+- Configure native word-by-word reading with timing, delay, colors and optional auto-scroll.
+
+**Productivity**
+- Pomodoro timer.
+- 80/20 timer.
+- Configurable durations and page toolbar controls.
+
+Per-site switches let users disable these tools on individual supported websites.
+
+### 10. Medium compatibility
+
+Medium articles can be routed through a configurable Freedium mirror. The extension attempts to extract the article content returned by the mirror and can replace an incomplete saved copy when a longer capture becomes available.
+
+Compatibility adapter packages can be imported as ZIP files. Package paths, metadata, versions, compression, file counts and file sizes are validated. Imported JavaScript is stored as data and is **not executed** by the extension.
+
+Charlie MJ Reader does not bypass Medium authentication, memberships, paywalls or quotas.
+
+### 11. Settings, storage and exports
+
+The Settings center groups controls for:
+- My Reading Library
+- Smart Audio Reader
+- General settings
+- Appearance and themes
+- Toolbars
+- Supported Websites
+- Reading and highlight preferences
+- Text-to-speech
+- Vocabulary
+- AI configuration
+- Notifications
+- Storage and backup
+- Privacy and permissions
+- Medium compatibility
+- Knowledge intelligence and topics
+- Productivity center
+- Performance and diagnostics
+- Database manager
+- GitHub Data Sync preparation
+- Focus
+
+**Data portability**
+- Export articles as Markdown, TXT, HTML or JSON.
+- Export vocabulary and learning data in supported formats.
+- Export captures and saved records.
+- Create and restore a validated full JSON backup.
+- Export the database as a ZIP.
+- Use the Database Manager's portable data-tree workflow.
+
+GitHub Data Sync is preparation tooling: it can compare library data and prepare a difference ZIP or manual folder write. It does not provide automatic GitHub push or pull.
+
+## Supported browser and installation
+
+- Google Chrome or a Chromium-based browser with Manifest V3 support.
+- No Node.js, package manager or build step is required for the unpacked extension.
+- Browser-internal pages such as `chrome://` and some built-in PDF viewers cannot host the page toolbar.
+
+### Load unpacked
+
+1. Extract the extension project.
 2. Open `chrome://extensions`.
 3. Enable **Developer mode**.
-4. Choose **Load unpacked** and select this project folder.
-5. Pin Charlie MJ Reader to the Chrome toolbar.
-6. Open **Settings → Supported Websites** and add the sites you read (Medium and a starter list are included).
-7. Open an article on a supported site and use the floating toolbar or the popup.
+4. Click **Load unpacked**.
+5. Select the extracted `Charlie-MJ-Reader` project folder — the folder containing `manifest.json`.
+6. Pin the extension, open its Settings and add your preferred sites under **Supported Websites**.
 
-After reloading or updating the extension, supported tabs that are already open wake up automatically; other tabs need no action.
+See the complete [Installation Guide](docs/INSTALLATION.md) for first-run setup and troubleshooting.
 
-## Supported Websites and Sleep Mode
-
-**Settings → Supported Websites** is the single master switch.
-
-| Page | Behaviour |
-|---|---|
-| Supported and enabled | 🟢 **Active** — toolbar, highlighter, reading tools and article capture are available |
-| Supported but disabled, or excluded by a path rule | 😴 **Sleeping** |
-| Any other website (Gmail, YouTube, search engines, …) | 😴 **Sleeping** — completely untouched |
-
-While sleeping there is **no toolbar, no selection toolbar / highlighter, no focus mode or ad hiding, no reading or scroll tracking, no native reading, no text-to-speech, no article detection, no injected CSS, no page changes and nothing stored**. The toolbar icon shows a grey **zzz** badge, and the popup states *Sleeping* or *Active* for the current tab. The Reader workspace, saved library, vocabulary and settings are extension pages and work regardless.
-
-Changes apply immediately: adding or enabling a site wakes its open tabs, and removing or disabling it puts them back to sleep and removes all of the extension's listeners, timers, styles and elements from the page. A library website never activates the extension by itself; only the Supported Websites list does.
-
-### Per-website controls
-
-Each website card has **Restrictions & per-site features**:
-
-- **Enabled / Disabled** and **Include subdomains**
-- **Only these paths** and **Never on these paths** (e.g. `/articles/*`, `/account`)
-- Floating toolbar · Selection toolbar / highlighter · Vocabulary & translation · Listen / text-to-speech · Focus mode & ad hiding · Pomodoro / 80-20 · Native reading · Reading tracking · Auto-scroll · Article detection
-
-Also available: **Test a page** (paste an address to see *Active* or *Sleeping*, including path rules), filter the list, import / export JSON, and validate.
-
-## Features
-
-### Floating page toolbars
-Shown on active websites only.
-
-| Toolbar | What it does |
-|---|---|
-| **Main toolbar** | Reader Workspace, Vocabulary, Productivity Reader, Focus, Productivity, night toggle, hide (×). Pressing an open tool again closes its panel; the toolbar stays while you click the page. |
-| **Vocabulary / selection toolbar** | Appears beside selected text: **See Translate**, **Meaning**, **＋ Vocabulary**, **Quote**, **Paragraph**, **Selection**, **Copy**, **Notes**, **Pronunciation**. Optional auto-translate and auto-save. |
-| **Media toolbar** | Listen in Productivity Reader, Play / Pause / Stop, progress, speed, bookmark reading position. |
-| **Productivity toolbar** | Focus, Day/Night, Pomodoro, 80/20 timer and native-reading controls. |
-
-- Six toolbar types: floating, navbar, sidebar, right-sidebar, bottom-navbar, bubble — global default plus per-website override.
-- Position, opacity and independent colour themes (main, media, vocabulary, productivity).
-- Buttons give immediate feedback: busy state while working, duplicate clicks ignored, short confirmations (copied, saved, focus on/off), and a clear message if the extension was reloaded.
-
-### Reader Workspace (full-page app)
-Sections: **Dashboard, My Library, See Saved, Bookmarks, History, Highlights, Notes, Quotes, Vocabulary, Collections, Analytics, Exports, Productivity Reader**. The separate **Language Learning** workspace is available from the supported-site toolbar and Reader sidebar.
-
-- **Read Yourself** opens a saved article; **Listen** opens it and starts speech.
-- Semantic article HTML is kept separately from the UI (headings, paragraphs, lists, quotes, tables, code, links, images, captions) and sanitized with an allow-list.
-- Featured image, author, date, description and automatic **table of contents**.
-- Font size, width and line height; themes *default-dark, midnight, charcoal, slate, pure-white, soft-white, sepia, warm-paper*.
-- Mouse-follow line/word focus and reading-position restore.
-- Right-side capture tools for Vocabulary, Quotes, Paragraphs and custom Selections.
-- Reading history, progress, completion tracking and analytics.
-
-### Smart Audio Reader
-- Play / resume, pause, stop, previous / next sentence, progress %, word counter.
-- Word, sentence or combined highlighting; auto-scroll; voice, speed and pitch.
-- Sleep timer, bookmark at position, **Add note at position**, repeat word, focus mode, keyboard shortcuts, optional next-article playback.
-- Starts only on your action. Word-level precision depends on your system voices (sentence-level fallback included).
-
-### Capture & saved content
-- Save the page or a selection from the popup, toolbar or the right-click menu.
-- Highlights, notes, quotes, paragraphs/lines, custom selections and reading-position bookmarks.
-- **See Saved**: per-article cards and detail view (paragraphs & lines, words, quotes, highlights, notes, bookmarks, selections). Saved-library search with suggestions.
-
-### Language Learning Mode
-
-A separate workspace is available from the supported-site toolbar and Reader Workspace. It reuses the existing saved-article and vocabulary records rather than creating a duplicate Reader database.
-
-- Capture a supported active page and open it in the Language Learning Reader.
-- Read saved articles with a safe semantic HTML allow-list and optional grammar-category highlighting.
-- Select words, phrases or sentences to save shared vocabulary, sentences, expressions or grammar notes.
-- Translate selected text through the extension's existing translation service and use browser speech synthesis for pronunciation/listening.
-- Set a learner CEFR preference from A1 to C2 and view estimated article difficulty.
-- Export language-learning records as JSON.
-
-Grammar highlighting in v1.0.0 uses a lightweight English heuristic. It is deliberately presented as a reading aid, not a certified grammar parser or CEFR assessment. Language-specific morphology and advanced AI analysis are not included in this release.
-
-### Vocabulary
-- Entries with translation, definition, examples, part of speech, pronunciation, synonyms, notes, tags and source.
-- Nested categories, copy, edit, delete, mark mastered, revision quiz, export Markdown / CSV / JSON.
-- Translation through the public MyMemory endpoint (default Turkish → English, configurable); only the selected text is sent, and only when you press Translate.
-
-### My Reading Library
-Tabs: **Websites · Newspapers / News · Profile Pages · Favorite · Category · Tags · Saved Articles · Recent · All Saved · General Settings · Compatibility Adapters**.
-
-- Add the current website or add by address; refresh, import, export; bundled starter list.
-- Newspapers worldwide (country filter) and profile pages (Medium, DEV, Substack, Hashnode, GitHub, generic `/@name`, `/author/`).
-- Automatic categories (Tech, Health, Science, Business, Lifestyle, Education, Sports, Entertainment, News); manual edits lock a category.
-- Logos, **Details** view (overview, latest articles, SEO & ranking, saved articles, raw JSON).
-- SEO tools: 14-check on-page score, Tranco rank with trend, Google PageSpeed/Lighthouse, per-article audits, robots.txt / sitemap detection, Google `site:` shortcuts.
-
-### Article Library
-Same records as Saved Articles: search, refresh, import / export / download, details, edit, remove, **Refresh & Fetch**, **See Saved**.
-
-### Focus & productivity
-- Focus mode (brightness, contrast, opacity, dimming, blur, warmth, font scale, hide large images), Day / Night / Auto.
-- Best-effort ad hiding (not a full ad blocker).
-- Native reading: word-by-word highlighting on the page with configurable timer, delay, colours and optional auto-scroll.
-- Pomodoro and 80/20 timers.
-
-### Notifications & exports
-- Toast notifications (any corner, duration, per-event toggles) and button-click feedback.
-- Article export as Markdown, TXT, HTML, JSON; highlights, captures and vocabulary exports; full JSON backup / restore; database ZIP.
-
-## Right-click menu on links
-
-Right-click any link → **Charlie MJ Reader** →
-1. **Open article in Reader Workspace**
-2. **Save article to Saved Articles**
-
-The page is read in a hidden background tab (Medium links through Freedium) and stored once; an incomplete earlier copy is refreshed when the new capture is longer. This menu is an explicit action you trigger, so it also works for links to sites that are not in Supported Websites. Right-click **Save page / Save selection** items on a sleeping website show a short "sleeping" notice instead.
-
-## Medium / Freedium
-
-- Detects Medium articles and can open them through a configurable **Freedium** mirror (HTTPS service URL, new-tab option). The mirror inherits Medium's status in Supported Websites.
-- Extraction finds the container that holds the article text (any story layout), accepts any length and rejects only verification or error pages.
-- Re-opening or re-saving replaces an incomplete saved copy when the new capture is longer.
-- **Adapter packages**: import a ZIP (`adapter.json` + entry + README) in *Medium Compatibility → Adapter Package Manager*. Paths, version, entry, compression, file count and size are validated; executable types are blocked; imported JavaScript is stored as data and never executed. See `docs/ADAPTER-PACKAGES.md`.
-- The extension does not bypass authentication, paywalls or quotas.
-
-## Settings reference
-
-Panels: **My Reading Library · Smart Audio Reader · General · Appearance & Themes · Toolbars · Supported Websites · Reading Preferences · Highlight Preferences · Text-to-Speech · Vocabulary · AI Configuration · Notifications · Storage & Backup · Privacy & Permissions · Medium Compatibility · Knowledge Intelligence · Topics & Knowledge · Productivity Centre · Performance & Diagnostics · Database Manager · GitHub Data Sync · Focus**.
-
-## Data, backup & sync
-
-- Everything is stored locally in `chrome.storage.local` (`unlimitedStorage`).
-- Backup / restore JSON with validation; import from Library/History.
-- Database Manager: portable `database/My Reading Library/` tree and a full database ZIP.
-- GitHub Data Sync (preparation): compares My Reading Library and builds a difference ZIP of new/modified files, plus a manual JSON writer to a folder you pick. There is no automatic GitHub push or pull.
-
-## Permissions and privacy
-
-| Permission | Why |
-|---|---|
-| `storage`, `unlimitedStorage` | Local library and settings |
-| `activeTab`, `scripting`, `tabs` | User-initiated capture, adding page styles on supported sites, opening the reader |
-| `contextMenus` | Save selection / page and the link menu |
-| `notifications` | Short confirmations |
-| Host access `http://*/*`, `https://*/*` | Lets the page script exist; it acts only on Supported Websites. Also used to fetch library data and Freedium pages |
-| `api.dictionaryapi.dev`, `api.mymemory.translated.net`, `freedium-mirror.cfd` | Dictionary, translation, Medium mirror |
-
-- On unsupported websites the page script performs a single local settings check and stops.
-- Requests coming from a web page are accepted by the background worker only for Supported Websites.
-- AI settings are opt-in; the extension does not send article text to any AI service.
-- Fetched third-party HTML is stripped of inline event handlers and `javascript:` URLs; the strict MV3 content security policy is kept.
-- No cookie manipulation, paywall bypass or quota reset.
-
-## Project layout
+## Project structure
 
 ```text
 Charlie-MJ-Reader/
-├── assets/                 # Logo, icons, thumbnails (incl. Instagram Story 9:16)
-├── database/               # Website seed list and index (My Reading Library)
-├── docs/                   # User, feature, privacy, adapter, developer documentation
-├── extensions/adapters/    # Adapter package notes
+├── assets/                 # Extension icons, logo and visual assets
+├── database/               # Bundled website and reference data
+├── docs/                   # User, feature, architecture and security documentation
+├── extensions/adapters/    # Adapter package documentation / examples
 ├── src/
-│   ├── background/         # Service worker, Freedium fetch, sleep badge, link context menu
-│   ├── content/            # Page toolbars (starts only on Supported Websites)
-│   ├── lib/                # Site gate, storage, extraction, reading engine, sites/SEO, export
-│   ├── library/            # My Reading Library workspace
-│   ├── options/            # Settings center
-│   ├── popup/              # Extension popup
-│   └── reader/             # Reader workspace, Productivity Reader, See Saved
-├── tests/                  # Manual QA checklist
+│   ├── background/         # MV3 service worker and context-menu workflows
+│   ├── content/            # Supported-page toolbar and page interactions
+│   ├── language-learning/  # Language Learning workspace
+│   ├── lib/                # Storage, extraction, site gate and language engine
+│   ├── library/            # My Reading Library
+│   ├── options/             # Settings center
+│   ├── popup/               # Browser action popup
+│   └── reader/              # Reader Workspace and saved-content views
 ├── manifest.json
 └── README.md
 ```
 
-## Not included / limitations
+## Documentation index
 
-- No AI summaries, Q&A or flashcards (configuration storage only).
-- No true PDF/DOCX generation, semantic search, knowledge graph, cloud sync or automatic GitHub sync.
-- No adaptive spaced-repetition engine (basic review scheduling).
-- No official Medium account or quota status.
-- Ad hiding is best-effort; extraction quality varies by site; audio word-sync depends on system voices.
-- Scripted browser tests cover the activation gate, sleep/wake and toolbar behaviour; run the manual checklist in `tests/QA-CHECKLIST.md` in Chrome before releasing.
+The `docs/` directory contains the detailed project documentation. Start with the [Documentation Home](docs/README.md).
 
-## Developer standards
+| Document | Description |
+|---|---|
+| [Installation Guide](docs/INSTALLATION.md) | Browser requirements, unpacked installation, first run, updates and troubleshooting |
+| [User Guide](docs/USER-GUIDE.md) | Supported sites, toolbars, capture, reading, vocabulary, library and exports |
+| [Feature Matrix](docs/FEATURES.md) | Implemented capabilities, scope and known exclusions |
+| [Architecture & Developer Guide](docs/DEVELOPMENT.md) | Runtime surfaces, activation gate, data model and development practices |
+| [Privacy, Permissions & Security](docs/PRIVACY.md) | Local storage, network requests, browser permissions and security boundaries |
+| [Smart Audio Reader](docs/SMART-AUDIO-READER.md) | Audio workflow, controls, shortcuts, progress and speech limitations |
+| [Language Learning](docs/LANGUAGE-LEARNING.md) | Learning workspace, shared records, grammar tools and CEFR preferences |
+| [Language Engine](docs/LANGUAGE-ENGINE.md) | Language detection, analyzer pipeline and extension points |
+| [Adapter Packages](docs/ADAPTER-PACKAGES.md) | Adapter ZIP format, validation and import process |
+| [Manual QA Checklist](docs/QA-CHECKLIST.md) | Installation, activation, toolbar, capture and learning test scenarios |
+| [Project Blueprint Source Note](docs/PROJECT-BLUEPRINT-SOURCE.md) | Context about the original product specification |
 
-- Small feature-focused files; JSDoc on core modules.
-- 2-space indentation, semicolons, descriptive names.
-- No inline event handlers; UI content escaped before HTML rendering.
-- Anything that touches a web page must pass the Supported Websites gate (`src/lib/site-gate.js`) first.
+## Privacy, permissions and security
 
-## Assets & thumbnails
+Charlie MJ Reader stores its main library and settings in Chrome extension local storage. It does not require an account or remote user database.
 
-| File | Size | Use |
-|---|---|---|
-| `assets/thumbnail.png` | 1536×1024 | Repository / store overview |
-| `assets/thumbnail-instagram-story.png` | **1080×1920 (9:16)** | Instagram Story / Reels cover; key content sits inside the safe area (≈250 px top, ≈340 px bottom) |
-| `assets/logo.svg`, `assets/icons/` | 16–128 px | Extension icons |
+Some optional features make network requests when used:
+- Dictionary lookup: `api.dictionaryapi.dev`
+- Translation: `api.mymemory.translated.net`
+- Medium mirror: configured Freedium service
+- Website metadata and performance information: public website and ranking/performance sources
 
-## Documentation
+AI-related settings are configuration only in this release; article text is not sent to an AI service. Fetched HTML is sanitized before display, inline event handlers and `javascript:` URLs are removed, and imported adapter scripts are not executed.
 
-See [`docs/`](docs/README.md): installation, user guide, feature matrix, privacy, architecture, Smart Audio Reader, adapter packages and QA.
+Read [Privacy, Permissions & Security](docs/PRIVACY.md) before enabling the extension on sites containing sensitive material.
+
+## Known limitations
+
+- AI summaries, article Q&A and flashcards are not implemented; AI configuration is not evidence that those workflows are active.
+- There is no semantic search engine, knowledge graph, cloud account or automatic cloud synchronization.
+- GitHub Data Sync does not automatically push or pull repository data.
+- Spaced repetition is basic; there is no adaptive scheduling engine or operating-system reminder scheduler.
+- No true PDF or DOCX document-generation workflow is included.
+- Browser speech voices and word-boundary events vary; word timing can be approximate.
+- Grammar highlighting and CEFR difficulty are heuristic learning aids, not formal linguistic analysis or assessment.
+- Ad hiding is best-effort and is not a replacement for a dedicated content blocker.
+- Article extraction and metadata availability vary by website.
+- No Medium account, membership or quota status is accessed or bypassed.
+
+## Development and quality
+
+The extension uses plain JavaScript and Manifest V3 with no build step. Page-level behavior must pass through the Supported Websites gate. Treat all page content and imported metadata as untrusted input; escape UI text and sanitize fetched article HTML.
+
+Before release, follow the [Manual QA Checklist](docs/QA-CHECKLIST.md). Architecture, extension points and conventions are documented in the [Developer Guide](docs/DEVELOPMENT.md).
 
 ## License
 
-MIT — see `LICENSE`.
-
-
-For the expanded Language Learning Library, website classification, CEFR preferences, grammar appearance controls, and learning exports, see [`docs/LANGUAGE-LEARNING.md`](docs/LANGUAGE-LEARNING.md).
+MIT. See the repository's `LICENSE` file.
