@@ -7,14 +7,14 @@ A local-first Chrome Manifest V3 extension for distraction-free reading, article
 **It works only on the websites you choose.** Everywhere else it sleeps: nothing is injected, observed, tracked or changed.
 
 <p align="center">
-  <a href="/downloads/Charlie-MJ-Reader.zip">
+  <a href="/downloads/Charlie-MJ-Reader v1.0.0.zip">
     <img src="https://img.shields.io/badge/%E2%AC%87%20Download%20Chrome%20Extension%20v1.0.0-2ea44f?style=for-the-badge" alt="Download Chrome Extension Charlie-MJ-Reader-v1.0.0">
   </a>
 </p>
 
 <p align="center">
   <img src="assets/thumbnail.png" alt="Charlie MJ Reader overview" width="720"><br>
-  <img src="assets/thumbnail-instagram-story.png" alt="Charlie MJ Reader — Instagram Story thumbnail (1080×1920, 9:16)" width="270">
+  <img src="assets/Charlie MJ Reader Promo Poster.png" alt="Charlie MJ Reader — Instagram Story thumbnail (1080×1920, 9:16)" width="270">
 </p>
 
 > Everything under *Features* exists in the extension. Items under [Not included / limitations](#not-included--limitations) are not claimed as complete.
