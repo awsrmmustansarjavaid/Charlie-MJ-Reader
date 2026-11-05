@@ -85,7 +85,7 @@
       ],
       "title": "DermNet®",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:00.682Z",
+      "updatedAt": "2026-11-05T12:11:14.322Z",
       "url": "https://dermnetnz.org/"
     },
     {
@@ -96,7 +96,7 @@
       ],
       "title": "DEV Community",
       "type": "site",
-      "updatedAt": "2026-11-04T07:35:59.857Z",
+      "updatedAt": "2026-11-05T12:11:14.451Z",
       "url": "https://dev.to/"
     },
     {
@@ -107,7 +107,7 @@
       ],
       "title": "eksisozluk.com",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:03.511Z",
+      "updatedAt": "2026-11-05T12:11:16.823Z",
       "url": "https://eksisozluk.com/"
     },
     {
@@ -118,7 +118,7 @@
       ],
       "title": "Greater Good Podcasts",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:05.874Z",
+      "updatedAt": "2026-11-05T12:11:19.921Z",
       "url": "https://greatergood.berkeley.edu/"
     },
     {
@@ -129,7 +129,7 @@
       ],
       "title": "HackerNoon",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:04.024Z",
+      "updatedAt": "2026-11-05T12:11:17.667Z",
       "url": "https://hackernoon.com/"
     },
     {
@@ -139,7 +139,7 @@
       "tags": [],
       "title": "Medium",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:07.116Z",
+      "updatedAt": "2026-11-05T12:11:21.473Z",
       "url": "https://medium.com/"
     },
     {
@@ -150,7 +150,7 @@
       ],
       "title": "Cleveland Clinic",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:07.936Z",
+      "updatedAt": "2026-11-05T12:11:21.936Z",
       "url": "https://my.clevelandclinic.org/"
     },
     {
@@ -161,7 +161,7 @@
       ],
       "title": "PracticalDermatology",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:14.303Z",
+      "updatedAt": "2026-11-05T12:11:28.481Z",
       "url": "https://practicaldermatology.com/"
     },
     {
@@ -172,7 +172,7 @@
       ],
       "title": "Psych Central",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:11.723Z",
+      "updatedAt": "2026-11-05T12:11:25.710Z",
       "url": "https://psychcentral.com/"
     },
     {
@@ -183,7 +183,7 @@
       ],
       "title": "The Hacker News",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:09.361Z",
+      "updatedAt": "2026-11-05T12:11:23.153Z",
       "url": "https://thehackernews.com/"
     },
     {
@@ -194,7 +194,7 @@
       ],
       "title": "X (formerly Twitter)",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:15.483Z",
+      "updatedAt": "2026-11-05T12:11:33.738Z",
       "url": "https://twitter.com/"
     },
     {
@@ -205,7 +205,7 @@
       ],
       "title": "American Academy of Dermatology",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:14.490Z",
+      "updatedAt": "2026-11-05T12:11:29.247Z",
       "url": "https://www.aad.org/"
     },
     {
@@ -216,7 +216,7 @@
       ],
       "title": "Allure",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:15.818Z",
+      "updatedAt": "2026-11-05T12:11:29.679Z",
       "url": "https://www.allure.com/"
     },
     {
@@ -227,7 +227,7 @@
       ],
       "title": "www.apa.org",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:20.057Z",
+      "updatedAt": "2026-11-05T12:11:34.447Z",
       "url": "https://www.apa.org"
     },
     {
@@ -238,29 +238,23 @@
       ],
       "title": "The latest from www.byrdie.com",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:18.279Z",
+      "updatedAt": "2026-11-05T12:11:31.701Z",
       "url": "https://www.byrdie.com/"
     },
     {
       "category": "Tech",
       "domain": "www.freecodecamp.org",
-      "tags": [
-        "tech"
-      ],
+      "tags": [],
       "title": "www.freecodecamp.org",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:18.402Z",
       "url": "https://www.freecodecamp.org/"
     },
     {
       "category": "Health",
       "domain": "www.health.harvard.edu",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Harvard Health",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:22.571Z",
       "url": "https://www.health.harvard.edu/"
     },
     {
@@ -271,7 +265,7 @@
       ],
       "title": "Healthline",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:22.787Z",
+      "updatedAt": "2026-11-05T12:11:38.653Z",
       "url": "https://www.healthline.com/"
     },
     {
@@ -282,7 +276,7 @@
       ],
       "title": "Mayo Clinic",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:30.639Z",
+      "updatedAt": "2026-11-05T12:11:45.933Z",
       "url": "https://www.mayoclinic.org/"
     },
     {
@@ -293,7 +287,7 @@
       ],
       "title": "Mindful",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:27.115Z",
+      "updatedAt": "2026-11-05T12:11:41.557Z",
       "url": "https://www.mindful.org/"
     },
     {
@@ -304,7 +298,7 @@
       ],
       "title": "nhs.uk",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:25.573Z",
+      "updatedAt": "2026-11-05T12:11:44.051Z",
       "url": "https://www.nhs.uk/"
     },
     {
@@ -315,7 +309,7 @@
       ],
       "title": "Precision Nutrition",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:30.486Z",
+      "updatedAt": "2026-11-05T12:11:48.662Z",
       "url": "https://www.precisionnutrition.com/"
     },
     {
@@ -326,7 +320,7 @@
       ],
       "title": "Quanta Magazine – Illuminating science",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:35.145Z",
+      "updatedAt": "2026-11-05T12:11:51.073Z",
       "url": "https://www.quantamagazine.org/"
     },
     {
@@ -337,7 +331,7 @@
       ],
       "title": "Smashing Magazine",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:32.568Z",
+      "updatedAt": "2026-11-05T12:11:47.288Z",
       "url": "https://www.smashingmagazine.com/"
     },
     {
@@ -348,7 +342,7 @@
       ],
       "title": "The School of Life",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:36.989Z",
+      "updatedAt": "2026-11-05T12:11:52.869Z",
       "url": "https://www.theschooloflife.com/"
     },
     {
@@ -359,7 +353,7 @@
       ],
       "title": "Verywell Fit | trusted nutrition and fitness information",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:35.751Z",
+      "updatedAt": "2026-11-05T12:11:51.830Z",
       "url": "https://www.verywellfit.com/"
     },
     {
@@ -370,7 +364,7 @@
       ],
       "title": "X (formerly Twitter)",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:39.059Z",
+      "updatedAt": "2026-11-05T12:11:55.579Z",
       "url": "https://x.com/"
     },
     {
@@ -381,7 +375,7 @@
       ],
       "title": "Health & Wellness Blog",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:53.261Z",
+      "updatedAt": "2026-11-05T12:12:09.033Z",
       "url": "https://www.bayhealth.org/community-wellness/blog?"
     },
     {
@@ -392,16 +386,18 @@
       ],
       "title": "EverydayHealth.com",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:43.213Z",
+      "updatedAt": "2026-11-05T12:12:02.511Z",
       "url": "https://www.everydayhealth.com/"
     },
     {
       "category": "Health",
       "domain": "www.verywellhealth.com",
-      "tags": [],
+      "tags": [
+        "health"
+      ],
       "title": "Verywell Health | Expert Health Information and Advice",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:42.885Z",
+      "updatedAt": "2026-11-05T12:11:58.240Z",
       "url": "https://www.verywellhealth.com/"
     },
     {
@@ -411,7 +407,7 @@
       "tags": [],
       "title": "Calm Health",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:45.714Z",
+      "updatedAt": "2026-11-05T12:12:01.240Z",
       "url": "https://health.calm.com/resources/blog/"
     },
     {
@@ -422,18 +418,15 @@
       ],
       "title": "Health | Trusted Health and Wellness Information",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:45.049Z",
+      "updatedAt": "2026-11-05T12:12:03.944Z",
       "url": "https://www.health.com/"
     },
     {
       "category": "Health",
       "domain": "www.webmd.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "WebMD",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:48.774Z",
       "url": "https://www.webmd.com/"
     },
     {
@@ -443,7 +436,7 @@
       "tags": [],
       "title": "www.sutterhealth.org",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:47.692Z",
+      "updatedAt": "2026-11-05T12:12:06.149Z",
       "url": "https://www.sutterhealth.org/health/health-wellness-blog"
     },
     {
@@ -453,18 +446,16 @@
       "tags": [],
       "title": "goop",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:55.281Z",
+      "updatedAt": "2026-11-05T12:12:14.615Z",
       "url": "https://goop.com/editorial/?sort=newest"
     },
     {
       "category": "Health",
       "domain": "www.mindbodygreen.com",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "mindbodygreen RSS Feed",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:50.508Z",
+      "updatedAt": "2026-11-05T12:12:07.847Z",
       "url": "https://www.mindbodygreen.com//"
     },
     {
@@ -474,7 +465,7 @@
       "tags": [],
       "title": "Wellness Mama®",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:51.350Z",
+      "updatedAt": "2026-11-05T12:12:09.377Z",
       "url": "https://wellnessmama.com/"
     },
     {
@@ -485,18 +476,15 @@
       ],
       "title": "Root-Cause Natural Health You Can Trust",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:56.748Z",
+      "updatedAt": "2026-11-05T12:12:15.979Z",
       "url": "https://draxe.com/"
     },
     {
       "category": "Health",
       "domain": "www.dukehealth.org",
-      "tags": [
-        "health"
-      ],
+      "tags": [],
       "title": "Duke Health - Connect with your health care at Duke Health",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:58.133Z",
       "url": "https://www.dukehealth.org/blog"
     },
     {
@@ -506,7 +494,7 @@
       "tags": [],
       "title": "Anytime Fitness",
       "type": "site",
-      "updatedAt": "2026-11-04T07:37:00.994Z",
+      "updatedAt": "2026-11-05T12:12:18.421Z",
       "url": "https://www.anytimefitness.com/blog"
     },
     {
@@ -517,7 +505,7 @@
       ],
       "title": "Total Health and Fitness",
       "type": "site",
-      "updatedAt": "2026-11-04T07:36:59.651Z",
+      "updatedAt": "2026-11-05T12:12:17.164Z",
       "url": "https://www.totalhealthandfitness.com/blog/"
     },
     {
@@ -589,7 +577,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:38.149Z",
+      "updatedAt": "2026-11-05T12:12:20.220Z",
       "version": 1,
       "vocabulary": true
     },
@@ -612,7 +600,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:37.667Z",
+      "updatedAt": "2026-11-05T12:12:20.550Z",
       "version": 1,
       "vocabulary": true
     },
@@ -658,7 +646,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:42:42.958Z",
+      "updatedAt": "2026-11-05T12:12:27.323Z",
       "version": 1,
       "vocabulary": true
     },
@@ -681,7 +669,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:39.939Z",
+      "updatedAt": "2026-11-05T12:12:23.000Z",
       "version": 1,
       "vocabulary": true
     },
@@ -704,7 +692,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:42.552Z",
+      "updatedAt": "2026-11-05T12:12:24.390Z",
       "version": 1,
       "vocabulary": true
     },
@@ -727,7 +715,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:41.941Z",
+      "updatedAt": "2026-11-05T12:12:25.598Z",
       "version": 1,
       "vocabulary": true
     },
@@ -750,7 +738,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:46.332Z",
+      "updatedAt": "2026-11-05T12:12:29.564Z",
       "version": 1,
       "vocabulary": true
     },
@@ -773,7 +761,7 @@
       "toolbarTheme": "midnight",
       "toolbarType": "floating",
       "type": "site",
-      "updatedAt": "2026-11-04T07:38:44.603Z",
+      "updatedAt": "2026-11-05T12:12:28.168Z",
       "version": 1,
       "vocabulary": true
     }

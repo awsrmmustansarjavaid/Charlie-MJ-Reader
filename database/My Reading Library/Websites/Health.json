@@ -7,7 +7,7 @@
     ],
     "title": "DermNet®",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:00.682Z",
+    "updatedAt": "2026-11-05T12:11:14.322Z",
     "url": "https://dermnetnz.org/"
   },
   {
@@ -18,7 +18,7 @@
     ],
     "title": "Greater Good Podcasts",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:05.874Z",
+    "updatedAt": "2026-11-05T12:11:19.921Z",
     "url": "https://greatergood.berkeley.edu/"
   },
   {
@@ -29,7 +29,7 @@
     ],
     "title": "Cleveland Clinic",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:07.936Z",
+    "updatedAt": "2026-11-05T12:11:21.936Z",
     "url": "https://my.clevelandclinic.org/"
   },
   {
@@ -40,7 +40,7 @@
     ],
     "title": "PracticalDermatology",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:14.303Z",
+    "updatedAt": "2026-11-05T12:11:28.481Z",
     "url": "https://practicaldermatology.com/"
   },
   {
@@ -51,7 +51,7 @@
     ],
     "title": "Psych Central",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:11.723Z",
+    "updatedAt": "2026-11-05T12:11:25.710Z",
     "url": "https://psychcentral.com/"
   },
   {
@@ -62,7 +62,7 @@
     ],
     "title": "American Academy of Dermatology",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:14.490Z",
+    "updatedAt": "2026-11-05T12:11:29.247Z",
     "url": "https://www.aad.org/"
   },
   {
@@ -73,18 +73,15 @@
     ],
     "title": "www.apa.org",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:20.057Z",
+    "updatedAt": "2026-11-05T12:11:34.447Z",
     "url": "https://www.apa.org"
   },
   {
     "category": "Health",
     "domain": "www.health.harvard.edu",
-    "tags": [
-      "health"
-    ],
+    "tags": [],
     "title": "Harvard Health",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:22.571Z",
     "url": "https://www.health.harvard.edu/"
   },
   {
@@ -95,7 +92,7 @@
     ],
     "title": "Healthline",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:22.787Z",
+    "updatedAt": "2026-11-05T12:11:38.653Z",
     "url": "https://www.healthline.com/"
   },
   {
@@ -106,7 +103,7 @@
     ],
     "title": "Mayo Clinic",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:30.639Z",
+    "updatedAt": "2026-11-05T12:11:45.933Z",
     "url": "https://www.mayoclinic.org/"
   },
   {
@@ -117,7 +114,7 @@
     ],
     "title": "Mindful",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:27.115Z",
+    "updatedAt": "2026-11-05T12:11:41.557Z",
     "url": "https://www.mindful.org/"
   },
   {
@@ -128,7 +125,7 @@
     ],
     "title": "nhs.uk",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:25.573Z",
+    "updatedAt": "2026-11-05T12:11:44.051Z",
     "url": "https://www.nhs.uk/"
   },
   {
@@ -139,7 +136,7 @@
     ],
     "title": "Precision Nutrition",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:30.486Z",
+    "updatedAt": "2026-11-05T12:11:48.662Z",
     "url": "https://www.precisionnutrition.com/"
   },
   {
@@ -150,7 +147,7 @@
     ],
     "title": "Verywell Fit | trusted nutrition and fitness information",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:35.751Z",
+    "updatedAt": "2026-11-05T12:11:51.830Z",
     "url": "https://www.verywellfit.com/"
   },
   {
@@ -161,7 +158,7 @@
     ],
     "title": "Health & Wellness Blog",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:53.261Z",
+    "updatedAt": "2026-11-05T12:12:09.033Z",
     "url": "https://www.bayhealth.org/community-wellness/blog?"
   },
   {
@@ -172,16 +169,18 @@
     ],
     "title": "EverydayHealth.com",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:43.213Z",
+    "updatedAt": "2026-11-05T12:12:02.511Z",
     "url": "https://www.everydayhealth.com/"
   },
   {
     "category": "Health",
     "domain": "www.verywellhealth.com",
-    "tags": [],
+    "tags": [
+      "health"
+    ],
     "title": "Verywell Health | Expert Health Information and Advice",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:42.885Z",
+    "updatedAt": "2026-11-05T12:11:58.240Z",
     "url": "https://www.verywellhealth.com/"
   },
   {
@@ -192,29 +191,24 @@
     ],
     "title": "Health | Trusted Health and Wellness Information",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:45.049Z",
+    "updatedAt": "2026-11-05T12:12:03.944Z",
     "url": "https://www.health.com/"
   },
   {
     "category": "Health",
     "domain": "www.webmd.com",
-    "tags": [
-      "health"
-    ],
+    "tags": [],
     "title": "WebMD",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:48.774Z",
     "url": "https://www.webmd.com/"
   },
   {
     "category": "Health",
     "domain": "www.mindbodygreen.com",
-    "tags": [
-      "health"
-    ],
+    "tags": [],
     "title": "mindbodygreen RSS Feed",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:50.508Z",
+    "updatedAt": "2026-11-05T12:12:07.847Z",
     "url": "https://www.mindbodygreen.com//"
   },
   {
@@ -225,18 +219,15 @@
     ],
     "title": "Root-Cause Natural Health You Can Trust",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:56.748Z",
+    "updatedAt": "2026-11-05T12:12:15.979Z",
     "url": "https://draxe.com/"
   },
   {
     "category": "Health",
     "domain": "www.dukehealth.org",
-    "tags": [
-      "health"
-    ],
+    "tags": [],
     "title": "Duke Health - Connect with your health care at Duke Health",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:58.133Z",
     "url": "https://www.dukehealth.org/blog"
   },
   {
@@ -247,7 +238,7 @@
     ],
     "title": "Total Health and Fitness",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:59.651Z",
+    "updatedAt": "2026-11-05T12:12:17.164Z",
     "url": "https://www.totalhealthandfitness.com/blog/"
   }
 ]

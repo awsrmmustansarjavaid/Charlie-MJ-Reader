@@ -7,7 +7,7 @@
     ],
     "title": "DEV Community",
     "type": "site",
-    "updatedAt": "2026-11-04T07:35:59.857Z",
+    "updatedAt": "2026-11-05T12:11:14.451Z",
     "url": "https://dev.to/"
   },
   {
@@ -18,7 +18,7 @@
     ],
     "title": "HackerNoon",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:04.024Z",
+    "updatedAt": "2026-11-05T12:11:17.667Z",
     "url": "https://hackernoon.com/"
   },
   {
@@ -29,18 +29,15 @@
     ],
     "title": "The Hacker News",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:09.361Z",
+    "updatedAt": "2026-11-05T12:11:23.153Z",
     "url": "https://thehackernews.com/"
   },
   {
     "category": "Tech",
     "domain": "www.freecodecamp.org",
-    "tags": [
-      "tech"
-    ],
+    "tags": [],
     "title": "www.freecodecamp.org",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:18.402Z",
     "url": "https://www.freecodecamp.org/"
   },
   {
@@ -51,7 +48,7 @@
     ],
     "title": "Smashing Magazine",
     "type": "site",
-    "updatedAt": "2026-11-04T07:36:32.568Z",
+    "updatedAt": "2026-11-05T12:11:47.288Z",
     "url": "https://www.smashingmagazine.com/"
   }
 ]
